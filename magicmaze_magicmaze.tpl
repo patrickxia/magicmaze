@@ -26,7 +26,7 @@
 -->
 
 
-This is your game interface. You can edit this HTML in your ".tpl" file.
+<div id="nuke" style="display: block;">nuke it</div>
 
 <div id="area_container">
   <div id="area_scrollable"></div>

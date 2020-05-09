@@ -20,34 +20,62 @@ const CELL_SIZE = 54;
 const IMAGE_SIZE = 256;
 
 function toScreenCoords(x, y) {
+  // Thanks Sarah Howell (soasrsamh@gmail.com) for the
+  // lovely math behind this implementation.
+
   // 00 10 20 30
   // 01 11 21 31 41 51 61 71
   // 02 12 22 32 42 52 62 72
   // 03 13 23 33 43 53 63 73
   //             44 54 64 74
 
-  var entireTilesX = x / 4 | 0;
-  var cellsX = x % 4;
-  var entireTilesY = y / 4 | 0;
-  var cellsY = y % 4;
-  var left = entireTilesX * IMAGE_SIZE + BORDER_WIDTH + CELL_SIZE * cellsX;
-  var top = entireTilesY * IMAGE_SIZE + BORDER_WIDTH + CELL_SIZE * cellsY;
+  var x0 = ((y+4*x) / 17) | 0;
+  var cellsX = (x + 1) % 4;
+  var extraBordersX = 0;
+  var y0 = ((x-4*y) / 17) | 0;
+  var cellsY = (y + 1) % 4;
+  var extraBordersY = 0;
+  var left = 2 * BORDER_WIDTH * x0 + x * CELL_SIZE;
+  var top = -2 * BORDER_WIDTH * y0 + y * CELL_SIZE;
+
   return [left, top];
 }
 
-function placeTile(tile) {
-  var screenCoords = toScreenCoords(tile["position_x"], tile["position_y"])
-  screenCoords[0] -= BORDER_WIDTH;
-  screenCoords[1] -= BORDER_WIDTH;
-  var tile = dojo.create("div", {
-    "class": "tile" + tile["tile_id"],
+function dispatchClick(obj, evt, tileId, relativex, relativey, x, y) {
+  obj.onCreateTile(tileId, relativex, relativey);
+}
+
+function placeTile(obj, tile) {
+  const x = parseInt(tile["position_x"]);
+  const y = parseInt(tile["position_y"]);
+  const screenCoords = toScreenCoords(x, y)
+  const newTile = dojo.create("div", {
+    "class": `tile${tile["tile_id"]}`,
     style: {
       position: "absolute",
-      left: screenCoords[0] + "px",
-      top: screenCoords[1] + "px",
+      left: (screenCoords[0] - BORDER_WIDTH) + "px",
+      top: (screenCoords[1] - BORDER_WIDTH) + "px",
       transform: "rotate(" + tile["rotation"] + "deg)",
     }
   }, $('area_scrollable'));
+  for (let i = 0; i < 4; ++i) {
+    for (let j = 0; j < 4; ++j) {
+      var clickableZone = dojo.create("div", {
+        "class": "debug",
+        style: {
+          position: "absolute",
+          width: CELL_SIZE + "px",
+          height: CELL_SIZE + "px",
+          left: (screenCoords[0] + CELL_SIZE * i) + "px",
+          top: (screenCoords[1] + CELL_SIZE * j) + "px"
+        }
+      }, $('area_scrollable_oversurface'))
+      clickableZone.onclick = function(evt) {
+        dispatchClick(obj, evt,
+          tile["tile_id"], i, j, i + x, j + y);
+      };
+    }
+  }
 }
 
 define([
@@ -79,6 +107,13 @@ define([
       {
         console.log( "Starting game setup" );
 
+        const game = this;
+        $('nuke').onclick = function(evt) {
+          game.ajaxcall("/magicmaze/magicmaze/nuke.html", {}, this, function(res){
+            location.reload();
+          }, function(error){});
+        };
+
         // Setting up player boards
         for( var player_id in gamedatas.players )
         {
@@ -97,7 +132,7 @@ define([
         );
         this.scrollmap.setupOnScreenArrows(150);
         for (var key in gamedatas.tiles) {
-          placeTile(gamedatas.tiles[key]);
+          placeTile(this, gamedatas.tiles[key]);
         }
         /*
        var tile2 = dojo.create("div", {
@@ -284,6 +319,15 @@ define([
             _ make a call to the game server
 
 */
+      onCreateTile: function(tile_id, x, y) {
+        // TODO checkAction
+        this.ajaxcall("/magicmaze/magicmaze/placeTile.html",
+        {tile_id: tile_id,
+        x: x,
+      y:y}, this, function(result) {
+        console.log(result);
+      }, function (error) { console.log(error); });
+  },
 
       /* Example:
 
@@ -332,9 +376,14 @@ define([
                   your magicmaze.game.php file.
 
 */
+        notif_tileAdded: function(notif) {
+          console.log(notif);
+          placeTile(this, notif.args);
+        },
         setupNotifications: function()
         {
             console.log( 'notifications subscriptions setup' );
+            dojo.subscribe('tileAdded', this, 'notif_tileAdded');
 
       // TODO: here, associate your game notifications with local methods
 

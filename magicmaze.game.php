@@ -155,6 +155,81 @@ class MagicMaze extends Table
 //////////////////////////////////////////////////////////////////////////////
 //////////// Player actions
 //////////// 
+    function nextAvailableTile() {
+        // XXX: this doesn't work (races), but it's fine for debug
+        $sql = "select max(tile_id) + 1 id from tiles";
+        $nextId = self::getNonEmptyObjectFromDb($sql);
+        return $nextId['id'];
+    }
+
+    function tileCoords($tile_id) {
+        $sql = "select position_x, position_y from tiles where tile_id = " . $tile_id;
+        $res = self::getNonEmptyObjectFromDb($sql);
+        return [$res['position_x'], $res['position_y']];
+    }
+
+    function placeTileFrom($tile_id, $x, $y) {
+        // x, y in relative coordinates
+        // TODO: check to make sure we're not placing on top of another tile
+        // TODO: check to make sure that this is indeed the correct tile on the top
+        // of the stack
+        $nextId = $this->nextAvailableTile();
+        // Only valid exit tiles are at
+        //  20 (no rotation)
+        //  32 (90 degree rotation)
+        //  13 (180 degree rotation)
+        //  01 (-90 degree rotation)
+        // 00 10 20 30
+        // 01 11 21 31
+        // 02 12 22 32
+        // 03 13 23 33
+
+        $rotations = [
+            "20" => 0,
+            "32" => 90,
+            "13" => 180,
+            "01" => -90
+        ];
+        $dx = [
+            "20" => [1, -4],
+            "32" => [4, +1],
+            "13" => [-1, +4],
+            "01" => [-4, -1]
+        ];
+
+        $key = $x.$y;
+        if (!array_key_exists($key, $rotations)) {
+            throw new BgaUserException( self::_("you can't place a tile there") );
+        }
+        $coords = $this->tileCoords($tile_id);
+
+        $newx = $coords[0] + $dx[$key][0];
+        $newy = $coords[1] + $dx[$key][1];
+        $rotation = $rotations[$key];
+        
+        $sql = "insert into tiles (tile_id, position_x, position_y, rotation) values (";
+        $sql .= $nextId;
+        $sql .= ", ";
+        $sql .= $newx;
+        $sql .= ", ";
+        $sql .= $newy;
+        $sql .= ", ";
+        $sql .= $rotation;
+        $sql .= ")";
+        self::DbQuery($sql);
+
+        self::notifyAllPlayers("tileAdded", clienttranslate('tile added!'), array(
+            'tile_id' => $nextId,
+            'position_x' => $newx,
+            'position_y' => $newy,
+            'rotation' => $rotation
+        ));
+     }
+
+     function nukeIt() {
+         $sql = "delete from tiles where tile_id != 1";
+         self::DbQuery($sql);
+     }
 
     /*
         Each time a player is doing some game action, one of the methods below is called.

@@ -37,8 +37,22 @@
             $this->view = "magicmaze_magicmaze";
             self::trace( "Complete reinitialization of board game" );
       }
-  	} 
-  	
+    } 
+    
+    public function placeTile() {
+      self::setAjaxMode();
+      $id = self::getArg("tile_id", AT_int, true);
+      $x = self::getArg("x", AT_int, true);
+      $y = self::getArg("y", AT_int, true);
+      $this->game->placeTileFrom($id, $x, $y);
+      self::ajaxResponse();
+    }
+
+    public function nuke() {
+      self::setAjaxMode();
+      $this->game->nukeIt();
+      self::ajaxResponse();
+    }
   	// TODO: defines your action entry points there
 
 
