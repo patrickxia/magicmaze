@@ -118,6 +118,11 @@
     background-position: 32px 32px;
 }
 
+.debug {
+  background-color: #aaa;
+  opacity: .3;
+}
+
 .tile1 {
   width: 256px;
   height: 256px;

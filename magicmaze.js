@@ -19,7 +19,35 @@ const BORDER_WIDTH = 20;
 const CELL_SIZE = 54;
 const IMAGE_SIZE = 256;
 
-function toScreenCord(int xcoord, int ycoord) {
+function toScreenCoords(x, y) {
+  // 00 10 20 30
+  // 01 11 21 31 41 51 61 71
+  // 02 12 22 32 42 52 62 72
+  // 03 13 23 33 43 53 63 73
+  //             44 54 64 74
+
+  var entireTilesX = x / 4 | 0;
+  var cellsX = x % 4;
+  var entireTilesY = y / 4 | 0;
+  var cellsY = y % 4;
+  var left = entireTilesX * IMAGE_SIZE + BORDER_WIDTH + CELL_SIZE * cellsX;
+  var top = entireTilesY * IMAGE_SIZE + BORDER_WIDTH + CELL_SIZE * cellsY;
+  return [left, top];
+}
+
+function placeTile(tile) {
+  var screenCoords = toScreenCoords(tile["position_x"], tile["position_y"])
+  screenCoords[0] -= BORDER_WIDTH;
+  screenCoords[1] -= BORDER_WIDTH;
+  var tile = dojo.create("div", {
+    "class": "tile" + tile["tile_id"],
+    style: {
+      position: "absolute",
+      left: screenCoords[0] + "px",
+      top: screenCoords[1] + "px",
+      transform: "rotate(" + tile["rotation"] + "deg)",
+    }
+  }, $('area_scrollable'));
 }
 
 define([
@@ -68,15 +96,11 @@ define([
           $('area_scrollable_oversurface')
         );
         this.scrollmap.setupOnScreenArrows(150);
-        var startTile = dojo.create("div", {
-          "class": "tile1",
-          style: {
-            position: "absolute",
-            top: "0px",
-            left: "0px",
-          }
-        }, $('area_scrollable'));
-        var tile2 = dojo.create("div", {
+        for (var key in gamedatas.tiles) {
+          placeTile(gamedatas.tiles[key]);
+        }
+        /*
+       var tile2 = dojo.create("div", {
           "class": "tile2",
           style: {
             position: "absolute",
@@ -91,7 +115,7 @@ define([
             position: "absolute",
             top: "256px",
             left: "-64px",
-            transform: "rotate(180deg)"
+            y
           }
         }, $('area_scrollable'));
         var tile4 = dojo.create("div", {
@@ -111,7 +135,7 @@ define([
             left: "192px",
             transform: "rotate(90deg)"
           }
-        }, $('area_scrollable'));
+        }, $('area_scrollable'));*/
 
 
         //$('area_scrollable').append(startTile).css('background-image', "url('img/1.jpg')").css('width', '256px').css('height', '256px');

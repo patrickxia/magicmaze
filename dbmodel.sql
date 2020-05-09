@@ -18,6 +18,14 @@
 -- Note: The database schema is created from this file when the game starts. If you modify this file,
 --       you have to restart a game to see your changes in database.
 
+create table if not exists `tiles` (
+    `tile_id` int unsigned not null,
+    `position_x` int not null,
+    `position_y` int not null,
+    `rotation` int not null, -- really should be an enum but who has time for this
+    primary key (`tile_id`)
+) ENGINE=InnoDB;
+
 -- Example 1: create a standard "card" table to be used with the "Deck" tools (see example game "hearts"):
 
 -- CREATE TABLE IF NOT EXISTS `card` (

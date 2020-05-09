@@ -74,6 +74,9 @@ class MagicMaze extends Table
         }
         $sql .= implode( $values, ',' );
         self::DbQuery( $sql );
+
+        $sql = "insert into tiles (tile_id, position_x, position_y, rotation) values (0, 0, 0, 0)";
+        self::DbQuery($sql);
         self::reattributeColorsBasedOnPreferences( $players, $gameinfos['player_colors'] );
         self::reloadPlayersBasicInfos();
         
@@ -108,13 +111,13 @@ class MagicMaze extends Table
     protected function getAllDatas()
     {
         $result = array();
-    
-        $current_player_id = self::getCurrentPlayerId();    // !! We must only return informations visible by this player !!
-    
+        $current_player_id = self::getCurrentPlayerId();
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
         $sql = "SELECT player_id id, player_score score FROM player ";
         $result['players'] = self::getCollectionFromDb( $sql );
+        $sql = "select tile_id tile_id, position_x, position_y, rotation from tiles";
+        $result['tiles'] = self::getCollectionFromDb($sql);
   
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
   
