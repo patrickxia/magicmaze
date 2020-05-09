@@ -75,7 +75,7 @@ class MagicMaze extends Table
         $sql .= implode( $values, ',' );
         self::DbQuery( $sql );
 
-        $sql = "insert into tiles (tile_id, position_x, position_y, rotation) values (0, 0, 0, 0)";
+        $sql = "insert into tiles (tile_id, position_x, position_y, rotation) values (1, 0, 0, 0)";
         self::DbQuery($sql);
         self::reattributeColorsBasedOnPreferences( $players, $gameinfos['player_colors'] );
         self::reloadPlayersBasicInfos();
