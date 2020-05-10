@@ -79,6 +79,15 @@ class MagicMaze extends Table
         self::DbQuery($sql);
         self::reattributeColorsBasedOnPreferences( $players, $gameinfos['player_colors'] );
         self::reloadPlayersBasicInfos();
+
+        $spawns = [[1,1], [1,2], [2,1], [2,2]];
+        shuffle($spawns);
+        for ($i = 0; $i < 4; $i++) {
+            $x = $spawns[$i][0];
+            $y = $spawns[$i][1];
+            $sql = "insert into tokens (token_id, position_x, position_y) values ($i, $x, $y)";
+            self::DbQuery($sql);
+        }
         
         /************ Start the game initialization *****/
 
@@ -118,9 +127,9 @@ class MagicMaze extends Table
         $result['players'] = self::getCollectionFromDb( $sql );
         $sql = "select tile_id tile_id, position_x, position_y, rotation from tiles";
         $result['tiles'] = self::getCollectionFromDb($sql);
-  
-        // TODO: Gather all information about current game situation (visible by player $current_player_id).
-  
+        $sql = "select token_id, position_x, position_y from tokens";
+        $result['tokens'] = self::getCollectionFromDb($sql);
+
         return $result;
     }
 
@@ -166,6 +175,35 @@ class MagicMaze extends Table
         $sql = "select position_x, position_y from tiles where tile_id = " . $tile_id;
         $res = self::getNonEmptyObjectFromDb($sql);
         return [$res['position_x'], $res['position_y']];
+    }
+
+    function attemptMove($token_id, $x, $y) {
+        // TODO: checkAction
+        // TODO: check action is possible for current player (self::getActivePlayerId?)
+
+        $sql = "select position_x, position_y from tokens where token_id = " . $token_id;
+        $res = self::getNonEmptyObjectFromDb($sql);
+        $oldx = $res['position_x'];
+        $oldy = $res['position_y'];
+        $newx = $oldx + $x;
+        $newy = $oldy + $y;
+        // XXX check valid
+        
+        $sql = "update tokens set position_x = $newx, position_y = $newy where " .
+        "token_id = $token_id and position_x = $oldx and position_y = $oldy and " . 
+        "not exists (select * from (select * from tokens) t2 where t2.position_x = $newx and t2.position_y = $newy)";
+        self::DbQuery($sql);
+
+        $sql = "select position_x, position_y from tokens where token_id = " . $token_id;
+        $res = self::getNonEmptyObjectFromDb($sql);
+        // XXX conflicts, need a lot better than this (possibly timestamp the
+        // insertions).
+
+        self::notifyAllPlayers("tokenMoved", clienttranslate('token moved'), array(
+            "token_id" => $token_id,
+            "position_x" => $res['position_x'],
+            "position_y" => $res['position_y']
+        ));
     }
 
     function placeTileFrom($tile_id, $x, $y) {

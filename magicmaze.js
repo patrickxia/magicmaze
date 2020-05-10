@@ -17,6 +17,7 @@
 
 const BORDER_WIDTH = 20;
 const CELL_SIZE = 54;
+const MEEPLE_SIZE = 30;
 const IMAGE_SIZE = 256;
 
 function toScreenCoords(x, y) {
@@ -29,12 +30,9 @@ function toScreenCoords(x, y) {
   // 03 13 23 33 43 53 63 73
   //             44 54 64 74
 
-  var x0 = ((y+4*x) / 17) | 0;
-  var cellsX = (x + 1) % 4;
-  var extraBordersX = 0;
-  var y0 = ((x-4*y) / 17) | 0;
-  var cellsY = (y + 1) % 4;
-  var extraBordersY = 0;
+  var x0 = Math.floor((y+4*x) / 17);
+  var y0 = Math.floor((x-4*y) / 17);
+
   var left = 2 * BORDER_WIDTH * x0 + x * CELL_SIZE;
   var top = -2 * BORDER_WIDTH * y0 + y * CELL_SIZE;
 
@@ -43,6 +41,17 @@ function toScreenCoords(x, y) {
 
 function dispatchClick(obj, evt, tileId, relativex, relativey, x, y) {
   obj.onCreateTile(tileId, relativex, relativey);
+}
+
+function dispatchMove(obj, tokenId, arr) {
+  obj.ajaxcall("/magicmaze/magicmaze/attemptMove.html",
+    {
+      token_id: tokenId,
+      x: arr[0],
+      y: arr[1]
+    }, this, function (result) {
+      console.log(result);
+    }, function (error) { console.log(error); });
 }
 
 function placeTile(obj, tile) {
@@ -58,16 +67,18 @@ function placeTile(obj, tile) {
       transform: "rotate(" + tile["rotation"] + "deg)",
     }
   }, $('area_scrollable'));
+  
   for (let i = 0; i < 4; ++i) {
     for (let j = 0; j < 4; ++j) {
+      let screenCoords = toScreenCoords(x + i, y + j);
       var clickableZone = dojo.create("div", {
-        "class": "debug",
+        //class: "debug",
         style: {
           position: "absolute",
           width: CELL_SIZE + "px",
           height: CELL_SIZE + "px",
-          left: (screenCoords[0] + CELL_SIZE * i) + "px",
-          top: (screenCoords[1] + CELL_SIZE * j) + "px"
+          left: (screenCoords[0]) + "px",
+          top: (screenCoords[1]) + "px"
         }
       }, $('area_scrollable_oversurface'))
       clickableZone.onclick = function(evt) {
@@ -76,6 +87,19 @@ function placeTile(obj, tile) {
       };
     }
   }
+  
+}
+
+function placeCharacter(dojo, info) {
+  const x = parseInt(info["position_x"]);
+  const y = parseInt(info["position_y"]);
+  const screenCoords = toScreenCoords(x, y);
+  const adjust = (CELL_SIZE - MEEPLE_SIZE) / 2;
+  screenCoords[0] += adjust;
+  screenCoords[1] += adjust;
+  const el = $(`token${info["token_id"]}`);
+  el.style.left = `${screenCoords[0]}px`;
+  el.style.top = `${screenCoords[1]}px`;
 }
 
 define([
@@ -131,51 +155,35 @@ define([
           $('area_scrollable_oversurface')
         );
         this.scrollmap.setupOnScreenArrows(150);
-        for (var key in gamedatas.tiles) {
+        for (let key in gamedatas.tiles) {
           placeTile(this, gamedatas.tiles[key]);
         }
-        /*
-       var tile2 = dojo.create("div", {
-          "class": "tile2",
-          style: {
-            position: "absolute",
-            top: "-256px",
-            left: "64px",
-            //transform: "rotate(180deg)"
-          }
-        }, $('area_scrollable'));
-        var tile3 = dojo.create("div", {
-          "class": "tile3",
-          style: {
-            position: "absolute",
-            top: "256px",
-            left: "-64px",
-            y
-          }
-        }, $('area_scrollable'));
-        var tile4 = dojo.create("div", {
-          "class": "tile4",
-          style: {
-            position: "absolute",
-            top: "64px",
-            left: "256px",
-            transform: "rotate(90deg)"
-          }
-        }, $('area_scrollable'));
-        var tile5 = dojo.create("div", {
-          "class": "tile5",
-          style: {
-            position: "absolute",
-            top: "320px",
-            left: "192px",
-            transform: "rotate(90deg)"
-          }
-        }, $('area_scrollable'));*/
 
-
-        //$('area_scrollable').append(startTile).css('background-image', "url('img/1.jpg')").css('width', '256px').css('height', '256px');
-
-
+        for (let key in gamedatas.tokens) {
+          placeCharacter(dojo, gamedatas.tokens[key]);
+          const tokenId = gamedatas.tokens[key]["token_id"];
+          console.log(tokenId);
+          const base = `#controls${tokenId} `;
+          dojo.connect(document.querySelector(base + "> tbody > tr:nth-child(1) > td "), 'onclick', this, function(evt) {
+            // up
+            dispatchMove(this, tokenId, [0, -1]);
+          });
+          dojo.connect(document.querySelector(base + "> tbody > tr:nth-child(2) > td:nth-child(1)"), 'onclick', this, function(evt) {
+            // left
+            dispatchMove(this, tokenId, [-1, 0]);
+          });
+          dojo.connect(document.querySelector(base + "> tbody > tr:nth-child(2) > td:nth-child(3)"), 'onclick', this, function(evt) {
+            // right
+            dispatchMove(this, tokenId, [1, 0]);
+          });
+          dojo.connect(document.querySelector(base + "> tbody > tr:nth-child(3) > td"), 'onclick', this, function(evt) {
+            // down
+            dispatchMove(this, tokenId, [0, 1]);
+          } );
+          /*
+          #controls0 > tbody > tr:nth-child(4) > td // explore
+          */
+        }
         dojo.connect( $('movetop'), 'onclick', this, 'onMoveTop' );
         dojo.connect( $('moveleft'), 'onclick', this, 'onMoveLeft' );
         dojo.connect( $('moveright'), 'onclick', this, 'onMoveRight' );
@@ -377,13 +385,16 @@ define([
 
 */
         notif_tileAdded: function(notif) {
-          console.log(notif);
           placeTile(this, notif.args);
+        },
+        notif_tokenMoved: function(notif) {
+          placeCharacter(this, notif.args);
         },
         setupNotifications: function()
         {
             console.log( 'notifications subscriptions setup' );
             dojo.subscribe('tileAdded', this, 'notif_tileAdded');
+            dojo.subscribe('tokenMoved', this, 'notif_tokenMoved');
 
       // TODO: here, associate your game notifications with local methods
 

@@ -31,14 +31,46 @@
 <div id="area_container">
   <div id="area_scrollable"></div>
   <div id="area_surface"></div>
-  <div id="area_scrollable_oversurface"></div>
+  <div id="area_scrollable_oversurface">
+    <div id="token0"></div>
+    <div id="token1"></div>
+    <div id="token2"></div>
+    <div id="token3"></div>
+  </div>
   <a id="movetop" href="#"></a>
   <a id="moveleft" href="#"></a>
   <a id="moveright" href="#"></a>
   <a id="movedown" href="#"></a>
 </div>
 
-<div id="start_tile"></div>
+
+<table id="controls0">
+<tr><td colspan="3">Up</td></tr>
+<tr><td>Left</td><td>Green</td><td>Right</td></tr>
+<tr><td colspan="3">Down</td></tr>
+<tr><td colspan="3">Explore</td></tr>
+</table>
+
+<table id="controls1">
+<tr><td colspan="3">Up</td></tr>
+<tr><td>Left</td><td>Orange</td><td>Right</td></tr>
+<tr><td colspan="3">Down</td></tr>
+<tr><td colspan="3">Explore</td></tr>
+</table>
+
+<table id="controls2">
+<tr><td colspan="3">Up</td></tr>
+<tr><td>Left</td><td>Yellow</td><td>Right</td></tr>
+<tr><td colspan="3">Down</td></tr>
+<tr><td colspan="3">Explore</td></tr>
+</table>
+
+<table id="controls3">
+<tr><td colspan="3">Up</td></tr>
+<tr><td>Left</td><td>Purple</td><td>Right</td></tr>
+<tr><td colspan="3">Down</td></tr>
+<tr><td colspan="3">Explore</td></tr>
+</table>
 
 
 <script type="text/javascript">

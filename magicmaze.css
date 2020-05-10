@@ -178,3 +178,40 @@
   height: 256px;
   background-image: url('img/9.jpg');
 }
+
+#token0 {
+  width: 30px;
+  height: 30px;
+  background: url('img/30_30_meeple.png') -30px 0;
+  position: absolute;
+}
+
+#token1 {
+  width: 30px;
+  height: 30px;
+  background: url('img/30_30_meeple.png') -90px 0;
+  position: absolute;
+}
+
+#token2 {
+  width: 30px;
+  height: 30px;
+  background: url('img/30_30_meeple.png') -210px 0;
+  position: absolute;
+}
+
+#token3 {
+  width: 30px;
+  height: 30px;
+  background: url('img/30_30_meeple.png') -270px 0;
+  position: absolute;
+}
+
+/* temporary crap */
+
+table {border-collapse: collapse; display: inline; }
+table, th, td {border: 1px #000 solid;}
+td {
+  padding: 5px;
+  text-align: center;
+}
