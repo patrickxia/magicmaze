@@ -10,17 +10,19 @@
  * magicmaze.js
  *
  * MagicMaze user interface script
- * 
+ *
  * In this file, you are describing the logic of your user interface, in Javascript language.
  *
  */
 
-const BORDER_WIDTH = 20;
-const CELL_SIZE = 54;
-const MEEPLE_SIZE = 30;
-const IMAGE_SIZE = 256;
+/* global $, define, ebg, dojo */
 
-function toScreenCoords(x, y) {
+const BORDER_WIDTH = 20
+const CELL_SIZE = 54
+const MEEPLE_SIZE = 30
+// const IMAGE_SIZE = 256
+
+function toScreenCoords (x, y) {
   // Thanks Sarah Howell (soasrsamh@gmail.com) for the
   // lovely math behind this implementation.
 
@@ -30,91 +32,90 @@ function toScreenCoords(x, y) {
   // 03 13 23 33 43 53 63 73
   //             44 54 64 74
 
-  var x0 = Math.floor((y+4*x) / 17);
-  var y0 = Math.floor((x-4*y) / 17);
+  var x0 = Math.floor((y + 4 * x) / 17)
+  var y0 = Math.floor((x - 4 * y) / 17)
 
-  var left = 2 * BORDER_WIDTH * x0 + x * CELL_SIZE;
-  var top = -2 * BORDER_WIDTH * y0 + y * CELL_SIZE;
+  var left = 2 * BORDER_WIDTH * x0 + x * CELL_SIZE
+  var top = -2 * BORDER_WIDTH * y0 + y * CELL_SIZE
 
-  return [left, top];
+  return [left, top]
 }
 
-function dispatchClick(obj, evt, tileId, relativex, relativey, x, y) {
-  obj.onCreateTile(tileId, relativex, relativey);
+function dispatchClick (obj, evt, tileId, relativex, relativey, x, y) {
+  obj.onCreateTile(tileId, relativex, relativey)
 }
 
-function dispatchMove(obj, tokenId, arr) {
-  obj.ajaxcall("/magicmaze/magicmaze/attemptMove.html",
+function dispatchMove (obj, tokenId, arr) {
+  obj.ajaxcall('/magicmaze/magicmaze/attemptMove.html',
     {
       token_id: tokenId,
       x: arr[0],
       y: arr[1]
     }, this, function (result) {
-      console.log(result);
-    }, function (error) { console.log(error); });
+      console.log(result)
+    }, function (error) { console.log(error) })
 }
 
-function placeTile(obj, tile) {
-  const x = parseInt(tile["position_x"]);
-  const y = parseInt(tile["position_y"]);
+function placeTile (obj, tile) {
+  const x = parseInt(tile.position_x)
+  const y = parseInt(tile.position_y)
   const screenCoords = toScreenCoords(x, y)
-  const newTile = dojo.create("div", {
-    "class": `tile${tile["tile_id"]}`,
+  dojo.create('div', {
+    class: `tile${tile.tile_id}`,
     style: {
-      position: "absolute",
-      left: (screenCoords[0] - BORDER_WIDTH) + "px",
-      top: (screenCoords[1] - BORDER_WIDTH) + "px",
-      transform: "rotate(" + tile["rotation"] + "deg)",
+      position: 'absolute',
+      left: (screenCoords[0] - BORDER_WIDTH) + 'px',
+      top: (screenCoords[1] - BORDER_WIDTH) + 'px',
+      transform: 'rotate(' + tile.rotation + 'deg)'
     }
-  }, $('area_scrollable'));
-  
+  }, $('area_scrollable'))
+
   for (let i = 0; i < 4; ++i) {
     for (let j = 0; j < 4; ++j) {
-      let screenCoords = toScreenCoords(x + i, y + j);
-      var clickableZone = dojo.create("div", {
-        //class: "debug",
+      const screenCoords = toScreenCoords(x + i, y + j)
+      var clickableZone = dojo.create('div', {
+        // class: "debug",
         style: {
-          position: "absolute",
-          width: CELL_SIZE + "px",
-          height: CELL_SIZE + "px",
-          left: (screenCoords[0]) + "px",
-          top: (screenCoords[1]) + "px"
+          position: 'absolute',
+          width: CELL_SIZE + 'px',
+          height: CELL_SIZE + 'px',
+          left: (screenCoords[0]) + 'px',
+          top: (screenCoords[1]) + 'px'
         }
       }, $('area_scrollable_oversurface'))
-      clickableZone.onclick = function(evt) {
+      clickableZone.onclick = function (evt) {
         dispatchClick(obj, evt,
-          tile["tile_id"], i, j, i + x, j + y);
-      };
+          tile.tile_id, i, j, i + x, j + y)
+      }
     }
   }
-  
 }
 
-function placeCharacter(dojo, info) {
-  const x = parseInt(info["position_x"]);
-  const y = parseInt(info["position_y"]);
-  const screenCoords = toScreenCoords(x, y);
-  const adjust = (CELL_SIZE - MEEPLE_SIZE) / 2;
-  screenCoords[0] += adjust;
-  screenCoords[1] += adjust;
-  const el = $(`token${info["token_id"]}`);
-  el.style.left = `${screenCoords[0]}px`;
-  el.style.top = `${screenCoords[1]}px`;
+function placeCharacter (dojo, info) {
+  const x = parseInt(info.position_x)
+  const y = parseInt(info.position_y)
+  const screenCoords = toScreenCoords(x, y)
+  const adjust = (CELL_SIZE - MEEPLE_SIZE) / 2
+  screenCoords[0] += adjust
+  screenCoords[1] += adjust
+  const el = $(`token${info.token_id}`)
+  el.style.left = `${screenCoords[0]}px`
+  el.style.top = `${screenCoords[1]}px`
 }
 
 define([
-  "dojo","dojo/_base/declare",
-  "ebg/core/gamegui",
-  "ebg/counter",
-  "ebg/scrollmap"
+  'dojo', 'dojo/_base/declare',
+  'ebg/core/gamegui',
+  'ebg/counter',
+  'ebg/scrollmap'
 ],
-  function (dojo, declare) {
-    return declare("bgagame.magicmaze", ebg.core.gamegui, {
-      constructor: function(){
-        this.scrollmap = new ebg.scrollmap();
-      },
+function (dojo, declare) {
+  return declare('bgagame.magicmaze', ebg.core.gamegui, {
+    constructor: function () {
+      this.scrollmap = new ebg.scrollmap() // eslint-disable-line new-cap
+    },
 
-      /*
+    /*
             setup:
 
             This method must set up the game user interface according to current game situation specified
@@ -127,114 +128,106 @@ define([
             "gamedatas" argument contains all datas retrieved by your "getAllDatas" PHP method.
             */
 
-      setup: function( gamedatas )
-      {
-        console.log( "Starting game setup" );
+    setup: function (gamedatas) {
+      console.log('Starting game setup')
 
-        const game = this;
-        $('nuke').onclick = function(evt) {
-          game.ajaxcall("/magicmaze/magicmaze/nuke.html", {}, this, function(res){
-            location.reload();
-          }, function(error){});
-        };
+      const game = this
+      $('nuke').onclick = function (evt) {
+        game.ajaxcall('/magicmaze/magicmaze/nuke.html', {}, this, function (res) {
+          window.location.reload()
+        }, function (error) {
+          console.log(error)
+        })
+      }
 
-        // Setting up player boards
-        for( var player_id in gamedatas.players )
-        {
-          var player = gamedatas.players[player_id];
+      // Setting up player boards
+      for (var playerID in gamedatas.players) {
+        var player = gamedatas.players[playerID]
+        console.log(player)
+        // TODO: Setting up players boards if needed
+      }
 
-          // TODO: Setting up players boards if needed
-        }
+      // TODO: Set up your game interface here, according to "gamedatas"
 
-        // TODO: Set up your game interface here, according to "gamedatas"
+      this.scrollmap.create(
+        $('area_container'),
+        $('area_scrollable'),
+        $('area_surface'),
+        $('area_scrollable_oversurface')
+      )
+      this.scrollmap.setupOnScreenArrows(150)
+      for (const key in gamedatas.tiles) {
+        placeTile(this, gamedatas.tiles[key])
+      }
 
-        this.scrollmap.create(
-          $('area_container'),
-          $('area_scrollable'),
-          $('area_surface'),
-          $('area_scrollable_oversurface')
-        );
-        this.scrollmap.setupOnScreenArrows(150);
-        for (let key in gamedatas.tiles) {
-          placeTile(this, gamedatas.tiles[key]);
-        }
-
-        for (let key in gamedatas.tokens) {
-          placeCharacter(dojo, gamedatas.tokens[key]);
-          const tokenId = gamedatas.tokens[key]["token_id"];
-          console.log(tokenId);
-          const base = `#controls${tokenId} `;
-          dojo.connect(document.querySelector(base + "> tbody > tr:nth-child(1) > td "), 'onclick', this, function(evt) {
-            // up
-            dispatchMove(this, tokenId, [0, -1]);
-          });
-          dojo.connect(document.querySelector(base + "> tbody > tr:nth-child(2) > td:nth-child(1)"), 'onclick', this, function(evt) {
-            // left
-            dispatchMove(this, tokenId, [-1, 0]);
-          });
-          dojo.connect(document.querySelector(base + "> tbody > tr:nth-child(2) > td:nth-child(3)"), 'onclick', this, function(evt) {
-            // right
-            dispatchMove(this, tokenId, [1, 0]);
-          });
-          dojo.connect(document.querySelector(base + "> tbody > tr:nth-child(3) > td"), 'onclick', this, function(evt) {
-            // down
-            dispatchMove(this, tokenId, [0, 1]);
-          } );
-          /*
+      for (const key in gamedatas.tokens) {
+        placeCharacter(dojo, gamedatas.tokens[key])
+        const tokenId = gamedatas.tokens[key].token_id
+        console.log(tokenId)
+        const base = `#controls${tokenId} `
+        dojo.connect(document.querySelector(base + '> tbody > tr:nth-child(1) > td '), 'onclick', this, function (evt) {
+          // up
+          dispatchMove(this, tokenId, [0, -1])
+        })
+        dojo.connect(document.querySelector(base + '> tbody > tr:nth-child(2) > td:nth-child(1)'), 'onclick', this, function (evt) {
+          // left
+          dispatchMove(this, tokenId, [-1, 0])
+        })
+        dojo.connect(document.querySelector(base + '> tbody > tr:nth-child(2) > td:nth-child(3)'), 'onclick', this, function (evt) {
+          // right
+          dispatchMove(this, tokenId, [1, 0])
+        })
+        dojo.connect(document.querySelector(base + '> tbody > tr:nth-child(3) > td'), 'onclick', this, function (evt) {
+          // down
+          dispatchMove(this, tokenId, [0, 1])
+        })
+        /*
           #controls0 > tbody > tr:nth-child(4) > td // explore
           */
-        }
-        dojo.connect( $('movetop'), 'onclick', this, 'onMoveTop' );
-        dojo.connect( $('moveleft'), 'onclick', this, 'onMoveLeft' );
-        dojo.connect( $('moveright'), 'onclick', this, 'onMoveRight' );
-        dojo.connect( $('movedown'), 'onclick', this, 'onMoveDown' );
+      }
+      dojo.connect($('movetop'), 'onclick', this, 'onMoveTop')
+      dojo.connect($('moveleft'), 'onclick', this, 'onMoveLeft')
+      dojo.connect($('moveright'), 'onclick', this, 'onMoveRight')
+      dojo.connect($('movedown'), 'onclick', this, 'onMoveDown')
 
-        // Setup game notifications to handle (see "setupNotifications" method below)
-        this.setupNotifications();
+      // Setup game notifications to handle (see "setupNotifications" method below)
+      this.setupNotifications()
 
-        console.log( "Ending game setup" );
-      },
+      console.log('Ending game setup')
+    },
 
-      onMoveTop : function( evt )
-      {
-        console.log( "onMoveTop" );        
-        evt.preventDefault();
-        this.scrollmap.scroll( 0, 300 );
-      },
-      onMoveLeft : function( evt )
-      {
-        console.log( "onMoveLeft" );        
-        evt.preventDefault();
-        this.scrollmap.scroll( 300, 0 );
-      },
-      onMoveRight : function( evt )
-      {
-        console.log( "onMoveRight" );        
-        evt.preventDefault();
-        this.scrollmap.scroll( -300, 0 );
-      },
-      onMoveDown : function( evt )
-      {
-        console.log( "onMoveDown" );        
-        evt.preventDefault();
-        this.scrollmap.scroll( 0, -300 );
-      },
+    onMoveTop: function (evt) {
+      console.log('onMoveTop')
+      evt.preventDefault()
+      this.scrollmap.scroll(0, 300)
+    },
+    onMoveLeft: function (evt) {
+      console.log('onMoveLeft')
+      evt.preventDefault()
+      this.scrollmap.scroll(300, 0)
+    },
+    onMoveRight: function (evt) {
+      console.log('onMoveRight')
+      evt.preventDefault()
+      this.scrollmap.scroll(-300, 0)
+    },
+    onMoveDown: function (evt) {
+      console.log('onMoveDown')
+      evt.preventDefault()
+      this.scrollmap.scroll(0, -300)
+    },
 
+    /// ////////////////////////////////////////////////
+    /// / Game & client states
 
-      ///////////////////////////////////////////////////
-      //// Game & client states
+    // onEnteringState: this method is called each time we are entering into a new game state.
+    //                  You can use this method to perform some user interface changes at this moment.
+    //
+    onEnteringState: function (stateName, args) {
+      console.log('Entering state: ' + stateName)
 
-      // onEnteringState: this method is called each time we are entering into a new game state.
-      //                  You can use this method to perform some user interface changes at this moment.
-      //
-      onEnteringState: function( stateName, args )
-      {
-        console.log( 'Entering state: '+stateName );
-
-        switch( stateName )
-        {
-
-            /* Example:
+      switch (stateName) {
+        /* Example:
 
             case 'myGameState':
 
@@ -244,23 +237,19 @@ define([
                 break;
                 */
 
+        case 'dummmy':
+          break
+      }
+    },
 
-          case 'dummmy':
-            break;
-        }
-      },
+    // onLeavingState: this method is called each time we are leaving a game state.
+    //                 You can use this method to perform some user interface changes at this moment.
+    //
+    onLeavingState: function (stateName) {
+      console.log('Leaving state: ' + stateName)
 
-      // onLeavingState: this method is called each time we are leaving a game state.
-      //                 You can use this method to perform some user interface changes at this moment.
-      //
-      onLeavingState: function( stateName )
-      {
-        console.log( 'Leaving state: '+stateName );
-
-        switch( stateName )
-        {
-
-            /* Example:
+      switch (stateName) {
+        /* Example:
 
             case 'myGameState':
 
@@ -270,56 +259,51 @@ define([
                 break;
                 */
 
+        case 'dummmy':
+          break
+      }
+    },
 
-          case 'dummmy':
-            break;
-        }               
-      }, 
+    // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
+    //                        action status bar (ie: the HTML links in the status bar).
+    //
+    onUpdateActionButtons: function (stateName, args) {
+      console.log('onUpdateActionButtons: ' + stateName)
 
-      // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
-      //                        action status bar (ie: the HTML links in the status bar).
-      //        
-      onUpdateActionButtons: function( stateName, args )
-      {
-        console.log( 'onUpdateActionButtons: '+stateName );
-
-        if( this.isCurrentPlayerActive() )
-        {            
-          switch( stateName )
-          {
-              /*               
+      if (this.isCurrentPlayerActive()) {
+        switch (stateName) {
+          /*
                  Example:
 
                  case 'myGameState':
 
               // Add 3 action buttons in the action status bar:
 
-                    this.addActionButton( 'button_1_id', _('Button 1 label'), 'onMyMethodToCall1' ); 
-                    this.addActionButton( 'button_2_id', _('Button 2 label'), 'onMyMethodToCall2' ); 
-                    this.addActionButton( 'button_3_id', _('Button 3 label'), 'onMyMethodToCall3' ); 
+                    this.addActionButton( 'button_1_id', _('Button 1 label'), 'onMyMethodToCall1' );
+                    this.addActionButton( 'button_2_id', _('Button 2 label'), 'onMyMethodToCall2' );
+                    this.addActionButton( 'button_3_id', _('Button 3 label'), 'onMyMethodToCall3' );
                     break;
                     */
-          }
         }
-      },        
+      }
+    },
 
-      ///////////////////////////////////////////////////
-      //// Utility methods
+    /// ////////////////////////////////////////////////
+    /// / Utility methods
 
-      /*
+    /*
 
             Here, you can defines some utility methods that you can use everywhere in your javascript
             script.
 
 */
 
+    /// ////////////////////////////////////////////////
+    /// / Player's action
 
-      ///////////////////////////////////////////////////
-      //// Player's action
+    /*
 
-      /*
-
-            Here, you are defining methods to handle player's action (ex: results of mouse click on 
+            Here, you are defining methods to handle player's action (ex: results of mouse click on
             game objects).
 
             Most of the time, these methods:
@@ -327,17 +311,19 @@ define([
             _ make a call to the game server
 
 */
-      onCreateTile: function(tile_id, x, y) {
-        // TODO checkAction
-        this.ajaxcall("/magicmaze/magicmaze/placeTile.html",
-        {tile_id: tile_id,
-        x: x,
-      y:y}, this, function(result) {
-        console.log(result);
-      }, function (error) { console.log(error); });
-  },
+    onCreateTile: function (tileID, x, y) {
+      // TODO checkAction
+      this.ajaxcall('/magicmaze/magicmaze/placeTile.html',
+        {
+          tile_id: tileID,
+          x: x,
+          y: y
+        }, this, function (result) {
+          console.log(result)
+        }, function (error) { console.log(error) })
+    },
 
-      /* Example:
+    /* Example:
 
         onMyMethodToCall1: function( evt )
         {
@@ -350,12 +336,12 @@ define([
             if( ! this.checkAction( 'myAction' ) )
             {   return; }
 
-            this.ajaxcall( "/magicmaze/magicmaze/myAction.html", { 
-                                                                    lock: true, 
-                                                                    myArgument1: arg1, 
+            this.ajaxcall( "/magicmaze/magicmaze/myAction.html", {
+                                                                    lock: true,
+                                                                    myArgument1: arg1,
                                                                     myArgument2: arg2,
                                                                     ...
-                                                                 }, 
+                                                                 },
                          this, function( result ) {
 
       // What to do after the server call if it succeeded
@@ -366,16 +352,15 @@ define([
       // What to do after the server call in anyway (success or failure)
       // (most of the time: nothing)
 
-                         } );        
-        },        
+                         } );
+        },
 
 */
 
+    /// ////////////////////////////////////////////////
+    /// / Reaction to cometD notifications
 
-      ///////////////////////////////////////////////////
-      //// Reaction to cometD notifications
-
-      /*
+    /*
             setupNotifications:
 
             In this method, you associate each of your game notifications with your local method to handle it.
@@ -384,17 +369,16 @@ define([
                   your magicmaze.game.php file.
 
 */
-        notif_tileAdded: function(notif) {
-          placeTile(this, notif.args);
-        },
-        notif_tokenMoved: function(notif) {
-          placeCharacter(this, notif.args);
-        },
-        setupNotifications: function()
-        {
-            console.log( 'notifications subscriptions setup' );
-            dojo.subscribe('tileAdded', this, 'notif_tileAdded');
-            dojo.subscribe('tokenMoved', this, 'notif_tokenMoved');
+    notif_tileAdded: function (notif) {
+      placeTile(this, notif.args)
+    },
+    notif_tokenMoved: function (notif) {
+      placeCharacter(this, notif.args)
+    },
+    setupNotifications: function () {
+      console.log('notifications subscriptions setup')
+      dojo.subscribe('tileAdded', this, 'notif_tileAdded')
+      dojo.subscribe('tokenMoved', this, 'notif_tokenMoved')
 
       // TODO: here, associate your game notifications with local methods
 
@@ -406,12 +390,12 @@ define([
       //            see what is happening in the game.
       // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
       // this.notifqueue.setSynchronous( 'cardPlayed', 3000 );
-      // 
-    },  
+      //
+    }
 
-      // TODO: from this point and below, you can write your game notifications handling methods
+    // TODO: from this point and below, you can write your game notifications handling methods
 
-      /*
+    /*
         Example:
 
         notif_cardPlayed: function( notif )
@@ -422,8 +406,8 @@ define([
       // Note: notif.args contains the arguments specified during you "notifyAllPlayers" / "notifyPlayer" PHP call
 
       // TODO: play the card in the user interface.
-        },    
+        },
 
 */
-   });             
-});
+  })
+})
