@@ -15,16 +15,20 @@
  *
  */
 
+// This is written in JavaScript Standard Style.
+// (https://standardjs.com)
+
+// Define the libraries that the BGA framework gives us to begin with.
 /* global $, define, ebg, dojo */
 
 const BORDER_WIDTH = 20
 const CELL_SIZE = 54
 const MEEPLE_SIZE = 30
-// const IMAGE_SIZE = 256
 
 function toScreenCoords (x, y) {
   // Thanks Sarah Howell (soasrsamh@gmail.com) for the
-  // lovely math behind this implementation.
+  // lovely math behind this implementation. Note that this only
+  // works for each start tile.
 
   // 00 10 20 30
   // 01 11 21 31 41 51 61 71
@@ -72,35 +76,50 @@ function placeTile (obj, tile) {
 
   for (let i = 0; i < 4; ++i) {
     for (let j = 0; j < 4; ++j) {
-      const screenCoords = toScreenCoords(x + i, y + j)
-      var clickableZone = dojo.create('div', {
-        // class: "debug",
+      const cellLeft = screenCoords[0] + i * CELL_SIZE
+      const cellTop = screenCoords[1] + j * CELL_SIZE
+      const cellStyle = {
+        // class: 'debug',
         style: {
           position: 'absolute',
           width: CELL_SIZE + 'px',
           height: CELL_SIZE + 'px',
-          left: (screenCoords[0]) + 'px',
-          top: (screenCoords[1]) + 'px'
+          left: cellLeft + 'px',
+          top: cellTop + 'px'
         }
-      }, $('area_scrollable_oversurface'))
-      clickableZone.onclick = function (evt) {
-        dispatchClick(obj, evt,
-          tile.tile_id, i, j, i + x, j + y)
       }
+      /*
+      var clickableZone = dojo.create('div',
+        cellStyle, $('area_scrollable_oversurface'))
+      clickableZone.onclick = function (evt) {
+        dispatchClick(obj, evt, tile.tile_id, i, j, i + x, j + y)
+      }
+      obj.clickableCells.set(key, clickableZone)
+      */
+      const key = getKey(x + i, y + j)
+      obj.lefts.set(key, cellLeft)
+      obj.tops.set(key, cellTop)
+      const zone = dojo.create('div',
+        cellStyle, $('area_scrollable'))
+      obj.visualCells.set(key, zone)
     }
   }
 }
 
-function placeCharacter (dojo, info) {
+function getKey (x, y) {
+  return `${x}_${y}`
+}
+
+function placeCharacter (obj, info) {
   const x = parseInt(info.position_x)
   const y = parseInt(info.position_y)
-  const screenCoords = toScreenCoords(x, y)
-  const adjust = (CELL_SIZE - MEEPLE_SIZE) / 2
-  screenCoords[0] += adjust
-  screenCoords[1] += adjust
+  const key = getKey(x, y)
+  const top = obj.tops.get(key)
+  const left = obj.lefts.get(key)
   const el = $(`token${info.token_id}`)
-  el.style.left = `${screenCoords[0]}px`
-  el.style.top = `${screenCoords[1]}px`
+  const adjust = (CELL_SIZE - MEEPLE_SIZE) / 2
+  el.style.left = `${left + adjust}px`
+  el.style.top = `${top + adjust}px`
 }
 
 define([
@@ -112,6 +131,10 @@ define([
 function (dojo, declare) {
   return declare('bgagame.magicmaze', ebg.core.gamegui, {
     constructor: function () {
+      this.lefts = new Map()
+      this.tops = new Map()
+      this.clickableCells = new Map()
+      this.visualCells = new Map()
       this.scrollmap = new ebg.scrollmap() // eslint-disable-line new-cap
     },
 
@@ -161,7 +184,7 @@ function (dojo, declare) {
       }
 
       for (const key in gamedatas.tokens) {
-        placeCharacter(dojo, gamedatas.tokens[key])
+        placeCharacter(this, gamedatas.tokens[key])
         const tokenId = gamedatas.tokens[key].token_id
         console.log(tokenId)
         const base = `#controls${tokenId} `
