@@ -18,10 +18,15 @@
 
 
 require_once( APP_GAMEMODULE_PATH.'module/table/table.game.php' );
-
+function getKey($inx, $iny) {
+    return "${inx}_${iny}";
+}
 
 class MagicMaze extends Table
 {
+    // tile_id -> x -> y -> {"walls", "escalator", "properties"}
+    protected $tileinfo = array();
+
 	function __construct( )
 	{
         // Your global variables labels:
@@ -39,9 +44,10 @@ class MagicMaze extends Table
             //    "my_first_game_variant" => 100,
             //    "my_second_game_variant" => 101,
             //      ...
-        ) );        
+        ) );
+        
 	}
-	
+
     protected function getGameName( )
     {
 		// Used for translations and stuff. Please do not modify.
@@ -75,8 +81,7 @@ class MagicMaze extends Table
         $sql .= implode( $values, ',' );
         self::DbQuery( $sql );
 
-        $sql = "insert into tiles (tile_id, position_x, position_y, rotation) values (1, 0, 0, 0)";
-        self::DbQuery($sql);
+        $this->createTile(1, 0, 0, 0);
         self::reattributeColorsBasedOnPreferences( $players, $gameinfos['player_colors'] );
         self::reloadPlayersBasicInfos();
 
@@ -154,10 +159,128 @@ class MagicMaze extends Table
 //////////////////////////////////////////////////////////////////////////////
 //////////// Utility functions
 ////////////    
+    function populateTileInfo() {
+        if (count($this->tileinfo) > 0) {
+            return;
+        }
+
+        $handle = fopen(dirname(__FILE__)."/modules/mm-tiles.csv", "r");
+        
+        $firstrow = 1;
+        while (($data = fgetcsv($handle)) !== FALSE) {
+            if ($firstrow) {
+                $firstrow = 0;
+                continue;
+            }
+            $num = count($data);
+            // tile_id, cell, walls, escalator, properties
+            $tile_id = $data[0];
+            $cellx = intval($data[1][0]);
+            $celly = intval($data[1][1]);
+            $res = [
+                "walls" => $data[2],
+                "escalator" => $data[3],
+                "properties" => $data[4]
+            ];
+            $this->tileinfo[$tile_id][$cellx][$celly] = $res;
+        }
+        fclose($handle);
+    }
 
     /*
         In this space, you can put any utility methods useful for your game logic
     */
+    function generateConnectionsForTile($tile_id, $x_coord, $y_coord, $rotation) {
+        $this->populateTileInfo();
+        $tileToGrid = function($x, $y) {
+            throw new Exception("invalid rotation");
+        };
+        $rotWalls = function($s) {
+            throw new Exception("invalid rotation");
+        };
+        switch ($rotation) {
+            case 0:
+                $tileToGrid = function($x, $y) {
+                    return [$x, $y];
+                };
+                $rotWalls = function ($str) {
+                    return $str;
+                };
+                break;
+            case 90:
+                $tileToGrid = function($x, $y) {
+                    return [$y, 3 - $x];
+                };
+                $rotWalls = function($str) {
+                    // XXX barbarian
+                    return strtr($str, "NESW", "ESWN");
+                };
+                break;
+            case 180:
+                $tileToGrid = function($x, $y) {
+                    return [3 - $x, 3 - $y];
+                };
+                $rotWalls = function($str) {
+                    return strtr($str, "NESW", "SWNE");
+                };
+                break;
+            case -90:
+            case 270:
+                $tileToGrid = function($x, $y) {
+                    return [3 - $y, $x];
+                };
+                $rotWalls = function($str) {
+                    return strtr($str, "NESW", "WNES");
+                };
+                break;
+        }
+        $sqlstring = "insert ignore into walls values ";
+        $valuestring = "";
+        for ($i = 0; $i < 4; ++$i) {
+            for ($j = 0; $j < 4; ++$j) {
+                
+                $coord = $tileToGrid($i, $j);
+                $walls = $rotWalls($this->tileinfo[$tile_id][$coord[0]][$coord[1]]["walls"]);
+                for ($k = 0; $k < strlen($walls); ++$k) {
+                    $dir = $walls[$k];
+                    $dx = 0;
+                    $dy = 0;
+                    switch($dir) {
+                        // XXX barbarian
+                        case 'N':
+                            $dx = 0;
+                            $dy = -1;
+                        break;
+                        case 'S':
+                            $dx = 0;
+                            $dy = 1;
+                        break;
+                        case 'E':
+                            $dx = 1;
+                            $dy = 0;
+                        break;
+                        case 'W':
+                            $dx = -1;
+                            $dy = 0;
+                        break;
+                        default:
+                          throw new Exception("assert: invalid direction");
+                    }
+                    if (strlen($valuestring) !== 0) {
+                        $valuestring .= ",";
+                    }
+                    $oldx = $x_coord + $i;
+                    $oldy = $y_coord + $j;
+                    $newx = $oldx + $dx;
+                    $newy = $oldy + $dy;
+                    // TODO: figure out if we should write both
+                    $valuestring .= "($oldx, $oldy, $newx, $newy),";
+                    $valuestring .= "($newx, $newy, $oldx, $oldy)";
+                }
+            }
+        }
+        self::DbQuery("$sqlstring $valuestring");
+    }
 
 
 
@@ -179,26 +302,50 @@ class MagicMaze extends Table
 
     function attemptMove($token_id, $x, $y) {
         // TODO: checkAction
-        // TODO: check action is possible for current player (self::getActivePlayerId?)
+        // TODO: check action is possible for current player (self::getCurrentPlayerId)
 
-        $sql = "select position_x, position_y from tokens where token_id = " . $token_id;
-        $res = self::getNonEmptyObjectFromDb($sql);
-        $oldx = $res['position_x'];
-        $oldy = $res['position_y'];
+        $sql = "select token_id, position_x, position_y from tokens for update";
+        //$allPositions = self::getNonEmptyCollectionFromDB($sql);
+        $res = self::DbQuery($sql);
+        $others = array();
+
+        $oldx = -9999;
+        $oldy = -9999;
+        while ($row = $res->fetch_row()) {
+            if ($row[0] == $token_id) {
+                $oldx = $row[1];
+                $oldy = $row[2];
+            } else {
+                $others[getKey($row[1], $row[2])] = 1;
+            }
+        }
+        $res->close();
+
         $newx = $oldx + $x;
         $newy = $oldy + $y;
         // XXX check valid
+        if (array_key_exists(getKey($newx, $newy), $others)) {
+            throw new BgaUserException( self::_("can't move there: another pawn is already there") );
+        }
         
         $sql = "update tokens set position_x = $newx, position_y = $newy where " .
-        "token_id = $token_id and position_x = $oldx and position_y = $oldy and " . 
-        "not exists (select * from (select * from tokens) t2 where t2.position_x = $newx and t2.position_y = $newy)";
-        self::DbQuery($sql);
+        "token_id = $token_id";
+        $wallrestriction = " and not exists " 
+          . "(select 1 from walls where old_x = $oldx and old_y = $oldy and new_x = $newx and new_y = $newy) ";
+        $tilerestriction = " and exists "
+          . "(select 1 from tiles where $newx - position_x between 0 and 3 and $newy - position_y between 0 and 3) ";
+        $res = self::DbQuery("$sql $wallrestriction $tilerestriction");
+        if (self::DbAffectedRow() === 0) {
+            throw new BgaUserException( self::_("you can't move there") );
+        }
+
 
         $sql = "select position_x, position_y from tokens where token_id = " . $token_id;
         $res = self::getNonEmptyObjectFromDb($sql);
         // XXX conflicts, need a lot better than this (possibly timestamp the
         // insertions).
 
+        // XXX check win
         self::notifyAllPlayers("tokenMoved", clienttranslate('token moved'), array(
             "token_id" => $token_id,
             "position_x" => $res['position_x'],
@@ -239,22 +386,21 @@ class MagicMaze extends Table
         if (!array_key_exists($key, $rotations)) {
             throw new BgaUserException( self::_("you can't place a tile there") );
         }
-        $coords = $this->tileCoords($tile_id);
 
+        $coords = $this->tileCoords($tile_id);
         $newx = $coords[0] + $dx[$key][0];
         $newy = $coords[1] + $dx[$key][1];
         $rotation = $rotations[$key];
+        $this->createTile($nextId, $newx, $newy, $rotation);
+    }
+
+    function createTile($nextId, $newx, $newy, $rotation) {
         
-        $sql = "insert into tiles (tile_id, position_x, position_y, rotation) values (";
-        $sql .= $nextId;
-        $sql .= ", ";
-        $sql .= $newx;
-        $sql .= ", ";
-        $sql .= $newy;
-        $sql .= ", ";
-        $sql .= $rotation;
-        $sql .= ")";
+        $sql = "insert into tiles (tile_id, position_x, position_y, rotation) values ";
+        $sql .= "($nextId, $newx, $newy, $rotation)";
         self::DbQuery($sql);
+
+        $this->generateConnectionsForTile($nextId, $newx, $newy, $rotation);
 
         self::notifyAllPlayers("tileAdded", clienttranslate('tile added!'), array(
             'tile_id' => $nextId,
@@ -265,8 +411,11 @@ class MagicMaze extends Table
      }
 
      function nukeIt() {
-         $sql = "delete from tiles where tile_id != 1";
+         $sql = "delete from tiles where 1=1";
          self::DbQuery($sql);
+         $sql = "delete from walls where 1=1";
+         self::DbQuery($sql);
+         $this->createTile(1, 0, 0, 0);
      }
 
     /*

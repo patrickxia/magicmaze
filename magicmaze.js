@@ -76,6 +76,7 @@ function placeTile (obj, tile) {
 
   for (let i = 0; i < 4; ++i) {
     for (let j = 0; j < 4; ++j) {
+      const key = getKey(x + i, y + j)
       const cellLeft = screenCoords[0] + i * CELL_SIZE
       const cellTop = screenCoords[1] + j * CELL_SIZE
       const cellStyle = {
@@ -88,15 +89,13 @@ function placeTile (obj, tile) {
           top: cellTop + 'px'
         }
       }
-      /*
       var clickableZone = dojo.create('div',
         cellStyle, $('area_scrollable_oversurface'))
       clickableZone.onclick = function (evt) {
         dispatchClick(obj, evt, tile.tile_id, i, j, i + x, j + y)
       }
       obj.clickableCells.set(key, clickableZone)
-      */
-      const key = getKey(x + i, y + j)
+
       obj.lefts.set(key, cellLeft)
       obj.tops.set(key, cellTop)
       const zone = dojo.create('div',
