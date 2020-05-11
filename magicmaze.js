@@ -50,12 +50,25 @@ function dispatchClick (obj, evt, tileId, relativex, relativey, x, y) {
 }
 
 function dispatchMove (obj, tokenId, arr) {
-  obj.ajaxcall('/magicmaze/magicmaze/attemptMove.html',
-    {
+  let arg = {}
+  let path = ''
+  if (arr.length === 2) {
+    path = '/magicmaze/magicmaze/attemptMove.html'
+    arg = {
       token_id: tokenId,
       x: arr[0],
       y: arr[1]
-    }, this, function (result) {
+    }
+  } else {
+    // warp, explore, etc
+    // only escalator right now...
+    path = '/magicmaze/magicmaze/attemptEscalator.html'
+    arg = {
+      token_id: tokenId
+    }
+  }
+  obj.ajaxcall(path,
+    arg, this, function (result) {
       console.log(result)
     }, function (error) { console.log(error) })
 }
@@ -206,6 +219,9 @@ function (dojo, declare) {
         /*
           #controls0 > tbody > tr:nth-child(4) > td // explore
           */
+        dojo.connect(document.querySelector(base + '> tbody > tr:nth-child(5) > td'), 'onclick', this, function (evt) {
+          dispatchMove(this, tokenId, [1])
+        })
       }
       dojo.connect($('movetop'), 'onclick', this, 'onMoveTop')
       dojo.connect($('moveleft'), 'onclick', this, 'onMoveLeft')

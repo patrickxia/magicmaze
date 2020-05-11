@@ -51,12 +51,21 @@
 
     public function attemptMove() {
       self::setAjaxMode();
+      // XXX stop players from warping
       $id = self::getArg("token_id", AT_int, true);
       $x = self::getArg("x", AT_int, true);
       $y = self::getArg("y", AT_int, true);
       $this->game->attemptMove($id, $x, $y);
       self::ajaxResponse();
     }
+
+    public function attemptEscalator() {
+      self::setAjaxMode();
+      $id = self::getArg("token_id", AT_int, true);
+      $this->game->attemptEscalator($id);
+      self::ajaxResponse();
+    }
+    
 
     public function nuke() {
       self::setAjaxMode();

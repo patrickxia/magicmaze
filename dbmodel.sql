@@ -42,4 +42,12 @@ create table `walls` (
     primary key (`old_x`, `old_y`, `new_x`, `new_y`)
 ) ENGINE=InnoDB;
 
+create table `escalators` (
+    `old_x` int not null,
+    `old_y` int not null,
+    `new_x` int not null,
+    `new_y` int not null,
+    primary key (`old_x`, `old_y`, `new_x`, `new_y`)
+) ENGINE=InnoDB;
+
 alter table `player` add `current_role` int unsigned not null;

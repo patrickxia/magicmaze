@@ -49,6 +49,7 @@
 <tr><td>Left</td><td>Green</td><td>Right</td></tr>
 <tr><td colspan="3">Down</td></tr>
 <tr><td colspan="3">Explore</td></tr>
+<tr><td colspan="3">Escalator</td></tr>
 </table>
 
 <table id="controls1">
@@ -56,6 +57,7 @@
 <tr><td>Left</td><td>Orange</td><td>Right</td></tr>
 <tr><td colspan="3">Down</td></tr>
 <tr><td colspan="3">Explore</td></tr>
+<tr><td colspan="3">Escalator</td></tr>
 </table>
 
 <table id="controls2">
@@ -63,6 +65,7 @@
 <tr><td>Left</td><td>Yellow</td><td>Right</td></tr>
 <tr><td colspan="3">Down</td></tr>
 <tr><td colspan="3">Explore</td></tr>
+<tr><td colspan="3">Escalator</td></tr>
 </table>
 
 <table id="controls3">
@@ -70,6 +73,7 @@
 <tr><td>Left</td><td>Purple</td><td>Right</td></tr>
 <tr><td colspan="3">Down</td></tr>
 <tr><td colspan="3">Explore</td></tr>
+<tr><td colspan="3">Escalator</td></tr>
 </table>
 
 

@@ -22,6 +22,25 @@ function getKey($inx, $iny) {
     return "${inx}_${iny}";
 }
 
+
+function updateEscalatorQuery($token_id) {
+    return <<<EOT
+update
+    `tokens` t
+join
+    `escalators` e
+on t.position_x = e.old_x and t.position_y = e.old_y
+set t.position_x = e.new_x, t.position_y = e.new_y
+where
+    t.token_id = $token_id
+and
+not exists (
+    select 1 from (select * from `tokens`) t2
+    where t2.position_x = e.new_x and t2.position_y = e.new_y
+)
+EOT;
+}
+
 class MagicMaze extends Table
 {
     // tile_id -> x -> y -> {"walls", "escalator", "properties"}
@@ -195,14 +214,14 @@ class MagicMaze extends Table
         $tileToGrid = function($x, $y) {
             throw new Exception("invalid rotation");
         };
-        $rotWalls = function($s) {
-            throw new Exception("invalid rotation");
-        };
+        $invTileToGrid = $tileToGrid;
+        $rotWalls = $tileToGrid;
         switch ($rotation) {
             case 0:
                 $tileToGrid = function($x, $y) {
                     return [$x, $y];
                 };
+                $invTileToGrid = $tileToGrid;
                 $rotWalls = function ($str) {
                     return $str;
                 };
@@ -210,6 +229,9 @@ class MagicMaze extends Table
             case 90:
                 $tileToGrid = function($x, $y) {
                     return [$y, 3 - $x];
+                };
+                $invTileToGrid = function($x, $y) {
+                    return [3 - $y, $x];
                 };
                 $rotWalls = function($str) {
                     // XXX barbarian
@@ -220,6 +242,7 @@ class MagicMaze extends Table
                 $tileToGrid = function($x, $y) {
                     return [3 - $x, 3 - $y];
                 };
+                $invTileToGrid = $tileToGrid;
                 $rotWalls = function($str) {
                     return strtr($str, "NESW", "SWNE");
                 };
@@ -229,18 +252,22 @@ class MagicMaze extends Table
                 $tileToGrid = function($x, $y) {
                     return [3 - $y, $x];
                 };
+                $invTileToGrid = function($x, $y) {
+                    return [$y, 3 - $x];
+                };
                 $rotWalls = function($str) {
                     return strtr($str, "NESW", "WNES");
                 };
                 break;
         }
-        $sqlstring = "insert ignore into walls values ";
-        $valuestring = "";
+        $escalatorstring = "";
+        $wallstring = "";
         for ($i = 0; $i < 4; ++$i) {
             for ($j = 0; $j < 4; ++$j) {
-                
                 $coord = $tileToGrid($i, $j);
-                $walls = $rotWalls($this->tileinfo[$tile_id][$coord[0]][$coord[1]]["walls"]);
+                $tile = $this->tileinfo[$tile_id][$coord[0]][$coord[1]];
+                $walls = $rotWalls($tile["walls"]);
+
                 for ($k = 0; $k < strlen($walls); ++$k) {
                     $dir = $walls[$k];
                     $dx = 0;
@@ -266,20 +293,38 @@ class MagicMaze extends Table
                         default:
                           throw new Exception("assert: invalid direction");
                     }
-                    if (strlen($valuestring) !== 0) {
-                        $valuestring .= ",";
+                    if (strlen($wallstring) !== 0) {
+                        $wallstring .= ",";
                     }
                     $oldx = $x_coord + $i;
                     $oldy = $y_coord + $j;
                     $newx = $oldx + $dx;
                     $newy = $oldy + $dy;
                     // TODO: figure out if we should write both
-                    $valuestring .= "($oldx, $oldy, $newx, $newy),";
-                    $valuestring .= "($newx, $newy, $oldx, $oldy)";
+                    $wallstring .= "($oldx, $oldy, $newx, $newy),";
+                    $wallstring .= "($newx, $newy, $oldx, $oldy)";
+                }
+
+                if (strlen($tile["escalator"]) > 0) {
+                    if (strlen($escalatorstring) !== 0) {
+                        $escalatorstring .= ",";
+                    }
+                    $oldx = $x_coord + $i;
+                    $oldy = $y_coord + $j;
+                    $esclx = intval($tile["escalator"][0]);
+                    $escly = intval($tile["escalator"][1]);
+                    $tfnew = $invTileToGrid($esclx, $escly);
+                    $newx = $x_coord + $tfnew[0];
+                    $newy = $y_coord + $tfnew[1];
+                    $escalatorstring .= "($oldx, $oldy, $newx, $newy),";
+                    $escalatorstring .= "($newx, $newy, $oldx, $oldy)";
                 }
             }
         }
-        self::DbQuery("$sqlstring $valuestring");
+        self::DbQuery("insert ignore into walls values $wallstring");
+        if (strlen($escalatorstring) > 0) {
+            self::DbQuery("insert ignore into escalators values $escalatorstring");
+        }
     }
 
 
@@ -298,6 +343,23 @@ class MagicMaze extends Table
         $sql = "select position_x, position_y from tiles where tile_id = " . $tile_id;
         $res = self::getNonEmptyObjectFromDb($sql);
         return [$res['position_x'], $res['position_y']];
+    }
+
+    function attemptEscalator($token_id) {
+        // TODO: check action possible for current player
+
+        $res = self::DbQuery(updateEscalatorQuery($token_id));
+        if (self::DbAffectedRow() === 0) {
+            throw new BgaUserException( self::_("invalid escalator operation") );
+        }
+
+        $sql = "select position_x, position_y from tokens where token_id = $token_id";
+        $res = self::getNonEmptyObjectFromDb($sql);
+        self::notifyAllPlayers("tokenMoved", clienttranslate('token moved'), array(
+            "token_id" => $token_id,
+            "position_x" => $res["position_x"],
+            "position_y" => $res["position_y"]
+        ));
     }
 
     function attemptMove($token_id, $x, $y) {
@@ -339,7 +401,7 @@ class MagicMaze extends Table
             throw new BgaUserException( self::_("you can't move there") );
         }
 
-
+        // XXX roundtrips
         $sql = "select position_x, position_y from tokens where token_id = " . $token_id;
         $res = self::getNonEmptyObjectFromDb($sql);
         // XXX conflicts, need a lot better than this (possibly timestamp the
@@ -415,6 +477,7 @@ class MagicMaze extends Table
          self::DbQuery($sql);
          $sql = "delete from walls where 1=1";
          self::DbQuery($sql);
+         self::DbQuery("delete from escalators where 1=1");
          $this->createTile(1, 0, 0, 0);
      }
 
