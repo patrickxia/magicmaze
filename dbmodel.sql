@@ -20,9 +20,11 @@
 
 create table `tiles` (
     `tile_id` int unsigned not null,
-    `position_x` int not null,
-    `position_y` int not null,
-    `rotation` int not null, 
+    `placed` bool not null default false,
+    `tile_order` int not null,
+    `position_x` int,
+    `position_y` int,
+    `rotation` int,
      primary key (`tile_id`)
 ) ENGINE=InnoDB;
 

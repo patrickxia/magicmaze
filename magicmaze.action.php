@@ -41,7 +41,6 @@
     
     public function placeTile() {
       self::setAjaxMode();
-      // XXX is there injection here? do we guarantee an int?
       $id = self::getArg("tile_id", AT_int, true);
       $x = self::getArg("x", AT_int, true);
       $y = self::getArg("y", AT_int, true);

@@ -35,7 +35,7 @@ where
     t.token_id = $token_id
 and
 not exists (
-    select 1 from (select * from `tokens`) t2
+    select 1 from (select * from `tokens` for update) t2
     where t2.position_x = e.new_x and t2.position_y = e.new_y
 )
 EOT;
@@ -100,6 +100,18 @@ class MagicMaze extends Table
         $sql .= implode( $values, ',' );
         self::DbQuery( $sql );
 
+        // XXX don't hardcode
+        $tiles = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+        shuffle($tiles);
+        $sql = "insert into tiles (tile_id, tile_order) values ";
+        for ($i = 0; $i < count($tiles); ++$i) {
+            if ($i != 0) {
+                $sql .= ",";
+            }
+            $sql .= "($tiles[$i], $i)";
+        }
+        self::DbQuery($sql);
+
         $this->createTile(1, 0, 0, 0);
         self::reattributeColorsBasedOnPreferences( $players, $gameinfos['player_colors'] );
         self::reloadPlayersBasicInfos();
@@ -149,7 +161,7 @@ class MagicMaze extends Table
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
         $sql = "SELECT player_id id, player_score score FROM player ";
         $result['players'] = self::getCollectionFromDb( $sql );
-        $sql = "select tile_id tile_id, position_x, position_y, rotation from tiles";
+        $sql = "select tile_id tile_id, position_x, position_y, rotation from tiles where placed";
         $result['tiles'] = self::getCollectionFromDb($sql);
         $sql = "select token_id, position_x, position_y from tokens";
         $result['tokens'] = self::getCollectionFromDb($sql);
@@ -333,10 +345,9 @@ class MagicMaze extends Table
 //////////// Player actions
 //////////// 
     function nextAvailableTile() {
-        // XXX: this doesn't work (races), but it's fine for debug
-        $sql = "select max(tile_id) + 1 id from tiles";
+        $sql = "select tile_id from tiles where not placed order by tile_order limit 1 for update";
         $nextId = self::getNonEmptyObjectFromDb($sql);
-        return $nextId['id'];
+        return $nextId['tile_id'];
     }
 
     function tileCoords($tile_id) {
@@ -458,8 +469,14 @@ class MagicMaze extends Table
 
     function createTile($nextId, $newx, $newy, $rotation) {
         
-        $sql = "insert into tiles (tile_id, position_x, position_y, rotation) values ";
-        $sql .= "($nextId, $newx, $newy, $rotation)";
+        $sql = <<<SQL
+        update tiles set
+          placed = true,
+          position_x = $newx,
+          position_y = $newy,
+          rotation = $rotation
+        where tile_id = $nextId
+SQL;
         self::DbQuery($sql);
 
         $this->generateConnectionsForTile($nextId, $newx, $newy, $rotation);
@@ -516,6 +533,34 @@ class MagicMaze extends Table
 //////////////////////////////////////////////////////////////////////////////
 //////////// Game state arguments
 ////////////
+
+    // Two players:
+    // player1: escalator search south west
+    // player2: portal north east
+
+    // Three players:
+    // player1: north east
+    // player2: west portal
+    // player3: escalator search south
+    
+
+    // Four players:
+    // player1: south search
+    // player2: west portal
+    // player3: escalator east
+    // player4: north
+
+    // Five players: add
+    // player5: west
+
+    // Six players: add
+    // player6: east
+
+    // Seven players: add
+    // player 7: south
+    
+    // Eight players: add
+    // player 8: north
 
     /*
         Here, you can create methods defined as "game state arguments" (see "args" property in states.inc.php).
