@@ -52,4 +52,11 @@ create table `escalators` (
     primary key (`old_x`, `old_y`, `new_x`, `new_y`)
 ) ENGINE=InnoDB;
 
+create table `properties` (
+    `position_x` int not null,
+    `position_y` int not null,
+    `property` varchar(32) not null,
+    primary key (`position_x`, `position_y`)
+) ENGINE=InnoDB;
+
 alter table `player` add `current_role` int unsigned not null;

@@ -274,11 +274,15 @@ class MagicMaze extends Table
         }
         $escalatorstring = "";
         $wallstring = "";
+        $propertystring = "";
         for ($i = 0; $i < 4; ++$i) {
             for ($j = 0; $j < 4; ++$j) {
                 $coord = $tileToGrid($i, $j);
                 $tile = $this->tileinfo[$tile_id][$coord[0]][$coord[1]];
                 $walls = $rotWalls($tile["walls"]);
+
+                $oldx = $x_coord + $i;
+                $oldy = $y_coord + $j;
 
                 for ($k = 0; $k < strlen($walls); ++$k) {
                     $dir = $walls[$k];
@@ -308,8 +312,6 @@ class MagicMaze extends Table
                     if (strlen($wallstring) !== 0) {
                         $wallstring .= ",";
                     }
-                    $oldx = $x_coord + $i;
-                    $oldy = $y_coord + $j;
                     $newx = $oldx + $dx;
                     $newy = $oldy + $dy;
                     // TODO: figure out if we should write both
@@ -321,8 +323,7 @@ class MagicMaze extends Table
                     if (strlen($escalatorstring) !== 0) {
                         $escalatorstring .= ",";
                     }
-                    $oldx = $x_coord + $i;
-                    $oldy = $y_coord + $j;
+
                     $esclx = intval($tile["escalator"][0]);
                     $escly = intval($tile["escalator"][1]);
                     $tfnew = $invTileToGrid($esclx, $escly);
@@ -331,11 +332,21 @@ class MagicMaze extends Table
                     $escalatorstring .= "($oldx, $oldy, $newx, $newy),";
                     $escalatorstring .= "($newx, $newy, $oldx, $oldy)";
                 }
+
+                if (strlen($tile["properties"]) > 0) {
+                    if (strlen($propertystring) !== 0) {
+                        $propertystring .= ",";
+                    }
+                    $propertystring .= "($oldx, $oldy, '$tile[properties]')";
+                }
             }
         }
         self::DbQuery("insert ignore into walls values $wallstring");
         if (strlen($escalatorstring) > 0) {
             self::DbQuery("insert ignore into escalators values $escalatorstring");
+        }
+        if (strlen($propertystring) > 0) {
+            self::DbQuery("insert into properties values $propertystring");
         }
     }
 
@@ -495,6 +506,7 @@ SQL;
          $sql = "delete from walls where 1=1";
          self::DbQuery($sql);
          self::DbQuery("delete from escalators where 1=1");
+         self::DbQuery("delete from properties where 1=1");
          $this->createTile(1, 0, 0, 0);
      }
 
