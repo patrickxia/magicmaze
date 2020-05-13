@@ -52,7 +52,13 @@ function dispatchClick (obj, evt, tileId, relativex, relativey, x, y) {
 function dispatchMove (obj, tokenId, arr) {
   let arg = {}
   let path = ''
-  if (arr.length === 2) {
+  if (tokenId === -1) {
+    path = '/magicmaze/magicmaze/attemptWarp.html'
+    arg = {
+      x: arr[0],
+      y: arr[1]
+    }
+  } else if (arr.length === 2) {
     path = '/magicmaze/magicmaze/attemptMove.html'
     arg = {
       token_id: tokenId,
@@ -86,7 +92,6 @@ function placeTile (obj, tile) {
       transform: 'rotate(' + tile.rotation + 'deg)'
     }
   }, $('area_scrollable'))
-
   for (let i = 0; i < 4; ++i) {
     for (let j = 0; j < 4; ++j) {
       const key = getKey(x + i, y + j)
@@ -102,19 +107,48 @@ function placeTile (obj, tile) {
           top: cellTop + 'px'
         }
       }
+      /*
       var clickableZone = dojo.create('div',
         cellStyle, $('area_scrollable_oversurface'))
       clickableZone.onclick = function (evt) {
         dispatchClick(obj, evt, tile.tile_id, i, j, i + x, j + y)
       }
       obj.clickableCells.set(key, clickableZone)
+      */
 
       obj.lefts.set(key, cellLeft)
       obj.tops.set(key, cellTop)
+      /*
       const zone = dojo.create('div',
         cellStyle, $('area_scrollable'))
       obj.visualCells.set(key, zone)
+      */
     }
+  }
+}
+
+function drawClickables (obj, properties) {
+  for (let i = 0; i < properties.warp.length; ++i) {
+    const warp = properties.warp[i]
+    console.log(warp)
+    const key = getKey(warp.position_x, warp.position_y)
+    if (key in obj.clickableCells) continue
+    const cellLeft = obj.lefts.get(key)
+    const cellTop = obj.tops.get(key)
+    const clickableZone = dojo.create('div', {
+      // class: 'debug',
+      style: {
+        position: 'absolute',
+        width: CELL_SIZE + 'px',
+        height: CELL_SIZE + 'px',
+        left: cellLeft + 'px',
+        top: cellTop + 'px'
+      }
+    }, $('area_scrollable_oversurface'))
+    clickableZone.ondblclick = function (evt) {
+      dispatchMove(obj, -1, [warp.position_x, warp.position_y])
+    }
+    obj.clickableCells.set(key, clickableZone)
   }
 }
 
@@ -194,6 +228,8 @@ function (dojo, declare) {
       for (const key in gamedatas.tiles) {
         placeTile(this, gamedatas.tiles[key])
       }
+
+      drawClickables(this, gamedatas.properties)
 
       for (const key in gamedatas.tokens) {
         placeCharacter(this, gamedatas.tokens[key])
@@ -360,7 +396,6 @@ function (dojo, declare) {
           console.log(result)
         }, function (error) { console.log(error) })
     },
-
     /* Example:
 
         onMyMethodToCall1: function( evt )

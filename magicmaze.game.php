@@ -33,8 +33,8 @@ on t.position_x = e.old_x and t.position_y = e.old_y
 set t.position_x = e.new_x, t.position_y = e.new_y
 where
     t.token_id = $token_id
-and
-not exists (
+and not t.locked
+and not exists (
     select 1 from (select * from `tokens` for update) t2
     where t2.position_x = e.new_x and t2.position_y = e.new_y
 )
@@ -165,6 +165,10 @@ class MagicMaze extends Table
         $result['tiles'] = self::getCollectionFromDb($sql);
         $sql = "select token_id, position_x, position_y from tokens";
         $result['tokens'] = self::getCollectionFromDb($sql);
+        $sql = "select position_x, position_y, token_id from properties where property = 'warp'";
+        $result['properties']['warp'] = self::getObjectListFromDB($sql);
+        $sql = "select position_x, position_y, token_id from properties where property = 'explore'";
+        $result['properties']['explore'] = self::getObjectListFromDB($sql);
 
         return $result;
     }
@@ -223,6 +227,7 @@ class MagicMaze extends Table
     */
     function generateConnectionsForTile($tile_id, $x_coord, $y_coord, $rotation) {
         $this->populateTileInfo();
+        $ret = array();
         $tileToGrid = function($x, $y) {
             throw new Exception("invalid rotation");
         };
@@ -337,7 +342,23 @@ class MagicMaze extends Table
                     if (strlen($propertystring) !== 0) {
                         $propertystring .= ",";
                     }
-                    $propertystring .= "($oldx, $oldy, '$tile[properties]')";
+                    // goyp
+                    $color = "NULL";
+                    $type = "";
+                    if (strpos($tile["properties"], "timer") !== FALSE) {
+                        $type = "timer";
+                    } else {
+                        $lookup = [
+                            "g" => 0,
+                            "o" => 1,
+                            "y" => 2,
+                            "p" => 3
+                        ];
+                        $color = $lookup[$tile["properties"][0]];
+                        $type = substr($tile["properties"], 1);
+                        $ret[$type][] = [$oldx, $oldy];
+                    }
+                    $propertystring .= "($oldx, $oldy, $color, '$type')";
                 }
             }
         }
@@ -348,6 +369,7 @@ class MagicMaze extends Table
         if (strlen($propertystring) > 0) {
             self::DbQuery("insert into properties values $propertystring");
         }
+        return $ret;
     }
 
 
@@ -365,6 +387,36 @@ class MagicMaze extends Table
         $sql = "select position_x, position_y from tiles where tile_id = " . $tile_id;
         $res = self::getNonEmptyObjectFromDb($sql);
         return [$res['position_x'], $res['position_y']];
+    }
+
+    function attemptWarp($x, $y) {
+        // TODO: check action possible
+        // TODO: check warps allowed
+        $sql = <<<SQL
+update tokens t
+join properties p
+on t.token_id = p.token_id
+set
+  t.position_x = p.position_x,
+  t.position_y = p.position_y
+where
+  p.position_x = $x
+  and p.position_y = $y
+  and p.property = 'warp' 
+SQL;
+        self::DbQuery($sql);
+        if (self::DbAffectedRow() === 0) {
+            throw new BgaUserException( self::_("you can't warp there") );
+        }
+        // timestamp this
+        $sql = "select token_id, position_x, position_y from tokens where position_x = $x and position_y = $y";
+        $res = self::getNonEmptyObjectFromDb($sql);
+
+        self::notifyAllPlayers("tokenMoved", clienttranslate('token moved'), array(
+            "token_id" => $res["token_id"],
+            "position_x" => $res["position_x"],
+            "position_y" => $res["position_y"]
+        ));
     }
 
     function attemptEscalator($token_id) {
@@ -418,7 +470,8 @@ class MagicMaze extends Table
           . "(select 1 from walls where old_x = $oldx and old_y = $oldy and new_x = $newx and new_y = $newy) ";
         $tilerestriction = " and exists "
           . "(select 1 from tiles where $newx - position_x between 0 and 3 and $newy - position_y between 0 and 3) ";
-        $res = self::DbQuery("$sql $wallrestriction $tilerestriction");
+        $lockrestriction = " and not locked ";
+        $res = self::DbQuery("$sql $wallrestriction $tilerestriction $lockrestriction");
         if (self::DbAffectedRow() === 0) {
             throw new BgaUserException( self::_("you can't move there") );
         }
@@ -490,13 +543,14 @@ class MagicMaze extends Table
 SQL;
         self::DbQuery($sql);
 
-        $this->generateConnectionsForTile($nextId, $newx, $newy, $rotation);
+        $clickables = $this->generateConnectionsForTile($nextId, $newx, $newy, $rotation);
 
         self::notifyAllPlayers("tileAdded", clienttranslate('tile added!'), array(
             'tile_id' => $nextId,
             'position_x' => $newx,
             'position_y' => $newy,
-            'rotation' => $rotation
+            'rotation' => $rotation,
+            'clickables' => $clickables,
         ));
      }
 

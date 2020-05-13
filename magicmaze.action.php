@@ -58,6 +58,14 @@
       self::ajaxResponse();
     }
 
+    public function attemptWarp() {
+      self::setAjaxMode();
+      $x = self::getArg("x", AT_int, true);
+      $y = self::getArg("y", AT_int, true);
+      $this->game->attemptWarp($x, $y);
+      self::ajaxResponse();
+    }
+
     public function attemptEscalator() {
       self::setAjaxMode();
       $id = self::getArg("token_id", AT_int, true);

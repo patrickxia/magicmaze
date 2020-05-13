@@ -7,17 +7,6 @@
 -- See http://en.boardgamearena.com/#!doc/Studio for more information.
 -- -----
 
--- dbmodel.sql
-
--- This is the file where you are describing the database schema of your game
--- Basically, you just have to export from PhpMyAdmin your table structure and copy/paste
--- this export here.
--- Note that the database itself and the standard tables ("global", "stats", "gamelog" and "player") are
--- already created and must not be created here
-
--- Note: The database schema is created from this file when the game starts. If you modify this file,
---       you have to restart a game to see your changes in database.
-
 create table `tiles` (
     `tile_id` int unsigned not null,
     `placed` bool not null default false,
@@ -28,10 +17,17 @@ create table `tiles` (
      primary key (`tile_id`)
 ) ENGINE=InnoDB;
 
+-- The token that initiates an explore half-step is locked.
+-- This stops people from invalidly moving a meeple when the person is
+-- trying to decide where to put the tile(s). This is much cleaner for
+-- all sorts of races (including if the timer is flipped when the person
+-- is looking at tiles).
+
 create table `tokens` (
     `token_id` int unsigned not null,
     `position_x` int not null,
     `position_y` int not null,
+    `locked` bool not null default false,
     primary key (`token_id`)
 ) ENGINE=InnoDB;
 
@@ -55,6 +51,7 @@ create table `escalators` (
 create table `properties` (
     `position_x` int not null,
     `position_y` int not null,
+    `token_id` int,
     `property` varchar(32) not null,
     primary key (`position_x`, `position_y`)
 ) ENGINE=InnoDB;
