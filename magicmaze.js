@@ -107,14 +107,12 @@ function placeTile (obj, tile) {
           top: cellTop + 'px'
         }
       }
-      /*
       var clickableZone = dojo.create('div',
         cellStyle, $('area_scrollable_oversurface'))
       clickableZone.onclick = function (evt) {
         dispatchClick(obj, evt, tile.tile_id, i, j, i + x, j + y)
       }
       obj.clickableCells.set(key, clickableZone)
-      */
 
       obj.lefts.set(key, cellLeft)
       obj.tops.set(key, cellTop)
@@ -128,6 +126,7 @@ function placeTile (obj, tile) {
 }
 
 function drawClickables (obj, properties) {
+  console.log(properties.warp)
   for (let i = 0; i < properties.warp.length; ++i) {
     const warp = properties.warp[i]
     console.log(warp)
@@ -136,7 +135,7 @@ function drawClickables (obj, properties) {
     const cellLeft = obj.lefts.get(key)
     const cellTop = obj.tops.get(key)
     const clickableZone = dojo.create('div', {
-      // class: 'debug',
+      class: 'debug',
       style: {
         position: 'absolute',
         width: CELL_SIZE + 'px',

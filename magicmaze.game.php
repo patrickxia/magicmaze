@@ -356,7 +356,10 @@ class MagicMaze extends Table
                         ];
                         $color = $lookup[$tile["properties"][0]];
                         $type = substr($tile["properties"], 1);
-                        $ret[$type][] = [$oldx, $oldy];
+                        $ret[$type][] = [
+                            "position_x" => $oldx,
+                            "position_y" => $oldy
+                        ];
                     }
                     $propertystring .= "($oldx, $oldy, $color, '$type')";
                 }
