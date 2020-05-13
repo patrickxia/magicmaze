@@ -101,7 +101,7 @@ class MagicMaze extends Table
         self::DbQuery( $sql );
 
         // XXX don't hardcode
-        $tiles = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+        $tiles = [1, 2,3,4,5,6,7,8,9];
         shuffle($tiles);
         $sql = "insert into tiles (tile_id, tile_order) values ";
         for ($i = 0; $i < count($tiles); ++$i) {
@@ -251,8 +251,7 @@ class MagicMaze extends Table
                     return [3 - $y, $x];
                 };
                 $rotWalls = function($str) {
-                    // XXX barbarian
-                    return strtr($str, "NESW", "ESWN");
+                    return strtr($str, "NESWnesw", "ESWNeswn");
                 };
                 break;
             case 180:
@@ -261,7 +260,7 @@ class MagicMaze extends Table
                 };
                 $invTileToGrid = $tileToGrid;
                 $rotWalls = function($str) {
-                    return strtr($str, "NESW", "SWNE");
+                    return strtr($str, "NESWnesw", "SWNEswne");
                 };
                 break;
             case -90:
@@ -273,7 +272,7 @@ class MagicMaze extends Table
                     return [$y, 3 - $x];
                 };
                 $rotWalls = function($str) {
-                    return strtr($str, "NESW", "WNES");
+                    return strtr($str, "NESWnesw", "WNESwnes");
                 };
                 break;
         }
@@ -289,12 +288,12 @@ class MagicMaze extends Table
                 $oldx = $x_coord + $i;
                 $oldy = $y_coord + $j;
 
+                // gyop
                 for ($k = 0; $k < strlen($walls); ++$k) {
                     $dir = $walls[$k];
                     $dx = 0;
                     $dy = 0;
-                    switch($dir) {
-                        // XXX barbarian
+                    switch(strtoupper($dir)) {
                         case 'N':
                             $dx = 0;
                             $dy = -1;
@@ -320,8 +319,9 @@ class MagicMaze extends Table
                     $newx = $oldx + $dx;
                     $newy = $oldy + $dy;
                     // TODO: figure out if we should write both
-                    $wallstring .= "($oldx, $oldy, $newx, $newy),";
-                    $wallstring .= "($newx, $newy, $oldx, $oldy)";
+                    $is_dwarf = (($dir === strtoupper($dir)) ? 0 : 1);
+                    $wallstring .= "($oldx, $oldy, $newx, $newy, $is_dwarf),";
+                    $wallstring .= "($newx, $newy, $oldx, $oldy, $is_dwarf)";
                 }
 
                 if (strlen($tile["escalator"]) > 0) {
@@ -375,6 +375,10 @@ class MagicMaze extends Table
         return $ret;
     }
 
+    function isDwarf($token_id) {
+        // goyp
+        return intval($token_id) === 1;
+    }
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -469,8 +473,9 @@ SQL;
         
         $sql = "update tokens set position_x = $newx, position_y = $newy where " .
         "token_id = $token_id";
+        $dwarfexclusion = (($this->isDwarf($token_id)) ? "and not dwarf" : "");
         $wallrestriction = " and not exists " 
-          . "(select 1 from walls where old_x = $oldx and old_y = $oldy and new_x = $newx and new_y = $newy) ";
+          . "(select 1 from walls where old_x = $oldx and old_y = $oldy and new_x = $newx and new_y = $newy $dwarfexclusion) ";
         $tilerestriction = " and exists "
           . "(select 1 from tiles where $newx - position_x between 0 and 3 and $newy - position_y between 0 and 3) ";
         $lockrestriction = " and not locked ";

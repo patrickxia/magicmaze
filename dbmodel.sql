@@ -31,12 +31,12 @@ create table `tokens` (
     primary key (`token_id`)
 ) ENGINE=InnoDB;
 
--- needs dwarf-walls
 create table `walls` (
     `old_x` int not null,
     `old_y` int not null,
     `new_x` int not null,
     `new_y` int not null,
+    `dwarf` bool not null default false,
     primary key (`old_x`, `old_y`, `new_x`, `new_y`)
 ) ENGINE=InnoDB;
 
