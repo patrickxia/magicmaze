@@ -444,6 +444,7 @@ function (dojo, declare) {
 */
     notif_tileAdded: function (notif) {
       placeTile(this, notif.args)
+      drawClickables(this, notif.args.clickables)
     },
     notif_tokenMoved: function (notif) {
       placeCharacter(this, notif.args)
