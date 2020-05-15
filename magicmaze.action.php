@@ -72,6 +72,13 @@
       $this->game->attemptEscalator($id);
       self::ajaxResponse();
     }
+
+    public function attemptExplore() {
+      self::setAjaxMode();
+      $id = self::getArg("token_id", AT_int, true);
+      $this->game->attemptExplore($id);
+      self::ajaxResponse();
+    }
     
 
     public function nuke() {

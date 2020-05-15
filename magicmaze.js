@@ -66,11 +66,18 @@ function dispatchMove (obj, tokenId, arr) {
       y: arr[1]
     }
   } else {
-    // warp, explore, etc
-    // only escalator right now...
-    path = '/magicmaze/magicmaze/attemptEscalator.html'
-    arg = {
-      token_id: tokenId
+    if (arr[0] === 0) {
+      path = '/magicmaze/magicmaze/attemptExplore.html'
+      arg = {
+        token_id: tokenId
+      }
+      // explore
+    } else {
+      // warp
+      path = '/magicmaze/magicmaze/attemptEscalator.html'
+      arg = {
+        token_id: tokenId
+      }
     }
   }
   obj.ajaxcall(path,
@@ -79,7 +86,15 @@ function dispatchMove (obj, tokenId, arr) {
     }, function (error) { console.log(error) })
 }
 
+function previewNextTile (obj, info) {
+  const tileId = parseInt(info.tile_id)
+  dojo.create('div', {
+    class: `tile${tileId}`
+  }, $('next_explore'))
+}
+
 function placeTile (obj, tile) {
+  $('next_explore').innerHTML = ''
   const x = parseInt(tile.position_x)
   const y = parseInt(tile.position_y)
   const screenCoords = toScreenCoords(x, y)
@@ -251,10 +266,12 @@ function (dojo, declare) {
           // down
           dispatchMove(this, tokenId, [0, 1])
         })
-        /*
-          #controls0 > tbody > tr:nth-child(4) > td // explore
-          */
+        dojo.connect(document.querySelector(base + '> tbody > tr:nth-child(4) > td'), 'onclick', this, function (evt) {
+          // explore
+          dispatchMove(this, tokenId, [0])
+        })
         dojo.connect(document.querySelector(base + '> tbody > tr:nth-child(5) > td'), 'onclick', this, function (evt) {
+          // escalator
           dispatchMove(this, tokenId, [1])
         })
       }
@@ -448,11 +465,14 @@ function (dojo, declare) {
     notif_tokenMoved: function (notif) {
       placeCharacter(this, notif.args)
     },
+    notif_nextTile: function (notif) {
+      previewNextTile(this, notif.args)
+    },
     setupNotifications: function () {
       console.log('notifications subscriptions setup')
       dojo.subscribe('tileAdded', this, 'notif_tileAdded')
       dojo.subscribe('tokenMoved', this, 'notif_tokenMoved')
-
+      dojo.subscribe('nextTile', this, 'notif_nextTile')
       // TODO: here, associate your game notifications with local methods
 
       // Example 1: standard notification handling

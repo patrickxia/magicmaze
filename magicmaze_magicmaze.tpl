@@ -43,6 +43,12 @@
   <a id="movedown" href="#"></a>
 </div>
 
+<div id="next_explore_container">
+Next explore tile:
+<div id="next_explore">
+</div>
+</div>
+
 
 <table id="controls0">
 <tr><td colspan="3">Up</td></tr>

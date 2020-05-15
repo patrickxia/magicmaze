@@ -101,7 +101,7 @@ class MagicMaze extends Table
         self::DbQuery( $sql );
 
         // XXX don't hardcode
-        $tiles = [1, 2,3,4,5,6,7,8,9];
+        $tiles = [1, 2];
         shuffle($tiles);
         $sql = "insert into tiles (tile_id, tile_order) values ";
         for ($i = 0; $i < count($tiles); ++$i) {
@@ -386,6 +386,7 @@ class MagicMaze extends Table
 //////////// Player actions
 //////////// 
     function nextAvailableTile() {
+        // TODO throw the correct exception (BgaUserException instead of SQL error)
         $sql = "select tile_id from tiles where not placed order by tile_order limit 1 for update";
         $nextId = self::getNonEmptyObjectFromDb($sql);
         return $nextId['tile_id'];
@@ -395,6 +396,40 @@ class MagicMaze extends Table
         $sql = "select position_x, position_y from tiles where tile_id = " . $tile_id;
         $res = self::getNonEmptyObjectFromDb($sql);
         return [$res['position_x'], $res['position_y']];
+    }
+
+    function attemptExplore($tokenId) {
+        // TODO: check action possible by player
+        // TODO: mage action
+        // TODO: this kind of sucks UI wise, display a little "locked" icon
+        // TODO: can't attempt explore when the tile is already placed
+        // TODO: clicking twice on explore should place
+        $next = $this->nextAvailableTile();
+
+        self::notifyAllPlayers("nextTile", clienttranslate('next tile available'), array(
+            "tile_id" => $next
+        ));
+
+        $sql = <<<SQL
+update tokens t
+join properties p
+on t.token_id = p.token_id
+set 
+  t.locked = true,
+  p.property = 'used_explore'
+where
+  p.position_x = t.position_x
+  and p.position_y = t.position_y
+  and not t.locked
+  and p.property = 'explore'
+  and not exists (
+      select 1 from (select * from tokens for update) t2 where locked
+  )
+SQL;
+        self::DbQuery($sql);
+        if (self::DbAffectedRow() === 0) {
+            throw new BgaUserException( self::_("you can't explore from there") );
+        }
     }
 
     function attemptWarp($x, $y) {
@@ -410,13 +445,14 @@ set
 where
   p.position_x = $x
   and p.position_y = $y
+  and not t.locked
   and p.property = 'warp' 
 SQL;
         self::DbQuery($sql);
         if (self::DbAffectedRow() === 0) {
             throw new BgaUserException( self::_("you can't warp there") );
         }
-        // timestamp this
+        // TODO: timestamp this
         $sql = "select token_id, position_x, position_y from tokens where position_x = $x and position_y = $y";
         $res = self::getNonEmptyObjectFromDb($sql);
 
@@ -501,7 +537,6 @@ SQL;
 
     function placeTileFrom($tile_id, $x, $y) {
         // x, y in relative coordinates
-        // TODO: check to make sure we're not placing on top of another tile
         // TODO: check to make sure that this is indeed the correct tile on the top
         // of the stack
         $nextId = $this->nextAvailableTile();
@@ -534,10 +569,45 @@ SQL;
         }
 
         $coords = $this->tileCoords($tile_id);
+        $oldx = $coords[0] + $x;
+        $oldy = $coords[1] + $y;
         $newx = $coords[0] + $dx[$key][0];
         $newy = $coords[1] + $dx[$key][1];
         $rotation = $rotations[$key];
+        $sql = <<<SQL
+        update tokens t
+        join properties p
+        on t.token_id = p.token_id
+        set 
+          t.locked = false,
+          p.property = 'used_explore'
+        where
+          p.position_x = t.position_x
+          and p.position_y = t.position_y
+          and p.position_x = $oldx
+          and p.position_y = $oldy
+          and (p.property = 'explore' or p.property = 'used_explore')
+SQL;
+        self::dbQuery($sql);
+        if (self::DbAffectedRow() === 0) {
+            throw new BgaUserException( self::_("you can't place a tile there") );
+        }
+
         $this->createTile($nextId, $newx, $newy, $rotation);
+        self::dbQuery("select 1 from tokens where locked");
+        if (self::DbAffectedRow() !== 0) {
+            try {
+                $next = $this->nextAvailableTile();
+
+                self::notifyAllPlayers("nextTile", clienttranslate('next tile available'), array(
+                    "tile_id" => $next
+                ));
+            } catch (Exception $e) {
+                // this isn't the cleanest but it's rare
+                self::dbQuery("update tokens t set locked = false");
+                // TODO: unset locked indicator
+            }
+        }
     }
 
     function createTile($nextId, $newx, $newy, $rotation) {
@@ -548,9 +618,16 @@ SQL;
           position_x = $newx,
           position_y = $newy,
           rotation = $rotation
-        where tile_id = $nextId
+        where tile_id = $nextId and
+        not exists (
+            select 1 from (select * from tiles for update) t2
+            where position_x = $newx and position_y = $newy
+        )
 SQL;
         self::DbQuery($sql);
+        if (self::DbAffectedRow() === 0) {
+            throw new BgaUserException( self::_("you can't create a tile there") );
+        }
 
         $clickables = $this->generateConnectionsForTile($nextId, $newx, $newy, $rotation);
 
