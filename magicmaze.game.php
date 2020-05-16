@@ -433,7 +433,7 @@ SQL;
 select position_x, position_y, find_tile(position_x, position_y) tile_id from tokens where locked;
 SQL;
             $res = self::getNonEmptyObjectFromDb($sql);
-            $this->placeTileFrom($res['tile_id'], $res['position_x'], $res['position_y']);
+            $this->placeTileFrom($res['tile_id'], $res['position_x'], $res['position_y'], true);
         }
         // TODO: mark frozen
     }
@@ -541,7 +541,12 @@ SQL;
         ));
     }
 
-    function placeTileFrom($tile_id, $x, $y) {
+    function placeTileFrom($tile_id, $x, $y, $is_absolute=false) {
+        $coords = $this->tileCoords($tile_id);
+        if ($is_absolute) {
+            $x -= $coords[0];
+            $y -= $coords[1];
+        }
         // x, y in relative coordinates
         // TODO: check to make sure that this is indeed the correct tile on the top
         // of the stack
@@ -574,7 +579,6 @@ SQL;
             throw new BgaUserException( self::_("no valid action at that cell") );
         }
 
-        $coords = $this->tileCoords($tile_id);
         $oldx = $coords[0] + $x;
         $oldy = $coords[1] + $y;
         $newx = $coords[0] + $dx[$key][0];
