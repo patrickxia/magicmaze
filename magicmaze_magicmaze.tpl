@@ -25,8 +25,8 @@
     Please REMOVE this comment before publishing your game on BGA
 -->
 
-
-<div id="nuke" style="display: block;">nuke it</div>
+Double click on warps to warp.
+<div id="nuke" style="display: none;">nuke it</div>
 
 <div id="area_container">
   <div id="area_scrollable"></div>

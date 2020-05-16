@@ -440,7 +440,7 @@ SQL;
 
     function attemptWarp($x, $y) {
         // TODO: check action possible
-        // TODO: check warps allowed
+        $this->checkAction("warp");
         $sql = <<<SQL
 update tokens t
 join properties p
@@ -527,13 +527,31 @@ SQL;
             throw new BgaUserException( self::_("you can't move there") );
         }
 
+        $target = (checkAction('steal', false) ? "item" : "exit");
+        $sql = <<<SQL
+        select
+          1
+        from tokens t join properties p
+        on t.token_id = p.token_id
+        where p.property = "$target"
+        and t.position_x = p.position_x
+        and t.position_y = p.position_y
+SQL;
+        self::DbQuery($sql);
+
+        if (self::DbAffectedRow() === 4) {
+            if (checkAction('steal', false)) {
+                $this->gamestate->nextState('steal');
+            } else {
+                $this->gamestate->nextState('win');
+            }
+        }
         // XXX roundtrips
         $sql = "select position_x, position_y from tokens where token_id = " . $token_id;
         $res = self::getNonEmptyObjectFromDb($sql);
         // XXX conflicts, need a lot better than this (possibly timestamp the
         // insertions).
 
-        // XXX check win
         self::notifyAllPlayers("tokenMoved", clienttranslate('token moved'), array(
             "token_id" => $token_id,
             "position_x" => $res['position_x'],

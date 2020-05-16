@@ -150,7 +150,7 @@ function drawClickables (obj, properties) {
     const cellLeft = obj.lefts.get(key)
     const cellTop = obj.tops.get(key)
     const clickableZone = dojo.create('div', {
-      class: 'debug',
+      // class: 'debug',
       style: {
         position: 'absolute',
         width: CELL_SIZE + 'px',
