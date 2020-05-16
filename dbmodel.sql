@@ -17,19 +17,31 @@ create table `tiles` (
      primary key (`tile_id`)
 ) ENGINE=InnoDB;
 
+create function find_tile(x int, y int) returns int begin
+  return (select tile_id from tiles where
+    x - position_x between 0 and 3
+    and y - position_y between 0 and 3);
+end;
+
 -- The token that initiates an explore half-step is locked.
 -- This stops people from invalidly moving a meeple when the person is
 -- trying to decide where to put the tile(s). This is much cleaner for
 -- all sorts of races (including if the timer is flipped when the person
 -- is looking at tiles).
 
+-- `dummy` is used for a half-step to reduce the number of db roundtrips.
+-- You can remove it when the feature request
+-- https://forum.boardgamearena.com/viewtopic.php?f=12&t=15723
+-- is resolved.
 create table `tokens` (
     `token_id` int unsigned not null,
     `position_x` int not null,
     `position_y` int not null,
     `locked` bool not null default false,
+    `dummy` bool not null default false,
     primary key (`token_id`)
 ) ENGINE=InnoDB;
+
 
 create table `walls` (
     `old_x` int not null,
