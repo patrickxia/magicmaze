@@ -527,7 +527,7 @@ SQL;
             throw new BgaUserException( self::_("you can't move there") );
         }
 
-        $target = (checkAction('steal', false) ? "item" : "exit");
+        $target = ($this->checkAction('steal', false) ? "item" : "exit");
         $sql = <<<SQL
         select
           1
@@ -540,7 +540,7 @@ SQL;
         self::DbQuery($sql);
 
         if (self::DbAffectedRow() === 4) {
-            if (checkAction('steal', false)) {
+            if ($this->checkAction('steal', false)) {
                 $this->gamestate->nextState('steal');
             } else {
                 $this->gamestate->nextState('win');
