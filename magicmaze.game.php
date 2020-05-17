@@ -106,7 +106,7 @@ class MagicMaze extends Table
         self::DbQuery( $sql );
 
         // XXX don't hardcode
-        $tiles = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+        $tiles = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
         shuffle($tiles);
         $sql = "insert into tiles (tile_id, tile_order) values ";
         for ($i = 0; $i < count($tiles); ++$i) {
@@ -144,7 +144,6 @@ class MagicMaze extends Table
        
 
         // Activate first player (which is in general a good idea :) )
-        $this->activeNextPlayer();
         $this->gamestate->setAllPlayersMultiactive();
 
         /************ End of the game initialization *****/

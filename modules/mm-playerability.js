@@ -5,6 +5,9 @@ function getRoles (nPlayers, player, flips) {
   flips = parseInt(flips)
   let res = []
   switch (nPlayers) {
+    case 1:
+      res = ['NESWHPR']
+      break
     case 2:
       // Two players:
       // player1: escalator search south west

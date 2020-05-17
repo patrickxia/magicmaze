@@ -128,55 +128,109 @@
 .tile1 {
   width: 256px;
   height: 256px;
-  background-image: url('img/1.jpg');
+  background-image: url('img/01.jpg');
 }
 
 .tile2 {
   width: 256px;
   height: 256px;
-  background-image: url('img/2.jpg');
+  background-image: url('img/02.jpg');
 }
 
 .tile3 {
   width: 256px;
   height: 256px;
-  background-image: url('img/3.jpg');
+  background-image: url('img/03.jpg');
 }
 
 .tile4 {
   width: 256px;
   height: 256px;
-  background-image: url('img/4.jpg');
+  background-image: url('img/04.jpg');
 }
 
 .tile5 {
   width: 256px;
   height: 256px;
-  background-image: url('img/5.jpg');
+  background-image: url('img/05.jpg');
 }
 
 .tile6 {
   width: 256px;
   height: 256px;
-  background-image: url('img/6.jpg');
+  background-image: url('img/06.jpg');
 }
 
 .tile7 {
   width: 256px;
   height: 256px;
-  background-image: url('img/7.jpg');
+  background-image: url('img/07.jpg');
 }
 
 .tile8 {
   width: 256px;
   height: 256px;
-  background-image: url('img/8.jpg');
+  background-image: url('img/08.jpg');
 }
 
 .tile9 {
   width: 256px;
   height: 256px;
-  background-image: url('img/9.jpg');
+  background-image: url('img/09.jpg');
+}
+
+.tile10 {
+  width: 256px;
+  height: 256px;
+  background-image: url('img/10.jpg');
+}
+
+.tile11 {
+  width: 256px;
+  height: 256px;
+  background-image: url('img/11.jpg');
+}
+
+.tile12 {
+  width: 256px;
+  height: 256px;
+  background-image: url('img/12.jpg');
+}
+
+.tile13 {
+  width: 256px;
+  height: 256px;
+  background-image: url('img/13.jpg');
+}
+
+.tile14 {
+  width: 256px;
+  height: 256px;
+  background-image: url('img/14.jpg');
+}
+
+.tile15 {
+  width: 256px;
+  height: 256px;
+  background-image: url('img/15.jpg');
+}
+
+.tile16 {
+  width: 256px;
+  height: 256px;
+  background-image: url('img/16.jpg');
+}
+
+.tile17 {
+  width: 256px;
+  height: 256px;
+  background-image: url('img/17.jpg');
+}
+
+.tile18 {
+  width: 256px;
+  height: 256px;
+  background-image: url('img/18.jpg');
 }
 
 #token0 {

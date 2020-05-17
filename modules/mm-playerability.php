@@ -16,6 +16,11 @@
         $flips = intval($flips);
         $res = array();
         switch ($nPlayers) {
+            case 1:
+                $res = array(
+                    0 => "NESWHPR"
+                );
+            break;
             case 2:
                 // Two players:
                 // player1: escalator search south west
