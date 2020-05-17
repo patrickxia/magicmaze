@@ -27,6 +27,9 @@
 
 Double click on warps to warp.
 <div id="nuke" style="display: none;">nuke it</div>
+<div id="timer">
+Time remaining: <div id="timer_numbers">--:--</div>
+</div>
 
 <div id="area_container">
   <div id="area_scrollable"></div>

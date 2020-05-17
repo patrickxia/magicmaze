@@ -20,7 +20,9 @@
 
 require_once( APP_GAMEMODULE_PATH.'module/table/table.game.php' );
 
-define ("TIMER_VALUE", 180000000);
+define ("TIMER_VALUE", 180);
+// Be nice to the players: let them overshoot their timers by a tiny bit.
+define ("TIMER_SLOP", 2);
 
 function getKey($inx, $iny) {
     return "${inx}_${iny}";
@@ -167,10 +169,18 @@ class MagicMaze extends Table
         $result['tiles'] = self::getCollectionFromDb($sql);
         $sql = "select token_id, position_x, position_y from tokens";
         $result['tokens'] = self::getCollectionFromDb($sql);
+        // TODO: We can lower the roundtrips here but this is only on a full load...
         $sql = "select position_x, position_y, token_id from properties where property = 'warp'";
         $result['properties']['warp'] = self::getObjectListFromDB($sql);
         $sql = "select position_x, position_y, token_id from properties where property = 'explore'";
         $result['properties']['explore'] = self::getObjectListFromDB($sql);
+        $sql = "select position_x, position_y, token_id from properties where property = 'used'";
+        $result['properties']['used'] = self::getObjectListFromDB($sql);
+
+        $deadline = floatval(self::getGameStateValue("timer_deadline_micros"));
+        if ($deadline !== -1.) {
+            $result['deadline'] = $deadline;
+        }
 
         return $result;
     }
@@ -488,8 +498,6 @@ SQL;
     }
 
     function attemptMove($token_id, $x, $y) {
-        // TODO: checkAction
-        // TODO: cheating: not warping the token
         // TODO: check action is possible for current player (self::getCurrentPlayerId)
 
 
@@ -510,10 +518,17 @@ SQL;
         }
         $res->close();
 
-        $last_timer_turn = floatval(self::getGameStateValue("timer_deadline_micros"));
-        if ($last_timer_turn === -1.) {
+        $deadline = floatval(self::getGameStateValue("timer_deadline_micros"));
+        if ($deadline === -1.) {
             $new_deadline = microtime(true) + TIMER_VALUE;
             self::setGameStateValue("timer_deadline_micros", $new_deadline);
+            $this->notifyAllPlayers("newDeadline", clienttranslate("Timer started!"), array(
+                "deadline" => $new_deadline
+            ));
+        } else if (microtime(true) > $deadline + TIMER_SLOP) {
+            $this->gamestate->nextState('lose');
+            $this->notifyAllPlayers("message", clienttranslate("Oh no! You ran out of time."), array());
+            return;
         }
  
 
@@ -563,8 +578,40 @@ SQL;
             }
         }
         // XXX roundtrips
-        $sql = "select position_x, position_y from tokens where token_id = " . $token_id;
+        $sql = <<<SQL
+        select
+            t.position_x, t.position_y, p.property
+        from
+            tokens t
+            left join
+            properties p
+            on t.position_x = p.position_x and t.position_y = p.position_y
+        where
+            t.token_id = $token_id
+SQL;
         $res = self::getNonEmptyObjectFromDb($sql);
+        if ($res['property'] === "timer") {
+            // TODO: camera restriction
+            $sql = <<<SQL
+            update properties
+            set property = 'used'
+            where position_x = $res[position_x]
+            and position_y = $res[position_y]
+SQL;
+            self::DbQuery($sql);
+            $newDeadline = 2 * microtime(true) -
+                self::getGameStateValue("timer_deadline_micros") +
+                TIMER_VALUE;
+
+            self::setGameStateValue("timer_deadline_micros", $newDeadline);
+            self::notifyAllPlayers("newUsed", '', array(
+                "x" => $res['position_x'],
+                "y" => $res['position_y']
+            ));
+            self::notifyAllPlayers("newDeadline", clienttranslate('timer flipped!'), array(
+                "deadline" => $newDeadline
+            ));
+        }
         // XXX conflicts, need a lot better than this (possibly timestamp the
         // insertions).
 

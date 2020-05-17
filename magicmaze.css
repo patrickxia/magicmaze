@@ -207,6 +207,13 @@
   position: absolute;
 }
 
+.used {
+  position: absolute;
+  width: 55px;
+  height: 55px;
+  /* TODO: get an image here */
+  background: #000;
+}
 /* temporary crap */
 
 table {border-collapse: collapse; display: inline; }

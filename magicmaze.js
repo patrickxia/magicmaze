@@ -21,6 +21,9 @@
 // Define the libraries that the BGA framework gives us to begin with.
 /* global $, define, ebg, dojo */
 
+const SECS_TO_MILLIS = 1000.0
+const MILLIS_TO_SECS = 0.001
+
 const BORDER_WIDTH = 20
 const CELL_SIZE = 54
 const MEEPLE_SIZE = 30
@@ -43,6 +46,20 @@ function toScreenCoords (x, y) {
   var top = -2 * BORDER_WIDTH * y0 + y * CELL_SIZE
 
   return [left, top]
+}
+
+function updateTimer (obj, el) {
+  // TODO: sync server and local time
+  if (!obj.deadline) {
+    return
+  }
+
+  const deadline = SECS_TO_MILLIS * obj.deadline
+  const left = Math.max(0, Math.floor(MILLIS_TO_SECS * (deadline - Date.now())))
+  const minutes = Math.floor(left / 60)
+  let seconds = left % 60
+  if (seconds < 10) seconds = '0' + seconds
+  el.textContent = minutes + ':' + seconds
 }
 
 function dispatchClick (obj, evt, tileId, relativex, relativey, x, y) {
@@ -140,8 +157,7 @@ function placeTile (obj, tile) {
   }
 }
 
-function drawClickables (obj, properties) {
-  console.log(properties.warp)
+function drawProperties (obj, properties) {
   for (let i = 0; i < properties.warp.length; ++i) {
     const warp = properties.warp[i]
     console.log(warp)
@@ -164,6 +180,24 @@ function drawClickables (obj, properties) {
     }
     obj.clickableCells.set(key, clickableZone)
   }
+  for (let i = 0; i < (properties.used ? properties.used.length : 0); ++i) {
+    const used = properties.used[i]
+    drawUsed(obj, used.position_x, used.position_y)
+  }
+}
+
+function drawUsed (obj, x, y) {
+  console.log(`what: ${x}, ${y}`)
+  const key = getKey(x, y)
+  const cellLeft = obj.lefts.get(key)
+  const cellTop = obj.tops.get(key)
+  dojo.create('div', {
+    class: 'used',
+    style: {
+      left: cellLeft + 'px',
+      top: cellTop + 'px'
+    }
+  }, $('area_scrollable'))
 }
 
 function getKey (x, y) {
@@ -212,8 +246,6 @@ function (dojo, declare) {
             */
 
     setup: function (gamedatas) {
-      console.log('Starting game setup')
-
       const game = this
       $('nuke').onclick = function (evt) {
         game.ajaxcall('/magicmaze/magicmaze/nuke.html', {}, this, function (res) {
@@ -231,6 +263,9 @@ function (dojo, declare) {
       }
 
       // TODO: Set up your game interface here, according to "gamedatas"
+      if (gamedatas.deadline) {
+        this.deadline = gamedatas.deadline
+      }
 
       this.scrollmap.create(
         $('area_container'),
@@ -243,7 +278,7 @@ function (dojo, declare) {
         placeTile(this, gamedatas.tiles[key])
       }
 
-      drawClickables(this, gamedatas.properties)
+      drawProperties(this, gamedatas.properties)
 
       for (const key in gamedatas.tokens) {
         placeCharacter(this, gamedatas.tokens[key])
@@ -283,7 +318,7 @@ function (dojo, declare) {
       // Setup game notifications to handle (see "setupNotifications" method below)
       this.setupNotifications()
 
-      console.log('Ending game setup')
+      window.setInterval(function () { updateTimer(game, $('timer_numbers')) }, 500)
     },
 
     onMoveTop: function (evt) {
@@ -460,7 +495,7 @@ function (dojo, declare) {
 */
     notif_tileAdded: function (notif) {
       placeTile(this, notif.args)
-      drawClickables(this, notif.args.clickables)
+      drawProperties(this, notif.args.clickables)
     },
     notif_tokenMoved: function (notif) {
       placeCharacter(this, notif.args)
@@ -468,11 +503,19 @@ function (dojo, declare) {
     notif_nextTile: function (notif) {
       previewNextTile(this, notif.args)
     },
+    notif_newDeadline: function (notif) {
+      this.deadline = notif.args.deadline
+    },
+    notif_newUsed: function (notif) {
+      drawUsed(this, notif.args.x, notif.args.y)
+    },
     setupNotifications: function () {
       console.log('notifications subscriptions setup')
       dojo.subscribe('tileAdded', this, 'notif_tileAdded')
       dojo.subscribe('tokenMoved', this, 'notif_tokenMoved')
       dojo.subscribe('nextTile', this, 'notif_nextTile')
+      dojo.subscribe('newDeadline', this, 'notif_newDeadline')
+      dojo.subscribe('newUsed', this, 'notif_newUsed')
       // TODO: here, associate your game notifications with local methods
 
       // Example 1: standard notification handling
