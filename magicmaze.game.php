@@ -1,4 +1,5 @@
 <?php
+
  /**
   *------
   * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
@@ -18,6 +19,9 @@
 
 
 require_once( APP_GAMEMODULE_PATH.'module/table/table.game.php' );
+
+define ("TIMER_VALUE", 180000000);
+
 function getKey($inx, $iny) {
     return "${inx}_${iny}";
 }
@@ -57,12 +61,9 @@ class MagicMaze extends Table
         parent::__construct();
         
         self::initGameStateLabels( array( 
-            //    "my_first_global_variable" => 10,
-            //    "my_second_global_variable" => 11,
-            //      ...
+            "timer_deadline_micros" => 10,
             //    "my_first_game_variant" => 100,
             //    "my_second_game_variant" => 101,
-            //      ...
         ) );
         
 	}
@@ -128,8 +129,8 @@ class MagicMaze extends Table
         /************ Start the game initialization *****/
 
         // Init global values with their initial values
-        //self::setGameStateInitialValue( 'my_first_global_variable', 0 );
-        
+        self::setGameStateInitialValue("timer_deadline_micros", -1);
+       
         // Init game statistics
         // (note: statistics used in this file must be defined in your stats.inc.php file)
         //self::initStat( 'table', 'table_teststat1', 0 );    // Init a table statistics
@@ -488,7 +489,9 @@ SQL;
 
     function attemptMove($token_id, $x, $y) {
         // TODO: checkAction
+        // TODO: cheating: not warping the token
         // TODO: check action is possible for current player (self::getCurrentPlayerId)
+
 
         $sql = "select token_id, position_x, position_y from tokens for update";
         //$allPositions = self::getNonEmptyCollectionFromDB($sql);
@@ -506,6 +509,13 @@ SQL;
             }
         }
         $res->close();
+
+        $last_timer_turn = floatval(self::getGameStateValue("timer_deadline_micros"));
+        if ($last_timer_turn === -1.) {
+            $new_deadline = microtime(true) + TIMER_VALUE;
+            self::setGameStateValue("timer_deadline_micros", $new_deadline);
+        }
+ 
 
         $newx = $oldx + $x;
         $newy = $oldy + $y;
