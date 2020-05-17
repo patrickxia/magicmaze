@@ -532,7 +532,8 @@ SQL;
         $tilerestriction = " and exists "
           . "(select 1 from tiles where $newx - position_x between 0 and 3 and $newy - position_y between 0 and 3) ";
         $lockrestriction = " and not locked ";
-        $res = self::DbQuery("$sql $wallrestriction $tilerestriction $lockrestriction");
+        $warprestriction = " and abs(position_x - $newx) + abs(position_y - $newy) = 1 ";
+        $res = self::DbQuery("$sql $wallrestriction $tilerestriction $lockrestriction $warprestriction");
         if (self::DbAffectedRow() === 0) {
             throw new BgaUserException( self::_("you can't move there") );
         }
