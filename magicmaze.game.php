@@ -543,7 +543,12 @@ SQL;
             if ($this->checkAction('steal', false)) {
                 $this->gamestate->nextState('steal');
             } else {
+                $sql = <<<SQL
+                  update player set player_score = 1
+SQL;
+                self::DbQuery($sql);
                 $this->gamestate->nextState('win');
+                $this->notifyAllPlayers("message", clienttranslate("Congratulations!"), array());
             }
         }
         // XXX roundtrips
@@ -566,8 +571,6 @@ SQL;
             $y -= $coords[1];
         }
         // x, y in relative coordinates
-        // TODO: check to make sure that this is indeed the correct tile on the top
-        // of the stack
         $nextId = $this->nextAvailableTile();
         // Only valid exit tiles are at
         //  20 (no rotation)

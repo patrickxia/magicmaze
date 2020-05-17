@@ -68,7 +68,7 @@ $machinestates = array(
     		"description" => clienttranslate('Steal the items!'),
     		"descriptionmyturn" => clienttranslate('Steal the items!'),
     		"type" => "multipleactiveplayer",
-    		"possibleactions" => array( "warp", "steal"  ),
+    		"possibleactions" => array( "warp", "steal" ),
     		"transitions" => array( "steal" => 3,  )
     ),
 
