@@ -55,12 +55,6 @@ class MagicMaze extends Table
 
 	function __construct( )
 	{
-        // Your global variables labels:
-        //  Here, you can assign labels to global variables you are using for this game.
-        //  You can use any number of global variables with IDs between 10 and 99.
-        //  If your game has options (variants), you also have to associate here a label to
-        //  the corresponding ID in gameoptions.inc.php.
-        // Note: afterwards, you can get/set the global variables with getGameStateValue/setGameStateInitialValue/setGameStateValue
         parent::__construct();
         
         self::initGameStateLabels( array( 
@@ -140,10 +134,6 @@ class MagicMaze extends Table
         //self::initStat( 'table', 'table_teststat1', 0 );    // Init a table statistics
         //self::initStat( 'player', 'player_teststat1', 0 );  // Init a player statistics (for all players)
 
-        // TODO: setup the initial game situation here
-       
-
-        // Activate first player (which is in general a good idea :) )
         $this->gamestate->setAllPlayersMultiactive();
 
         /************ End of the game initialization *****/
@@ -246,9 +236,6 @@ class MagicMaze extends Table
         fclose($handle);
     }
 
-    /*
-        In this space, you can put any utility methods useful for your game logic
-    */
     function generateConnectionsForTile($tile_id, $x_coord, $y_coord, $rotation) {
         $this->populateTileInfo();
         $ret = array();
@@ -425,7 +412,6 @@ class MagicMaze extends Table
         $this->checkOk("H");
         // TODO: mage action
         // TODO: this kind of sucks UI wise, display a little "locked" icon
-        // TODO: can't attempt explore when the tile is already placed
         // TODO: clicking twice on explore should place
         $next = $this->nextAvailableTile();
 
@@ -458,7 +444,6 @@ SQL;
             $res = self::getNonEmptyObjectFromDb($sql);
             $this->placeTileFrom($res['tile_id'], $res['position_x'], $res['position_y'], true);
         }
-        // TODO: mark frozen
     }
 
     function attemptWarp($x, $y) {
@@ -561,7 +546,6 @@ SQL;
 
         $newx = $oldx + $x;
         $newy = $oldy + $y;
-        // XXX check valid
         if (array_key_exists(getKey($newx, $newy), $others)) {
             throw new BgaUserException( self::_("can't move there: another pawn is already there") );
         }
@@ -770,55 +754,6 @@ SQL;
      }
     
 //////////////////////////////////////////////////////////////////////////////
-//////////// Game state arguments
-////////////
-
-    /*
-        Here, you can create methods defined as "game state arguments" (see "args" property in states.inc.php).
-        These methods function is to return some additional information that is specific to the current
-        game state.
-    */
-
-    /*
-    
-    Example for game state "MyGameState":
-    
-    function argMyGameState()
-    {
-        // Get some values from the current game situation in database...
-    
-        // return values:
-        return array(
-            'variable1' => $value1,
-            'variable2' => $value2,
-            ...
-        );
-    }    
-    */
-
-//////////////////////////////////////////////////////////////////////////////
-//////////// Game state actions
-////////////
-
-    /*
-        Here, you can create methods defined as "game state actions" (see "action" property in states.inc.php).
-        The action method of state X is called everytime the current game state is set to X.
-    */
-    
-    /*
-    
-    Example for game state "MyGameState":
-
-    function stMyGameState()
-    {
-        // Do some stuff ...
-        
-        // (very often) go to another gamestate
-        $this->gamestate->nextState( 'some_gamestate_transition' );
-    }    
-    */
-
-//////////////////////////////////////////////////////////////////////////////
 //////////// Zombie
 ////////////
 
@@ -898,7 +833,5 @@ SQL;
 //        // Please add your future database scheme changes here
 //
 //
-
-
     }    
 }
