@@ -67,5 +67,3 @@ create table `properties` (
     `property` varchar(32) not null,
     primary key (`position_x`, `position_y`)
 ) ENGINE=InnoDB;
-
-alter table `player` add `current_role` int unsigned not null;

@@ -18,8 +18,9 @@
 // This is written in JavaScript Standard Style.
 // (https://standardjs.com)
 
-// Define the libraries that the BGA framework gives us to begin with.
-/* global $, define, ebg, dojo */
+// Define the libraries that the BGA framework gives us to begin with
+// and the imports.
+/* global $, define, ebg, dojo, g_gamethemeurl, getRoles */
 
 const SECS_TO_MILLIS = 1000.0
 const MILLIS_TO_SECS = 0.001
@@ -27,6 +28,8 @@ const MILLIS_TO_SECS = 0.001
 const BORDER_WIDTH = 20
 const CELL_SIZE = 54
 const MEEPLE_SIZE = 30
+
+const VALID_MOVES = 'NESWRPH'
 
 function toScreenCoords (x, y) {
   // Thanks Sarah Howell (soasrsamh@gmail.com) for the
@@ -101,6 +104,26 @@ function dispatchMove (obj, tokenId, arr) {
     arg, this, function (result) {
       console.log(result)
     }, function (error) { console.log(error) })
+}
+
+function setupAbilities (dojo, obj, flips) {
+  for (var playerId in obj.players) {
+    const player = obj.players[playerId]
+    obj.abilities[playerId] =
+          getRoles(
+            Object.keys(obj.players).length,
+            player.player_no,
+            flips)
+  }
+  for (const c of VALID_MOVES) {
+    console.log(c)
+    const node = dojo.query(`.action${c}`)
+    if (obj.abilities[obj.player_id].indexOf(c) === -1) {
+      node.style('background', '#000')
+    } else {
+      node.style('background', '')
+    }
+  }
 }
 
 function previewNextTile (obj, info) {
@@ -220,7 +243,8 @@ define([
   'dojo', 'dojo/_base/declare',
   'ebg/core/gamegui',
   'ebg/counter',
-  'ebg/scrollmap'
+  'ebg/scrollmap',
+  g_gamethemeurl + 'modules/mm-playerability.js' // eslint-disable-line camelcase
 ],
 function (dojo, declare) {
   return declare('bgagame.magicmaze', ebg.core.gamegui, {
@@ -255,13 +279,11 @@ function (dojo, declare) {
         })
       }
 
+      this.abilities = []
+      this.players = gamedatas.players
       // Setting up player boards
-      for (var playerID in gamedatas.players) {
-        var player = gamedatas.players[playerID]
-        console.log(player)
-        // TODO: Setting up players boards if needed
-      }
 
+      setupAbilities(dojo, this, gamedatas.flips)
       // TODO: Set up your game interface here, according to "gamedatas"
       if (gamedatas.deadline) {
         this.deadline = gamedatas.deadline
@@ -505,6 +527,9 @@ function (dojo, declare) {
     },
     notif_newDeadline: function (notif) {
       this.deadline = notif.args.deadline
+      if (notif.args.flips) {
+        setupAbilities(dojo, this, notif.args.flips)
+      }
     },
     notif_newUsed: function (notif) {
       drawUsed(this, notif.args.x, notif.args.y)

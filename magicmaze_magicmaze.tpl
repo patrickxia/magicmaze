@@ -54,35 +54,35 @@ Next explore tile:
 
 
 <table id="controls0">
-<tr><td colspan="3">Up</td></tr>
-<tr><td>Left</td><td>Green</td><td>Right</td></tr>
-<tr><td colspan="3">Down</td></tr>
-<tr><td colspan="3">Explore</td></tr>
-<tr><td colspan="3">Escalator</td></tr>
+<tr><td colspan="3" class="actionN">Up</td></tr>
+<tr><td class="actionW">Left</td><td>Green</td><td class="actionE">Right</td></tr>
+<tr><td colspan="3" class="actionS">Down</td></tr>
+<tr><td colspan="3" class="actionH">Explore</td></tr>
+<tr><td colspan="3" class="actionR">Escalator</td></tr>
 </table>
 
 <table id="controls1">
-<tr><td colspan="3">Up</td></tr>
-<tr><td>Left</td><td>Orange</td><td>Right</td></tr>
-<tr><td colspan="3">Down</td></tr>
-<tr><td colspan="3">Explore</td></tr>
-<tr><td colspan="3">Escalator</td></tr>
+<tr><td colspan="3" class="actionN">Up</td></tr>
+<tr><td class="actionW">Left</td><td>Orange</td><td class="actionE">Right</td></tr>
+<tr><td colspan="3" class="actionS">Down</td></tr>
+<tr><td colspan="3" class="actionH">Explore</td></tr>
+<tr><td colspan="3" class="actionR">Escalator</td></tr>
 </table>
 
 <table id="controls2">
-<tr><td colspan="3">Up</td></tr>
-<tr><td>Left</td><td>Yellow</td><td>Right</td></tr>
-<tr><td colspan="3">Down</td></tr>
-<tr><td colspan="3">Explore</td></tr>
-<tr><td colspan="3">Escalator</td></tr>
+<tr><td colspan="3" class="actionN">Up</td></tr>
+<tr><td class="actionW">Left</td><td>Yellow</td><td class="actionE">Right</td></tr>
+<tr><td colspan="3" class="actionS">Down</td></tr>
+<tr><td colspan="3" class="actionH">Explore</td></tr>
+<tr><td colspan="3" class="actionR">Escalator</td></tr>
 </table>
 
 <table id="controls3">
-<tr><td colspan="3">Up</td></tr>
-<tr><td>Left</td><td>Purple</td><td>Right</td></tr>
-<tr><td colspan="3">Down</td></tr>
-<tr><td colspan="3">Explore</td></tr>
-<tr><td colspan="3">Escalator</td></tr>
+<tr><td colspan="3" class="actionN">Up</td></tr>
+<tr><td class="actionW">Left</td><td>Purple</td><td class="actionE">Right</td></tr>
+<tr><td colspan="3" class="actionS">Down</td></tr>
+<tr><td colspan="3" class="actionH">Explore</td></tr>
+<tr><td colspan="3" class="actionR">Escalator</td></tr>
 </table>
 
 

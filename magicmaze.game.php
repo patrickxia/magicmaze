@@ -19,6 +19,7 @@
 
 
 require_once( APP_GAMEMODULE_PATH.'module/table/table.game.php' );
+require_once('modules/mm-playerability.php');
 
 define ("TIMER_VALUE", 180);
 // Be nice to the players: let them overshoot their timers by a tiny bit.
@@ -64,6 +65,7 @@ class MagicMaze extends Table
         
         self::initGameStateLabels( array( 
             "timer_deadline_micros" => 10,
+            "num_flips" => 11,
             //    "my_first_game_variant" => 100,
             //    "my_second_game_variant" => 101,
         ) );
@@ -163,7 +165,7 @@ class MagicMaze extends Table
         $current_player_id = self::getCurrentPlayerId();
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
-        $sql = "SELECT player_id id, player_score score FROM player ";
+        $sql = "SELECT player_id id, player_no player_no FROM player ";
         $result['players'] = self::getCollectionFromDb( $sql );
         $sql = "select tile_id tile_id, position_x, position_y, rotation from tiles where placed";
         $result['tiles'] = self::getCollectionFromDb($sql);
@@ -177,12 +179,23 @@ class MagicMaze extends Table
         $sql = "select position_x, position_y, token_id from properties where property = 'used'";
         $result['properties']['used'] = self::getObjectListFromDB($sql);
 
+        $result['flips'] = self::getGameStateValue("num_flips");
         $deadline = floatval(self::getGameStateValue("timer_deadline_micros"));
         if ($deadline !== -1.) {
             $result['deadline'] = $deadline;
         }
 
         return $result;
+    }
+
+    function checkOk($action) {
+        $players = self::loadPlayersBasicInfos();
+        $allowable = getRoles(count($players),
+            $players[self::getCurrentPlayerId()]["player_no"],
+            self::getGameStateValue("num_flips"));
+        if (strpos($allowable, $action) === FALSE) {
+            throw new BgaUserException( self::_("you don't have that ability") );
+        }
     }
 
     /*
@@ -410,7 +423,7 @@ class MagicMaze extends Table
     }
 
     function attemptExplore($tokenId) {
-        // TODO: check action possible by player
+        $this->checkOk("H");
         // TODO: mage action
         // TODO: this kind of sucks UI wise, display a little "locked" icon
         // TODO: can't attempt explore when the tile is already placed
@@ -450,7 +463,7 @@ SQL;
     }
 
     function attemptWarp($x, $y) {
-        // TODO: check action possible
+        $this->checkOk("P");
         $this->checkAction("warp");
         $sql = <<<SQL
 update tokens t
@@ -481,8 +494,7 @@ SQL;
     }
 
     function attemptEscalator($token_id) {
-        // TODO: check action possible for current player
-
+        $this->checkOk("R");
         $res = self::DbQuery(updateEscalatorQuery($token_id));
         if (self::DbAffectedRow() === 0) {
             throw new BgaUserException( self::_("invalid escalator operation") );
@@ -498,9 +510,25 @@ SQL;
     }
 
     function attemptMove($token_id, $x, $y) {
-        // TODO: check action is possible for current player (self::getCurrentPlayerId)
-
-
+        // TODO: the move should be a string and we should not parse this nonsense
+        // (legacy of how this was developed)
+        switch ($x.$y) {
+            case "-10":
+                $this->checkOk("W");
+            break;
+            case "10":
+                $this->checkOk("E");
+            break;
+            case "01":
+                $this->checkOk("S");
+            break;
+            case "0-1":
+                $this->checkOk("N");
+            break;
+            default:
+                throw new BgaUserException( self::_("received invalid move") );
+        }
+        
         $sql = "select token_id, position_x, position_y from tokens for update";
         //$allPositions = self::getNonEmptyCollectionFromDB($sql);
         $res = self::DbQuery($sql);
@@ -547,8 +575,7 @@ SQL;
         $tilerestriction = " and exists "
           . "(select 1 from tiles where $newx - position_x between 0 and 3 and $newy - position_y between 0 and 3) ";
         $lockrestriction = " and not locked ";
-        $warprestriction = " and abs(position_x - $newx) + abs(position_y - $newy) = 1 ";
-        $res = self::DbQuery("$sql $wallrestriction $tilerestriction $lockrestriction $warprestriction");
+        $res = self::DbQuery("$sql $wallrestriction $tilerestriction $lockrestriction");
         if (self::DbAffectedRow() === 0) {
             throw new BgaUserException( self::_("you can't move there") );
         }
@@ -609,6 +636,7 @@ SQL;
                 "y" => $res['position_y']
             ));
             self::notifyAllPlayers("newDeadline", clienttranslate('timer flipped!'), array(
+                "flips" => self::incGameStateValue("num_flips", 1),
                 "deadline" => $newDeadline
             ));
         }
@@ -745,34 +773,6 @@ SQL;
 //////////////////////////////////////////////////////////////////////////////
 //////////// Game state arguments
 ////////////
-
-    // Two players:
-    // player1: escalator search south west
-    // player2: portal north east
-
-    // Three players:
-    // player1: north east
-    // player2: west portal
-    // player3: escalator search south
-    
-
-    // Four players:
-    // player1: south search
-    // player2: west portal
-    // player3: escalator east
-    // player4: north
-
-    // Five players: add
-    // player5: west
-
-    // Six players: add
-    // player6: east
-
-    // Seven players: add
-    // player 7: south
-    
-    // Eight players: add
-    // player 8: north
 
     /*
         Here, you can create methods defined as "game state arguments" (see "args" property in states.inc.php).
