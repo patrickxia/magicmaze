@@ -398,7 +398,10 @@ class MagicMaze extends Table
     function nextAvailableTile() {
         // TODO throw the correct exception (BgaUserException instead of SQL error)
         $sql = "select tile_id from tiles where not placed order by tile_order limit 1 for update";
-        $nextId = self::getNonEmptyObjectFromDb($sql);
+        $nextId = self::getObjectFromDb($sql);
+        if (!$nextId) {
+            throw new BgaUserException(self::_("there are no tiles left!"));
+        }
         return $nextId['tile_id'];
     }
 

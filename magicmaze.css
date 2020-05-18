@@ -67,6 +67,13 @@
     }
 */
 
+#timer {
+  position: fixed;
+  left: 0px;
+  top: 5em;
+  background: #fff;
+}
+
 #area_container {
   position: relative;
   width: 100%;
