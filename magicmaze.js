@@ -151,6 +151,7 @@ function placeTile (obj, tile) {
       const key = getKey(x + i, y + j)
       const cellLeft = screenCoords[0] + i * CELL_SIZE
       const cellTop = screenCoords[1] + j * CELL_SIZE
+      /*
       const cellStyle = {
         // class: 'debug',
         style: {
@@ -167,7 +168,11 @@ function placeTile (obj, tile) {
         dispatchClick(obj, evt, tile.tile_id, i, j, i + x, j + y)
       }
       obj.clickableCells.set(key, clickableZone)
+      */
 
+      obj.tileIds.set(key, tile.tile_id)
+      obj.relativexs.set(key, i)
+      obj.relativeys.set(key, j)
       obj.lefts.set(key, cellLeft)
       obj.tops.set(key, cellTop)
       /*
@@ -186,6 +191,7 @@ function drawProperties (obj, properties) {
       const key = getKey(warp.position_x, warp.position_y)
       // XXX: this doesn't work
       // if (key in obj.clickableCells) continue
+      if (obj.clickableCells.has(key)) continue
       const cellLeft = obj.lefts.get(key)
       const cellTop = obj.tops.get(key)
       const clickableZone = dojo.create('div', {
@@ -208,6 +214,30 @@ function drawProperties (obj, properties) {
     for (let i = 0; i < properties.used.length; ++i) {
       const used = properties.used[i]
       drawUsed(obj, used.position_x, used.position_y)
+    }
+  }
+  if (properties.explore) {
+    for (let i = 0; i < properties.explore.length; ++i) {
+      const explore = properties.explore[i]
+      const key = getKey(explore.position_x, explore.position_y)
+      const cellLeft = obj.lefts.get(key)
+      const cellTop = obj.tops.get(key)
+      if (obj.clickableCells.has(key)) continue
+      const el = dojo.create('div', {
+        style: {
+          position: 'absolute',
+          width: CELL_SIZE + 'px',
+          height: CELL_SIZE + 'px',
+          left: cellLeft + 'px',
+          top: cellTop + 'px'
+        }
+      }, $('area_scrollable_oversurface'))
+
+      el.onclick = function (evt) {
+        dispatchClick(obj, evt, obj.tileIds.get(key),
+          obj.relativexs.get(key), obj.relativeys.get(key), false, false)
+      }
+      obj.clickableCells.set(key, el)
     }
   }
 }
@@ -253,6 +283,9 @@ function (dojo, declare) {
     constructor: function () {
       this.lefts = new Map()
       this.tops = new Map()
+      this.tileIds = new Map()
+      this.relativexs = new Map()
+      this.relativeys = new Map()
       this.clickableCells = new Map()
       this.visualCells = new Map()
       this.scrollmap = new ebg.scrollmap() // eslint-disable-line new-cap
