@@ -180,30 +180,35 @@ function placeTile (obj, tile) {
 }
 
 function drawProperties (obj, properties) {
-  for (let i = 0; i < properties.warp.length; ++i) {
-    const warp = properties.warp[i]
-    const key = getKey(warp.position_x, warp.position_y)
-    if (key in obj.clickableCells) continue
-    const cellLeft = obj.lefts.get(key)
-    const cellTop = obj.tops.get(key)
-    const clickableZone = dojo.create('div', {
-      // class: 'debug',
-      style: {
-        position: 'absolute',
-        width: CELL_SIZE + 'px',
-        height: CELL_SIZE + 'px',
-        left: cellLeft + 'px',
-        top: cellTop + 'px'
+  if (properties.warp) {
+    for (let i = 0; i < properties.warp.length; ++i) {
+      const warp = properties.warp[i]
+      const key = getKey(warp.position_x, warp.position_y)
+      // XXX: this doesn't work
+      // if (key in obj.clickableCells) continue
+      const cellLeft = obj.lefts.get(key)
+      const cellTop = obj.tops.get(key)
+      const clickableZone = dojo.create('div', {
+        // class: 'debug',
+        style: {
+          position: 'absolute',
+          width: CELL_SIZE + 'px',
+          height: CELL_SIZE + 'px',
+          left: cellLeft + 'px',
+          top: cellTop + 'px'
+        }
+      }, $('area_scrollable_oversurface'))
+      clickableZone.ondblclick = function (evt) {
+        dispatchMove(obj, -1, [warp.position_x, warp.position_y])
       }
-    }, $('area_scrollable_oversurface'))
-    clickableZone.ondblclick = function (evt) {
-      dispatchMove(obj, -1, [warp.position_x, warp.position_y])
+      obj.clickableCells.set(key, clickableZone)
     }
-    obj.clickableCells.set(key, clickableZone)
   }
-  for (let i = 0; i < (properties.used ? properties.used.length : 0); ++i) {
-    const used = properties.used[i]
-    drawUsed(obj, used.position_x, used.position_y)
+  if (properties.used) {
+    for (let i = 0; i < properties.used.length; ++i) {
+      const used = properties.used[i]
+      drawUsed(obj, used.position_x, used.position_y)
+    }
   }
 }
 
