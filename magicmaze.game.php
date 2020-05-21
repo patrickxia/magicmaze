@@ -653,7 +653,7 @@ SQL;
                 "flips" => self::incGameStateValue("num_flips", 1),
                 "deadline" => $newDeadline
             ));
-        } else if ($this->isBarbarian($res['token_id']) && res['property'] === "camera") {
+        } else if ($this->isBarbarian($res['token_id']) && $res['property'] === "camera") {
             $sql = <<<SQL
             update properties
             set property = 'used'
