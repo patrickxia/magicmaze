@@ -53,6 +53,5 @@ function getRoles (nPlayers, player, flips) {
       res[2] = 'RE'
       res[3] = 'N'
   }
-  console.log(res)
   return res[(player + flips) % nPlayers]
 }

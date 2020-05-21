@@ -116,7 +116,6 @@ function setupAbilities (dojo, obj, flips) {
             flips)
   }
   for (const c of VALID_MOVES) {
-    console.log(c)
     const node = dojo.query(`.action${c}`)
     if (obj.abilities[obj.player_id].indexOf(c) === -1) {
       node.style('background', '#000')
@@ -183,7 +182,6 @@ function placeTile (obj, tile) {
 function drawProperties (obj, properties) {
   for (let i = 0; i < properties.warp.length; ++i) {
     const warp = properties.warp[i]
-    console.log(warp)
     const key = getKey(warp.position_x, warp.position_y)
     if (key in obj.clickableCells) continue
     const cellLeft = obj.lefts.get(key)
@@ -210,7 +208,6 @@ function drawProperties (obj, properties) {
 }
 
 function drawUsed (obj, x, y) {
-  console.log(`what: ${x}, ${y}`)
   const key = getKey(x, y)
   const cellLeft = obj.lefts.get(key)
   const cellTop = obj.tops.get(key)
@@ -308,7 +305,6 @@ function (dojo, declare) {
       for (const key in gamedatas.tokens) {
         placeCharacter(this, gamedatas.tokens[key])
         const tokenId = gamedatas.tokens[key].token_id
-        console.log(tokenId)
         const base = `#controls${tokenId} `
         dojo.connect(document.querySelector(base + '> tbody > tr:nth-child(1) > td '), 'onclick', this, function (evt) {
           // up
@@ -347,22 +343,18 @@ function (dojo, declare) {
     },
 
     onMoveTop: function (evt) {
-      console.log('onMoveTop')
       evt.preventDefault()
       this.scrollmap.scroll(0, 300)
     },
     onMoveLeft: function (evt) {
-      console.log('onMoveLeft')
       evt.preventDefault()
       this.scrollmap.scroll(300, 0)
     },
     onMoveRight: function (evt) {
-      console.log('onMoveRight')
       evt.preventDefault()
       this.scrollmap.scroll(-300, 0)
     },
     onMoveDown: function (evt) {
-      console.log('onMoveDown')
       evt.preventDefault()
       this.scrollmap.scroll(0, -300)
     },
@@ -538,7 +530,6 @@ function (dojo, declare) {
       drawUsed(this, notif.args.x, notif.args.y)
     },
     setupNotifications: function () {
-      console.log('notifications subscriptions setup')
       dojo.subscribe('tileAdded', this, 'notif_tileAdded')
       dojo.subscribe('tokenMoved', this, 'notif_tokenMoved')
       dojo.subscribe('nextTile', this, 'notif_nextTile')
