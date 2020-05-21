@@ -449,6 +449,21 @@ SQL;
         }
     }
 
+    function checkDeadline() {
+        $deadline = floatval(self::getGameStateValue("timer_deadline_micros"));
+        if ($deadline === -1.) {
+            $new_deadline = microtime(true) + TIMER_VALUE;
+            self::setGameStateValue("timer_deadline_micros", $new_deadline);
+            $this->notifyAllPlayers("newDeadline", clienttranslate("Timer started!"), array(
+                "deadline" => $new_deadline
+            ));
+        } else if (microtime(true) > $deadline + TIMER_SLOP) {
+            $this->gamestate->nextState('lose');
+            $this->notifyAllPlayers("message", clienttranslate("Oh no! You ran out of time."), array());
+            return;
+        }
+    }
+
     function attemptWarp($x, $y) {
         $this->checkOk("P");
         $this->checkAction("warp");
@@ -473,6 +488,7 @@ SQL;
         if (self::DbAffectedRow() === 0) {
             throw new BgaUserException( self::_("you can't warp there") );
         }
+        $this->checkDeadline();
         // TODO: timestamp this
         $sql = "select token_id, position_x, position_y from tokens where position_x = $x and position_y = $y";
         $res = self::getNonEmptyObjectFromDb($sql);
@@ -490,7 +506,7 @@ SQL;
         if (self::DbAffectedRow() === 0) {
             throw new BgaUserException( self::_("invalid escalator operation") );
         }
-
+        $this->checkDeadline();
         $sql = "select position_x, position_y from tokens where token_id = $token_id";
         $res = self::getNonEmptyObjectFromDb($sql);
         self::notifyAllPlayers("tokenMoved", clienttranslate('token moved'), array(
@@ -537,19 +553,7 @@ SQL;
         }
         $res->close();
 
-        $deadline = floatval(self::getGameStateValue("timer_deadline_micros"));
-        if ($deadline === -1.) {
-            $new_deadline = microtime(true) + TIMER_VALUE;
-            self::setGameStateValue("timer_deadline_micros", $new_deadline);
-            $this->notifyAllPlayers("newDeadline", clienttranslate("Timer started!"), array(
-                "deadline" => $new_deadline
-            ));
-        } else if (microtime(true) > $deadline + TIMER_SLOP) {
-            $this->gamestate->nextState('lose');
-            $this->notifyAllPlayers("message", clienttranslate("Oh no! You ran out of time."), array());
-            return;
-        }
- 
+        $this->checkDeadline();
 
         $newx = $oldx + $x;
         $newy = $oldy + $y;
