@@ -464,6 +464,10 @@ where
   and p.position_y = $y
   and not t.locked
   and p.property = 'warp' 
+  and not exists (
+      select 1 from (select * from tokens for update) t2 where
+      t2.position_x = p.position_x and t2.position_y = p.position_y
+  )
 SQL;
         self::DbQuery($sql);
         if (self::DbAffectedRow() === 0) {
