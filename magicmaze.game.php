@@ -398,6 +398,9 @@ class MagicMaze extends Table
         // goyp
         return intval($token_id) === 1;
     }
+    function isBarbarian($token_id){
+        return intval($token_id) === 2;
+    }
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -470,8 +473,9 @@ SQL;
         } else if (microtime(true) > $deadline + TIMER_SLOP) {
             $this->gamestate->nextState('lose');
             $this->notifyAllPlayers("message", clienttranslate("Oh no! You ran out of time."), array());
-            return;
+            return FALSE;
         }
+        return TRUE;
     }
 
     function attemptWarp($x, $y) {
@@ -498,7 +502,9 @@ SQL;
         if (self::DbAffectedRow() === 0) {
             throw new BgaUserException( self::_("you can't warp there") );
         }
-        $this->checkDeadline();
+        if ($this->checkDeadline() === FALSE) {
+            return;
+        }
         // TODO: timestamp this
         $sql = "select token_id, position_x, position_y from tokens where position_x = $x and position_y = $y";
         $res = self::getNonEmptyObjectFromDb($sql);
@@ -516,7 +522,9 @@ SQL;
         if (self::DbAffectedRow() === 0) {
             throw new BgaUserException( self::_("invalid escalator operation") );
         }
-        $this->checkDeadline();
+        if ($this->checkDeadline() === FALSE) {
+            return;
+        }
         $sql = "select position_x, position_y from tokens where token_id = $token_id";
         $res = self::getNonEmptyObjectFromDb($sql);
         self::notifyAllPlayers("tokenMoved", clienttranslate('token moved'), array(
@@ -563,7 +571,9 @@ SQL;
         }
         $res->close();
 
-        $this->checkDeadline();
+        if ($this->checkDeadline() === FALSE) {
+            return;
+        }
 
         $newx = $oldx + $x;
         $newy = $oldy + $y;
@@ -611,7 +621,7 @@ SQL;
         // XXX roundtrips
         $sql = <<<SQL
         select
-            t.position_x, t.position_y, p.property
+            t.token_id, t.position_x, t.position_y, p.property
         from
             tokens t
             left join
@@ -642,6 +652,18 @@ SQL;
             self::notifyAllPlayers("newDeadline", clienttranslate('timer flipped!'), array(
                 "flips" => self::incGameStateValue("num_flips", 1),
                 "deadline" => $newDeadline
+            ));
+        } else if ($this->isBarbarian($res['token_id']) && res['property'] === "camera") {
+            $sql = <<<SQL
+            update properties
+            set property = 'used'
+            where position_x = $res[position_x]
+            and position_y = $res[position_y]
+SQL;
+            self::DbQuery($sql);
+            self::notifyAllPlayers("newUsed", '', array(
+                "x" => $res['position_x'],
+                "y" => $res['position_y']
             ));
         }
         // XXX conflicts, need a lot better than this (possibly timestamp the
