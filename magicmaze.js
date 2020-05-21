@@ -301,6 +301,9 @@ function (dojo, declare) {
       }
 
       drawProperties(this, gamedatas.properties)
+      if (gamedatas.next_tile) {
+        previewNextTile(this, gamedatas.next_tile)
+      }
 
       for (const key in gamedatas.tokens) {
         placeCharacter(this, gamedatas.tokens[key])

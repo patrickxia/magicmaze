@@ -158,8 +158,16 @@ class MagicMaze extends Table
         $result['players'] = self::getCollectionFromDb( $sql );
         $sql = "select tile_id tile_id, position_x, position_y, rotation from tiles where placed";
         $result['tiles'] = self::getCollectionFromDb($sql);
-        $sql = "select token_id, position_x, position_y from tokens";
+        $sql = "select token_id, position_x, position_y, locked from tokens";
         $result['tokens'] = self::getCollectionFromDb($sql);
+        foreach ($result['tokens'] as $token_id => $values) {
+            if ($values['locked']) {
+                $result['next_tile'] = array();
+                $result['next_tile']['tile_id'] = $this->nextAvailableTile();
+            break;
+            }
+        }
+
         // TODO: We can lower the roundtrips here but this is only on a full load...
         $sql = "select position_x, position_y, token_id from properties where property = 'warp'";
         $result['properties']['warp'] = self::getObjectListFromDB($sql);
@@ -396,11 +404,10 @@ class MagicMaze extends Table
 //////////// Player actions
 //////////// 
     function nextAvailableTile() {
-        // TODO throw the correct exception (BgaUserException instead of SQL error)
         $sql = "select tile_id from tiles where not placed order by tile_order limit 1 for update";
         $nextId = self::getObjectFromDb($sql);
         if (!$nextId) {
-            throw new BgaUserException(self::_("there are no tiles left!"));
+            return -1;
         }
         return $nextId['tile_id'];
     }
@@ -417,6 +424,9 @@ class MagicMaze extends Table
         // TODO: this kind of sucks UI wise, display a little "locked" icon
         // TODO: clicking twice on explore should place
         $next = $this->nextAvailableTile();
+        if ($next === -1) {
+            throw new BgaUserException(self::_("there are no tiles left!"));
+        }
 
         self::notifyAllPlayers("nextTile", clienttranslate('next tile available'), array(
             "tile_id" => $next
@@ -652,6 +662,9 @@ SQL;
         }
         // x, y in relative coordinates
         $nextId = $this->nextAvailableTile();
+        if ($nextId === -1) {
+            throw new BgaUserException(self::_("there are no tiles left!"));
+        }
         // Only valid exit tiles are at
         //  20 (no rotation)
         //  32 (90 degree rotation)
