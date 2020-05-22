@@ -25,6 +25,8 @@ define ("TIMER_VALUE", 180);
 // Be nice to the players: let them overshoot their timers by a tiny bit.
 define ("TIMER_SLOP", 2);
 
+define ("MAGE", 3);
+
 function getKey($inx, $iny) {
     return "${inx}_${iny}";
 }
@@ -60,6 +62,7 @@ class MagicMaze extends Table
         self::initGameStateLabels( array( 
             "timer_deadline_micros" => 10,
             "num_flips" => 11,
+            "mage_status" => 12,
             //    "my_first_game_variant" => 100,
             //    "my_second_game_variant" => 101,
         ) );
@@ -128,6 +131,8 @@ class MagicMaze extends Table
 
         // Init global values with their initial values
         self::setGameStateInitialValue("timer_deadline_micros", -1);
+        self::setGameStateInitialValue("num_flips", 0);
+        self::setGameStateInitialValue("mage_status", 0);
        
         // Init game statistics
         // (note: statistics used in this file must be defined in your stats.inc.php file)
@@ -421,11 +426,8 @@ class MagicMaze extends Table
         return [$res['position_x'], $res['position_y']];
     }
 
-    function attemptExplore($tokenId) {
-        $this->checkOk("H");
-        // TODO: mage action
-        // TODO: this kind of sucks UI wise, display a little "locked" icon
-        // TODO: clicking twice on explore should place
+
+    function informNextTile() {
         $next = $this->nextAvailableTile();
         if ($next === -1) {
             throw new BgaUserException(self::_("there are no tiles left!"));
@@ -434,6 +436,43 @@ class MagicMaze extends Table
         self::notifyAllPlayers("nextTile", clienttranslate('next tile available'), array(
             "tile_id" => $next
         ));
+    }
+
+    function attemptWizExplore() {
+        $mage = MAGE;
+        $sql = <<<SQL
+        update tokens t
+        join properties p
+        on t.position_x = p.position_x and t.position_y = p.position_y
+        set
+          t.locked = true
+        where
+          t.token_id = $mage
+          and not t.locked
+          and p.property = 'crystal'
+          and not exists (
+              select 1 from (select * from tokens for update) t2 where locked
+          )
+SQL;
+        self::DbQuery($sql);
+        if (self::DbAffectedRow() === 0) {
+            return FALSE;
+        }
+        self::setGameStateValue("mage_status", 1);
+        return TRUE;
+    }
+
+    function attemptExplore($tokenId) {
+        $this->checkOk("H");
+        // TODO: mage action
+        // TODO: this kind of sucks UI wise, display a little "locked" icon
+        // TODO: clicking twice on explore should place
+        $this->informNextTile();
+        if (intval($tokenId) === MAGE) {
+            if ($this->attemptWizExplore()) {
+                return;
+            }
+        }
         $sql = <<<SQL
 update tokens t
 join properties p
@@ -727,27 +766,67 @@ SQL;
         $newx = $coords[0] + $dx[$key][0];
         $newy = $coords[1] + $dx[$key][1];
         $rotation = $rotations[$key];
-        $sql = <<<SQL
-        update tokens t
-        join properties p
-        on t.token_id = p.token_id
-        set 
-          t.locked = false,
-          t.dummy = true
-        where
-          p.position_x = t.position_x
-          and p.position_y = t.position_y
-          and p.position_x = $oldx
-          and p.position_y = $oldy
-          and (p.property = 'explore')
+
+        $drawNew = FALSE;
+        $mageStatus = intval(self::getGameStateValue("mage_status"));
+        if ($mageStatus === 0) {
+            $sql = <<<SQL
+            update tokens t
+            join properties p
+            on t.token_id = p.token_id
+            set
+            t.locked = false,
+            t.dummy = true
+            where
+            p.position_x = t.position_x
+            and p.position_y = t.position_y
+            and p.position_x = $oldx
+            and p.position_y = $oldy
+            and (p.property = 'explore')
 SQL;
-        self::dbQuery($sql);
-        if (self::DbAffectedRow() === 0) {
-            throw new BgaUserException( self::_("you can't place a tile there") );
+            self::dbQuery($sql);
+            if (self::DbAffectedRow() === 0) {
+                throw new BgaUserException( self::_("you can't place a tile there") );
+            }
+        } else if ($mageStatus === 1) {
+            // TODO: allow user to opt out? I don't know why they would...
+            $drawNew = TRUE;
+            self::setGameStateValue("mage_status", 2);
+        } else {
+            $mage = MAGE;
+            $sql = <<<SQL
+            update tokens t
+            join properties p
+            on t.position_x = p.position_x and t.position_y = p.position_y
+            set p.property = 'used'
+            where t.token_id = 3
+SQL;
+            self::dbQuery($sql);
+            $sql = <<<SQL
+            select
+                t.position_x, t.position_y
+            from
+                tokens t
+                join
+                properties p
+                on t.position_x = p.position_x and t.position_y = p.position_y
+            where
+                t.token_id = 3 and p.property = "used"
+SQL;
+            $res = self::getNonEmptyObjectFromDb($sql);
+            self::notifyAllPlayers("newUsed", '', array(
+                "x" => $res['position_x'],
+                "y" => $res['position_y']
+            ));
         }
 
         $this->createTile($nextId, $newx, $newy, $rotation);
-        self::dbQuery("update tokens set locked = false, dummy = false");
+
+        if ($drawNew) {
+            $this->informNextTile();
+        } else {
+            self::dbQuery("update tokens set locked = false, dummy = false");
+        }
     }
 
     function createTile($nextId, $newx, $newy, $rotation) {

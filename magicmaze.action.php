@@ -78,7 +78,6 @@
       $this->game->attemptExplore($id);
       self::ajaxResponse();
     }
-    
 
     public function nuke() {
       self::setAjaxMode();
