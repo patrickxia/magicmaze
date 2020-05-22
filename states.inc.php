@@ -77,7 +77,8 @@ $machinestates = array(
     		"name" => "escape",
     		"description" => clienttranslate('Escape with the items!'),
     		"descriptionmyturn" => clienttranslate('Escape with the items!'),
-    		"type" => "multipleactiveplayer",
+            "type" => "multipleactiveplayer",
+            "updateGameProgression" => true,
     		"possibleactions" => array( "win", "lose"  ),
     		"transitions" => array( "win" => 99,  "lose" => 99)
     ),

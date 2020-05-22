@@ -212,9 +212,7 @@ class MagicMaze extends Table
     */
     function getGameProgression()
     {
-        // TODO: compute and return the game progression
-
-        return 0;
+        return intval(self::getGameStateValue("num_flips")) * 25;
     }
 
 
@@ -799,7 +797,7 @@ SQL;
             join properties p
             on t.position_x = p.position_x and t.position_y = p.position_y
             set p.property = 'used'
-            where t.token_id = 3
+            where t.token_id = $mage
 SQL;
             self::dbQuery($sql);
             $sql = <<<SQL
