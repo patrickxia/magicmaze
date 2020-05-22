@@ -243,7 +243,7 @@ tile_id,cell,walls,escalator,properties
 16,10,N,,
 16,20,NES,,camera
 16,30,NEWS,,
-16,01,E,,
+16,01,E,,oexplore
 16,11,W,,
 16,21,NS,,
 16,31,NE,,

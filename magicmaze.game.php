@@ -364,22 +364,22 @@ class MagicMaze extends Table
                     // goyp
                     $color = "NULL";
                     $type = "";
-                    if (strpos($tile["properties"], "timer") !== FALSE) {
-                        $type = "timer";
-                    } else {
-                        $lookup = [
-                            "g" => 0,
-                            "o" => 1,
-                            "y" => 2,
-                            "p" => 3
-                        ];
+                    $lookup = [
+                        "g" => 0,
+                        "o" => 1,
+                        "y" => 2,
+                        "p" => 3
+                    ];
+                    if (array_key_exists($tile["properties"][0], $lookup)) {
                         $color = $lookup[$tile["properties"][0]];
                         $type = substr($tile["properties"], 1);
-                        $ret[$type][] = [
-                            "position_x" => $oldx,
-                            "position_y" => $oldy
-                        ];
+                    } else {
+                        $type = $tile["properties"];
                     }
+                    $ret[$type][] = [
+                        "position_x" => $oldx,
+                        "position_y" => $oldy
+                    ];
                     $propertystring .= "($oldx, $oldy, $color, '$type')";
                 }
             }
@@ -632,14 +632,21 @@ SQL;
 SQL;
         $res = self::getNonEmptyObjectFromDb($sql);
         if ($res['property'] === "timer") {
-            // TODO: camera restriction
             $sql = <<<SQL
             update properties
             set property = 'used'
             where position_x = $res[position_x]
             and position_y = $res[position_y]
+            and exists
+              (select
+                count(*)
+              from (select * from properties where property = 'camera') p
+              having count(*) < 2)
 SQL;
             self::DbQuery($sql);
+            if (self::DbAffectedRow() === 0) {
+                throw new BgaUserException( self::_("can't move there: security cameras") );
+            }
             $newDeadline = 2 * microtime(true) -
                 self::getGameStateValue("timer_deadline_micros") +
                 TIMER_VALUE;
