@@ -79,6 +79,13 @@
       self::ajaxResponse();
     }
 
+    public function notify() {
+      self::setAjaxMode();
+      $id = self::getArg("player_id", AT_int, true);
+      $this->game->setAttentionPawn($id);
+      self::ajaxResponse();
+    }
+
     public function nuke() {
       self::setAjaxMode();
       $this->game->nukeIt();

@@ -281,6 +281,62 @@
   position: absolute;
 }
 
+.redpawn {
+  width: 30px;
+  height: 30px;
+  background: url('img/30_30_meeple.png') -180px 0;
+  display: inline-block;
+}
+
+.abilityN {
+  width: 30px;
+  height: 24px;
+  background: url('img/dirs.png') 0px 0;
+  display: inline-block;
+}
+
+.abilityS {
+  width: 30px;
+  height: 24px;
+  background: url('img/dirs.png') -30px 0;
+  display: inline-block;
+}
+
+.abilityW {
+  width: 30px;
+  height: 24px;
+  background: url('img/dirs.png') -60px 0;
+  display: inline-block;
+}
+
+.abilityE {
+  width: 30px;
+  height: 24px;
+  background: url('img/dirs.png') -90px 0;
+  display: inline-block;
+}
+
+.abilityP {
+  width: 30px;
+  height: 24px;
+  background: url('img/dirs.png') -120px 0;
+  display: inline-block;
+}
+
+.abilityR {
+  width: 30px;
+  height: 24px;
+  background: url('img/dirs.png') -150px 0;
+  display: inline-block;
+}
+
+.abilityH {
+  width: 30px;
+  height: 24px;
+  background: url('img/dirs.png') -180px 0;
+  display: inline-block;
+}
+
 .used {
   position: absolute;
   width: 55px;

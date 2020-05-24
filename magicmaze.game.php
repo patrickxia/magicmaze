@@ -64,6 +64,7 @@ class MagicMaze extends Table
             "timer_deadline_micros" => 10,
             "num_flips" => 11,
             "mage_status" => 12,
+            "attention_pawn" => 13,
             //    "my_first_game_variant" => 100,
             //    "my_second_game_variant" => 101,
         ) );
@@ -134,6 +135,7 @@ class MagicMaze extends Table
         self::setGameStateInitialValue("timer_deadline_micros", -1);
         self::setGameStateInitialValue("num_flips", 0);
         self::setGameStateInitialValue("mage_status", 0);
+        self::setGameStateInitialValue("attention_pawn", -1);
        
         // Init game statistics
         // (note: statistics used in this file must be defined in your stats.inc.php file)
@@ -160,7 +162,7 @@ class MagicMaze extends Table
         $current_player_id = self::getCurrentPlayerId();
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
-        $sql = "SELECT player_id id, player_no player_no FROM player ";
+        $sql = "SELECT player_id id, player_no player_no, player_name player_name FROM player ";
         $result['players'] = self::getCollectionFromDb( $sql );
         $sql = "select tile_id tile_id, position_x, position_y, rotation from tiles where placed";
         $result['tiles'] = self::getCollectionFromDb($sql);
@@ -186,6 +188,10 @@ class MagicMaze extends Table
         $deadline = floatval(self::getGameStateValue("timer_deadline_micros"));
         if ($deadline !== -1.) {
             $result['deadline'] = $deadline;
+        }
+        $attention = intval(self::getGameStateValue("attention_pawn"));
+        if ($attention !== -1) {
+            $result['attention_pawn'] = $attention;
         }
 
         return $result;
@@ -410,6 +416,15 @@ class MagicMaze extends Table
 //////////////////////////////////////////////////////////////////////////////
 //////////// Player actions
 //////////// 
+    function setAttentionPawn($id) {
+        self::setGameStateValue("attention_pawn", $id);
+        $players = self::loadPlayersBasicInfos();
+        self::notifyAllPlayers("attention", clienttranslate('Player ${player_name} is asked to pay attention by ${src_player}'), array(
+            "player_id" => $id,
+            "player_name" => $players[$id]["player_name"],
+            "src_player" => self::getCurrentPlayerName()
+        ));
+    }
     function nextAvailableTile() {
         $sql = "select tile_id from tiles where not placed order by tile_order limit 1 for update";
         $nextId = self::getObjectFromDb($sql);

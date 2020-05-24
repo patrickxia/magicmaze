@@ -85,6 +85,13 @@ Next explore tile:
 <tr><td colspan="3" class="actionR">Escalator</td></tr>
 </table>
 
+<div id="playerlist">
+
+</div>
+
+<div id="giganticRedPawn">
+</div>
+
 
 <script type="text/javascript">
 

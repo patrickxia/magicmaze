@@ -72,7 +72,12 @@ function dispatchClick (obj, evt, tileId, relativex, relativey, x, y) {
 function dispatchMove (obj, tokenId, arr) {
   let arg = {}
   let path = ''
-  if (tokenId === -1) {
+  if (tokenId == null) {
+    path = 'magicmaze/magicmaze/notify.html'
+    arg = {
+      player_id: arr[0]
+    }
+  } else if (tokenId === -1) {
     path = '/magicmaze/magicmaze/attemptWarp.html'
     arg = {
       x: arr[0],
@@ -106,14 +111,34 @@ function dispatchMove (obj, tokenId, arr) {
     }, function (error) { console.log(error) })
 }
 
-function setupAbilities (dojo, obj, flips) {
-  for (var playerId in obj.players) {
+function setupAbilities (dojo, obj) {
+  $('playerlist').innerText = ''
+  for (const playerId in obj.players) {
     const player = obj.players[playerId]
-    obj.abilities[playerId] =
+    const playerEl = dojo.create('div', {
+      innerHTML: `${player.player_name}: `
+    }, $('playerlist'))
+    const abilities =
           getRoles(
             Object.keys(obj.players).length,
             player.player_no,
-            flips)
+            obj.flips)
+    obj.abilities[playerId] = abilities
+    for (const ability of abilities) {
+      dojo.create('div', {
+        class: `ability${ability}`
+      }, playerEl)
+    }
+    console.log(obj)
+    console.log(playerId)
+    if (parseInt(obj.attention_pawn) === parseInt(playerId)) {
+      dojo.create('div', {
+        class: 'redpawn'
+      }, playerEl)
+    }
+    playerEl.ondblclick = function (evt) {
+      dispatchMove(obj, null, [playerId])
+    }
   }
   for (const c of VALID_MOVES) {
     const node = dojo.query(`.action${c}`)
@@ -317,8 +342,13 @@ function (dojo, declare) {
       this.abilities = []
       this.players = gamedatas.players
       // Setting up player boards
+      if (gamedatas.attention_pawn) {
+        this.attention_pawn = gamedatas.attention_pawn
+      }
 
-      setupAbilities(dojo, this, gamedatas.flips)
+      this.flips = gamedatas.flips
+
+      setupAbilities(dojo, this)
       // TODO: Set up your game interface here, according to "gamedatas"
       if (gamedatas.deadline) {
         this.deadline = gamedatas.deadline
@@ -560,12 +590,19 @@ function (dojo, declare) {
     },
     notif_newDeadline: function (notif) {
       this.deadline = notif.args.deadline
+      this.flips = notif.args.flips
       if (notif.args.flips) {
-        setupAbilities(dojo, this, notif.args.flips)
+        setupAbilities(dojo, this)
       }
     },
     notif_newUsed: function (notif) {
       drawUsed(this, notif.args.x, notif.args.y)
+    },
+    notif_attention: function (notif) {
+      this.attention_pawn = notif.args.player_id
+      setupAbilities(dojo, this)
+      // XXX need to add a blinking red border when notif_attention is called
+      // and the player Id matches current player ID
     },
     setupNotifications: function () {
       dojo.subscribe('tileAdded', this, 'notif_tileAdded')
@@ -573,6 +610,8 @@ function (dojo, declare) {
       dojo.subscribe('nextTile', this, 'notif_nextTile')
       dojo.subscribe('newDeadline', this, 'notif_newDeadline')
       dojo.subscribe('newUsed', this, 'notif_newUsed')
+      dojo.subscribe('attention', this, 'notif_attention')
+
       // TODO: here, associate your game notifications with local methods
 
       // Example 1: standard notification handling
