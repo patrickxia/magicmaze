@@ -72,6 +72,7 @@
   left: 0px;
   top: 5em;
   background: #fff;
+  z-index: 1;
 }
 
 #area_container {
