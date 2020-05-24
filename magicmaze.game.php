@@ -25,6 +25,7 @@ define ("TIMER_VALUE", 180);
 // Be nice to the players: let them overshoot their timers by a tiny bit.
 define ("TIMER_SLOP", 2);
 
+define ("ELF", 0);
 define ("MAGE", 3);
 
 function getKey($inx, $iny) {
@@ -462,6 +463,9 @@ SQL;
 
     function attemptExplore($tokenId) {
         $this->checkOk("H");
+        // TODO: write test cases for whether or not we transition states properly
+        // with a wizexplore while an elf is standing at an explore
+        $this->gamestate->nextState('move');
         // TODO: mage action
         // TODO: this kind of sucks UI wise, display a little "locked" icon
         // TODO: clicking twice on explore should place
@@ -492,9 +496,12 @@ SQL;
         }
         if (self::DbAffectedRow() === 1) {
             $sql = <<<SQL
-select position_x, position_y, find_tile(position_x, position_y) tile_id from tokens where locked;
+select token_id, position_x, position_y, find_tile(position_x, position_y) tile_id from tokens where locked;
 SQL;
             $res = self::getNonEmptyObjectFromDb($sql);
+            if ($res['token_id'] === ELF) {
+                $this->gamestate->nextState('talk');
+            }
             $this->placeTileFrom($res['tile_id'], $res['position_x'], $res['position_y'], true);
         }
     }
@@ -546,6 +553,7 @@ SQL;
         $sql = "select token_id, position_x, position_y from tokens where position_x = $x and position_y = $y";
         $res = self::getNonEmptyObjectFromDb($sql);
 
+        $this->gamestate->nextState('warp');
         self::notifyAllPlayers("tokenMoved", clienttranslate('token moved'), array(
             "token_id" => $res["token_id"],
             "position_x" => $res["position_x"],
@@ -564,6 +572,7 @@ SQL;
         }
         $sql = "select position_x, position_y from tokens where token_id = $token_id";
         $res = self::getNonEmptyObjectFromDb($sql);
+        $this->gamestate->nextState('move');
         self::notifyAllPlayers("tokenMoved", clienttranslate('token moved'), array(
             "token_id" => $token_id,
             "position_x" => $res["position_x"],
@@ -572,6 +581,7 @@ SQL;
     }
 
     function attemptMove($token_id, $x, $y) {
+        $this->gamestate->nextState('move');
         // TODO: the move should be a string and we should not parse this nonsense
         // (legacy of how this was developed)
         switch ($x.$y) {
@@ -643,6 +653,7 @@ SQL;
 SQL;
         self::DbQuery($sql);
 
+        // TODO maybe move this logic down and refactor it out of here...
         if (self::DbAffectedRow() === 4) {
             if ($this->checkAction('steal', false)) {
                 $this->gamestate->nextState('steal');
@@ -693,6 +704,7 @@ SQL;
                 "x" => $res['position_x'],
                 "y" => $res['position_y']
             ));
+            $this->gamestate->nextState('talk');
             self::notifyAllPlayers("newDeadline", clienttranslate('timer flipped!'), array(
                 "flips" => self::incGameStateValue("num_flips", 1),
                 "deadline" => $newDeadline
@@ -721,6 +733,7 @@ SQL;
     }
 
     function placeTileFrom($tile_id, $x, $y, $is_absolute=false) {
+        $this->gamestate->nextState('move');
         $coords = $this->tileCoords($tile_id);
         if ($is_absolute) {
             $x -= $coords[0];
@@ -769,12 +782,9 @@ SQL;
         $mageStatus = intval(self::getGameStateValue("mage_status"));
         if ($mageStatus === 0) {
             $sql = <<<SQL
-            update tokens t
+            select t.token_id from tokens t
             join properties p
             on t.token_id = p.token_id
-            set
-            t.locked = false,
-            t.dummy = true
             where
             p.position_x = t.position_x
             and p.position_y = t.position_y
@@ -782,9 +792,12 @@ SQL;
             and p.position_y = $oldy
             and (p.property = 'explore')
 SQL;
-            self::dbQuery($sql);
-            if (self::DbAffectedRow() === 0) {
+            $tokenId = self::getObjectFromDb($sql);
+            if (!$tokenId) {
                 throw new BgaUserException( self::_("you can't place a tile there") );
+            }
+            if (intval($tokenId['token_id']) === ELF) {
+                $this->gamestate->nextState('talk');
             }
         } else if ($mageStatus === 1) {
             // TODO: allow user to opt out? I don't know why they would...
