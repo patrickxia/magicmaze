@@ -527,6 +527,7 @@ SQL;
             $new_deadline = microtime(true) + TIMER_VALUE;
             self::setGameStateValue("timer_deadline_micros", $new_deadline);
             $this->notifyAllPlayers("newDeadline", clienttranslate("Timer started!"), array(
+                "flips" => self::getGameStateValue("num_flips"),
                 "deadline" => $new_deadline
             ));
         } else if (microtime(true) > $deadline + TIMER_SLOP) {
