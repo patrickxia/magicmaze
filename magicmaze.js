@@ -129,8 +129,6 @@ function setupAbilities (dojo, obj) {
         class: `ability${ability}`
       }, playerEl)
     }
-    console.log(obj)
-    console.log(playerId)
     if (parseInt(obj.attention_pawn) === parseInt(playerId)) {
       dojo.create('div', {
         class: 'redpawn'
@@ -343,7 +341,7 @@ function (dojo, declare) {
       this.players = gamedatas.players
       // Setting up player boards
       if (gamedatas.attention_pawn) {
-        this.attention_pawn = gamedatas.attention_pawn
+        this.attention_pawn = parseInt(gamedatas.attention_pawn)
       }
 
       this.flips = gamedatas.flips

@@ -352,3 +352,16 @@ td {
   padding: 5px;
   text-align: center;
 }
+/* goyp */
+#controls0, #controls0 > *, #controls0 > * > * {
+  background-color: #0f0;
+}
+#controls1, #controls1 > *, #controls1 > * > * {
+  background-color: #f90;
+}
+#controls2, #controls2 > *, #controls2 > * > * {
+  background-color: #ff0;
+}
+#controls3, #controls3 > *, #controls > *  > * {
+  background-color: #90f;
+}
