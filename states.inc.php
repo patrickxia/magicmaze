@@ -2,7 +2,7 @@
 /**
  *------
  * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
- * MagicMaze implementation : © <Your name here> <Your email address here>
+ * MagicMaze implementation : © Patrick Xia <patrick.xia@gmail.com>
  *
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
@@ -15,13 +15,6 @@
  */
 
 /*
-   Game state machine is a tool used to facilitate game developpement by doing common stuff that can be set up
-   in a very easy way from this configuration file.
-
-   Please check the BGA Studio presentation about game state to understand this, and associated documentation.
-
-   Summary:
-
    States types:
    _ activeplayer: in this type of state, we expect some action from the active player.
    _ multipleactiveplayer: in this type of state, we expect some action from multiple players (the active players)
@@ -45,9 +38,9 @@
            client side to be used on "onEnteringState" or to set arguments in the gamestate description.
    _ updateGameProgression: when specified, the game progression is updated (=> call to your getGameProgression
                             method).
-*/
 
 //    !! It is not a good idea to modify this file when a game is running !!
+*/
 
  
 $machinestates = array(
@@ -61,8 +54,6 @@ $machinestates = array(
         "transitions" => array( "" => 2 )
     ),
     
-    // Note: ID=2 => your first state
-
     2 => array(
             "name" => "steal_loud",
             "description" => clienttranslate('Steal the items!'),
@@ -102,31 +93,6 @@ $machinestates = array(
             "transitions" => array( "move" => 5, "talk" => 4, "win" => 99,  "lose" => 99)
     ),
 
-
-    
-/*
-    Examples:
-    
-    2 => array(
-        "name" => "nextPlayer",
-        "description" => '',
-        "type" => "game",
-        "action" => "stNextPlayer",
-        "updateGameProgression" => true,   
-        "transitions" => array( "endGame" => 99, "nextPlayer" => 10 )
-    ),
-    
-    10 => array(
-        "name" => "playerTurn",
-        "description" => clienttranslate('${actplayer} must play a card or pass'),
-        "descriptionmyturn" => clienttranslate('${you} must play a card or pass'),
-        "type" => "activeplayer",
-        "possibleactions" => array( "playCard", "pass" ),
-        "transitions" => array( "playCard" => 2, "pass" => 2 )
-    ), 
-
-*/    
-   
     // Final state.
     // Please do not modify (and do not overload action/args methods).
     99 => array(
@@ -138,6 +104,3 @@ $machinestates = array(
     )
 
 );
-
-
-
