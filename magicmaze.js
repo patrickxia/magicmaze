@@ -547,7 +547,8 @@ function (dojo, declare) {
         {
           tile_id: tileID,
           x: x,
-          y: y
+          y: y,
+          lock: true
         }, this, function (result) {
           console.log(result)
         }, function (error) { console.log(error) })
