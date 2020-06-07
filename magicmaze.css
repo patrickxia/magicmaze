@@ -368,6 +368,7 @@
 .action {
   cursor: pointer;
   z-index: 1;
+  padding: 5px;
 }
 /* temporary crap */
 
