@@ -344,6 +344,27 @@
   /* TODO: get an image here */
   background: #000;
 }
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+#border {
+  /* bgg tries to interfere with this as much as possible. */
+  z-index: 100000;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow: auto;
+  border: 3px solid red;
+  pointer-events: none; 
+  visibility: hidden;
+}
+
 /* temporary crap */
 
 table {border-collapse: collapse; display: inline; }

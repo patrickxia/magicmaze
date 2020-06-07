@@ -53,6 +53,8 @@ Next explore tile:
 </div>
 
 
+<div id="border"></div>
+
 <table id="controls0">
 <tr><td colspan="3" class="actionN">Up</td></tr>
 <tr><td class="actionW">Left</td><td>Green</td><td class="actionE">Right</td></tr>

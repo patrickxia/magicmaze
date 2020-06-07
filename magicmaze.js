@@ -343,6 +343,9 @@ function (dojo, declare) {
       if (gamedatas.attention_pawn) {
         this.attention_pawn = parseInt(gamedatas.attention_pawn)
       }
+      if (parseInt(this.player_id) === this.attention_pawn) {
+        dojo.query('#border').style('visibility', 'visible')
+      }
 
       this.flips = gamedatas.flips
 
@@ -599,8 +602,17 @@ function (dojo, declare) {
     notif_attention: function (notif) {
       this.attention_pawn = notif.args.player_id
       setupAbilities(dojo, this)
-      // XXX need to add a blinking red border when notif_attention is called
-      // and the player Id matches current player ID
+      const el = dojo.query('#border')
+      if (parseInt(notif.args.player_id) === parseInt(this.player_id)) {
+        el.style('animation', 'none')
+        setTimeout(function () {
+          el.style('visibility', 'visible')
+          el.style('animation', 'blink 0.3s')
+          el.style('animation-iteration-count', 10)
+        }, 0)
+      } else {
+        el.style('visibility', 'hidden')
+      }
     },
     setupNotifications: function () {
       dojo.subscribe('tileAdded', this, 'notif_tileAdded')
