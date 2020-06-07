@@ -141,9 +141,9 @@ function setupAbilities (dojo, obj) {
   for (const c of VALID_MOVES) {
     const node = dojo.query(`.action${c}`)
     if (obj.abilities[obj.player_id].indexOf(c) === -1) {
-      node.style('background', '#000')
+      node.style('visibility', 'hidden')
     } else {
-      node.style('background', '')
+      node.style('visibility', 'visible')
     }
   }
 }
@@ -252,7 +252,8 @@ function drawProperties (obj, properties) {
           width: CELL_SIZE + 'px',
           height: CELL_SIZE + 'px',
           left: cellLeft + 'px',
-          top: cellTop + 'px'
+          top: cellTop + 'px',
+          'z-index': 0
         }
       }, $('area_scrollable_oversurface'))
 
@@ -398,6 +399,24 @@ function (dojo, declare) {
         dojo.connect(document.querySelector(base + '> tbody > tr:nth-child(5) > td'), 'onclick', this, function (evt) {
           // escalator
           dispatchMove(this, tokenId, [1])
+        })
+
+        const base2 = `#token${tokenId}`
+        dojo.connect(document.querySelector(base2 + '> .actionN'), 'onclick', this, function (evt) {
+          // up
+          dispatchMove(this, tokenId, [0, -1])
+        })
+        dojo.connect(document.querySelector(base2 + '> .actionW'), 'onclick', this, function (evt) {
+          // left
+          dispatchMove(this, tokenId, [-1, 0])
+        })
+        dojo.connect(document.querySelector(base2 + '> .actionE'), 'onclick', this, function (evt) {
+          // up
+          dispatchMove(this, tokenId, [1, 0])
+        })
+        dojo.connect(document.querySelector(base2 + '> .actionS'), 'onclick', this, function (evt) {
+          // down
+          dispatchMove(this, tokenId, [0, 1])
         })
       }
       dojo.connect($('movetop'), 'onclick', this, 'onMoveTop')

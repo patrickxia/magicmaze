@@ -35,10 +35,30 @@ Time remaining: <div id="timer_numbers">--:--</div>
   <div id="area_scrollable"></div>
   <div id="area_surface"></div>
   <div id="area_scrollable_oversurface">
-    <div id="token0"></div>
-    <div id="token1"></div>
-    <div id="token2"></div>
-    <div id="token3"></div>
+    <div id="token0">
+      <div class="action actionN" style="position: absolute; left: 15px; top: -15px;">↑</div>
+      <div class="action actionE" style="position: absolute; left: 25px; top: 0px;">→</div>
+      <div class="action actionS" style="position: absolute; left: 15px; top: 20px;">↓</div>
+      <div class="action actionW" style="position: absolute; left: -10px; top: 0px;">←</div>
+    </div>
+    <div id="token1">
+      <div class="action actionN" style="position: absolute; left: 15px; top: -15px;">↑</div>
+      <div class="action actionE" style="position: absolute; left: 25px; top: 0px;">→</div>
+      <div class="action actionS" style="position: absolute; left: 15px; top: 20px;">↓</div>
+      <div class="action actionW" style="position: absolute; left: -10px; top: 0px;">←</div>
+    </div>
+    <div id="token2">
+      <div class="action actionN" style="position: absolute; left: 15px; top: -15px;">↑</div>
+      <div class="action actionE" style="position: absolute; left: 25px; top: 0px;">→</div>
+      <div class="action actionS" style="position: absolute; left: 15px; top: 20px;">↓</div>
+      <div class="action actionW" style="position: absolute; left: -10px; top: 0px;">←</div>
+    </div>
+    <div id="token3">
+      <div class="action actionN" style="position: absolute; left: 15px; top: -15px;">↑</div>
+      <div class="action actionE" style="position: absolute; left: 25px; top: 0px;">→</div>
+      <div class="action actionS" style="position: absolute; left: 15px; top: 20px;">↓</div>
+      <div class="action actionW" style="position: absolute; left: -10px; top: 0px;">←</div>
+    </div>
   </div>
   <a id="movetop" href="#"></a>
   <a id="moveleft" href="#"></a>
