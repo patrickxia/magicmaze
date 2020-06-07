@@ -45,11 +45,17 @@ function toScreenCoords (x, y) {
 }
 
 function updateTimer (obj, el) {
-  // TODO: sync server and local time
   if (!obj.deadline) {
     return
   }
 
+  const serverDeadline = $('reflexiontime_value').innerText
+  if (serverDeadline.length > 0) {
+    el.textContent = serverDeadline
+    return
+  }
+
+  // In single-player mode we can't just crib off of the UI.
   const deadline = SECS_TO_MILLIS * obj.deadline
   const left = Math.max(0, Math.floor(MILLIS_TO_SECS * (deadline - Date.now())))
   const minutes = Math.floor(left / 60)

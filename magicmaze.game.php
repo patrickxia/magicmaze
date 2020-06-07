@@ -514,14 +514,35 @@ SQL;
         }
     }
 
+    function setDeadline($newDeadline) {
+        self::setGameStateValue("timer_deadline_micros", $newDeadline);
+        $deadlineInt = intval($newDeadline);
+        $remain = intval($deadlineInt - microtime(true));
+        // Warning! MySQL DATETIME - DATETIME gives you a number in the format yyyyMMddhhmmss.
+        // It's crazy.
+        $sql = <<<SQL
+  update player
+  set player_start_reflexion_time = now(),
+  player_remaining_reflexion_time = $deadlineInt - unix_timestamp(now())
+SQL;
+        self::DbQuery($sql);
+
+        $state = $this->gamestate->state();
+        $players = $this->gamestate->getActivePlayerList();
+        foreach ($players as $player) {
+            $state["reflexion"]["total"][$player] = $remain;
+        }
+        $this->notifyAllPlayers("gameStateChange", "", $state);
+    }
+
     function checkDeadline() {
         $deadline = floatval(self::getGameStateValue("timer_deadline_micros"));
         if ($deadline === -1.) {
-            $new_deadline = microtime(true) + TIMER_VALUE;
-            self::setGameStateValue("timer_deadline_micros", $new_deadline);
+            $newDeadline = microtime(true) + TIMER_VALUE;
+            $this->setDeadline($newDeadline);
             $this->notifyAllPlayers("newDeadline", clienttranslate("Timer started!"), array(
                 "flips" => self::getGameStateValue("num_flips"),
-                "deadline" => $new_deadline
+                "deadline" => $newDeadline
             ));
         } else if (microtime(true) > $deadline + TIMER_SLOP) {
             $this->gamestate->nextState('lose');
@@ -708,7 +729,7 @@ SQL;
                 self::getGameStateValue("timer_deadline_micros") +
                 TIMER_VALUE;
 
-            self::setGameStateValue("timer_deadline_micros", $newDeadline);
+            $this->setDeadline($newDeadline);
             self::notifyAllPlayers("newUsed", '', array(
                 "x" => $res['position_x'],
                 "y" => $res['position_y']
