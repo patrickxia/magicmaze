@@ -294,6 +294,10 @@ function placeCharacter (obj, info) {
   el.style.top = `${top + adjust}px`
 }
 
+function filterZombies (obj) {
+  return Object.fromEntries(Object.entries(obj).filter(function (pair) { return !pair[1].player_zombie }))
+}
+
 define([
   'dojo', 'dojo/_base/declare',
   'ebg/core/gamegui',
@@ -338,7 +342,7 @@ function (dojo, declare) {
       }
 
       this.abilities = []
-      this.players = gamedatas.players
+      this.players = filterZombies(gamedatas.players)
       // Setting up player boards
       if (gamedatas.attention_pawn) {
         this.attention_pawn = parseInt(gamedatas.attention_pawn)
@@ -609,11 +613,17 @@ function (dojo, declare) {
       previewNextTile(this, notif.args)
     },
     notif_newDeadline: function (notif) {
-      this.deadline = notif.args.deadline
-      this.flips = notif.args.flips
+      if (notif.args.deadline) {
+        this.deadline = notif.args.deadline
+      }
       if (notif.args.flips) {
+        this.flips = notif.args.flips
         setupAbilities(dojo, this)
       }
+    },
+    notif_newZombie: function (notif) {
+      this.players = filterZombies(notif.args.players)
+      setupAbilities(dojo, this)
     },
     notif_newUsed: function (notif) {
       drawUsed(this, notif.args.x, notif.args.y)
@@ -638,6 +648,7 @@ function (dojo, declare) {
       dojo.subscribe('tokenMoved', this, 'notif_tokenMoved')
       dojo.subscribe('nextTile', this, 'notif_nextTile')
       dojo.subscribe('newDeadline', this, 'notif_newDeadline')
+      dojo.subscribe('newZombie', this, 'notif_newZombie')
       dojo.subscribe('newUsed', this, 'notif_newUsed')
       dojo.subscribe('attention', this, 'notif_attention')
 

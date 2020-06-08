@@ -140,9 +140,7 @@ class MagicMaze extends Table {
         $result = array();
         $current_player_id = self::getCurrentPlayerId();
         // Get information about players
-        // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
-        $sql = 'SELECT player_id id, player_no player_no, player_name player_name FROM player ';
-        $result['players'] = self::getCollectionFromDb($sql);
+        $result['players'] = self::loadPlayersBasicInfos();
         $sql = 'select tile_id tile_id, position_x, position_y, rotation from tiles where placed';
         $result['tiles'] = self::getCollectionFromDb($sql);
         $sql = 'select token_id, position_x, position_y, locked from tokens';
@@ -178,12 +176,16 @@ class MagicMaze extends Table {
     }
 
     public function checkOk($action) {
-        $players = self::loadPlayersBasicInfos();
+        $players = array_filter(self::loadPlayersBasicInfos(), function ($player) {
+            return !$player['player_zombie'];
+        });
+
         $allowable = getRoles(
             count($players),
             $players[self::getCurrentPlayerId()]['player_no'],
             self::getGameStateValue('num_flips')
         );
+
         if (strpos($allowable, $action) === false) {
             throw new BgaUserException(self::_("you don't have that ability"));
         }
@@ -953,20 +955,13 @@ SQL;
     public function zombieTurn($state, $active_player) {
         $statename = $state['name'];
 
-        if ($state['type'] === 'activeplayer') {
-            switch ($statename) {
-                default:
-                    $this->gamestate->nextState('zombiePass');
-
-                    break;
-            }
-
-            return;
-        }
-
         if ($state['type'] === 'multipleactiveplayer') {
             // Make sure player is in a non blocking status for role turn
             $this->gamestate->setPlayerNonMultiactive($active_player, '');
+            $players = self::loadPlayersBasicInfos();
+            self::notifyAllPlayers('newZombie', '', array(
+                'players' => $players,
+            ));
 
             return;
         }
