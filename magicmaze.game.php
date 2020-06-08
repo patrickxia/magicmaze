@@ -15,8 +15,7 @@ require_once('modules/mm-playerability.php');
 define('TIMER_VALUE', 180);
 // Be nice to the players: let them overshoot their timers by a tiny bit.
 define('TIMER_SLOP', 2);
-
-define('ELF', 0);
+// The mage is special for one SQL query. TODO: Refactor this crap out of here.
 define('MAGE', 3);
 
 function getKey($inx, $iny) {
@@ -71,14 +70,11 @@ class MagicMaze extends Table {
         the game is ready to be played.
     */
     protected function setupNewGame($players, $options = array()) {
-        // Set the colors of the players with HTML color code
-        // The default below is red/green/blue/orange/brown
-        // The number of colors defined here must correspond to the maximum number of players allowed for the gams
         $gameinfos = self::getGameinfos();
         $default_colors = $gameinfos['player_colors'];
 
         // Create players
-        // Note: if you added some extra field on "player" table in the database (dbmodel.sql), you can initialize it there.
+        // (This is boilerplate from the template).
         $sql = 'INSERT INTO player (player_id, player_color, player_canal, player_name, player_avatar) VALUES ';
         $values = array();
         foreach ($players as $player_id => $player) {
@@ -398,12 +394,18 @@ class MagicMaze extends Table {
         return $ret;
     }
 
-    public function isDwarf($token_id) {
-        // goyp
-        return intval($token_id) === 1;
+    // goyp
+    public function isElf($tokenID) {
+        return intval($tokenID) === 0;
     }
-    public function isBarbarian($token_id) {
-        return intval($token_id) === 2;
+    public function isDwarf($tokenID) {
+        return intval($tokenID) === 1;
+    }
+    public function isBarbarian($tokenID) {
+        return intval($tokenID) === 2;
+    }
+    public function isMage($tokenID) {
+        return intval($tokenID) === 3;
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -480,7 +482,7 @@ SQL;
         // TODO: this kind of sucks UI wise, display a little "locked" icon
         // TODO: clicking twice on explore should place
         $this->informNextTile();
-        if (intval($tokenId) === MAGE) {
+        if ($this->isMage($tokenId)) {
             if ($this->attemptWizExplore()) {
                 return;
             }
@@ -509,7 +511,7 @@ SQL;
 select token_id, position_x, position_y, find_tile(position_x, position_y) tile_id from tokens where locked;
 SQL;
             $res = self::getNonEmptyObjectFromDb($sql);
-            if ($res['token_id'] === ELF) {
+            if ($this->isElf($res['token_id'])) {
                 $this->gamestate->nextState('talk');
             }
             $this->placeTileFrom($res['tile_id'], $res['position_x'], $res['position_y'], true);
@@ -834,7 +836,7 @@ SQL;
             if (!$tokenId) {
                 throw new BgaUserException(self::_("you can't place a tile there"));
             }
-            if (intval($tokenId['token_id']) === ELF) {
+            if ($this->isElf($tokenId['token_id'])) {
                 $this->gamestate->nextState('talk');
             }
         } elseif ($mageStatus === 1) {
