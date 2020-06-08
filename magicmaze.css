@@ -79,122 +79,122 @@
 .tile1 {
   width: 256px;
   height: 256px;
-  background: url('img/t.png') -0px 0;
+  background: url('img/t.png') -0px -256px;
 }
 .tile2 {
   width: 256px;
   height: 256px;
-  background: url('img/t.png') -256px 0;
+  background: url('img/t.png') -256px -256px;
 }
 .tile3 {
   width: 256px;
   height: 256px;
-  background: url('img/t.png') -512px 0;
+  background: url('img/t.png') -512px -256px;
 }
 .tile4 {
   width: 256px;
   height: 256px;
-  background: url('img/t.png') -768px 0;
+  background: url('img/t.png') -768px -256px;
 }
 .tile5 {
   width: 256px;
   height: 256px;
-  background: url('img/t.png') -1024px 0;
+  background: url('img/t.png') -1024px -256px;
 }
 .tile6 {
   width: 256px;
   height: 256px;
-  background: url('img/t.png') -1280px 0;
+  background: url('img/t.png') -1280px -256px;
 }
 .tile7 {
   width: 256px;
   height: 256px;
-  background: url('img/t.png') -1536px 0;
+  background: url('img/t.png') -1536px -256px;
 }
 .tile8 {
   width: 256px;
   height: 256px;
-  background: url('img/t.png') -1792px 0;
+  background: url('img/t.png') -1792px -256px;
 }
 .tile9 {
   width: 256px;
   height: 256px;
-  background: url('img/t.png') -2048px 0;
+  background: url('img/t.png') -2048px -256px;
 }
 .tile10 {
   width: 256px;
   height: 256px;
-  background: url('img/t.png') -2304px 0;
+  background: url('img/t.png') -2304px -256px;
 }
 .tile11 {
   width: 256px;
   height: 256px;
-  background: url('img/t.png') -2560px 0;
+  background: url('img/t.png') -2560px -256px;
 }
 .tile12 {
   width: 256px;
   height: 256px;
-  background: url('img/t.png') -2816px 0;
+  background: url('img/t.png') -2816px -256px;
 }
 .tile13 {
   width: 256px;
   height: 256px;
-  background: url('img/t.png') -3072px 0;
+  background: url('img/t.png') -3072px -256px;
 }
 .tile14 {
   width: 256px;
   height: 256px;
-  background: url('img/t.png') -3328px 0;
+  background: url('img/t.png') -256px 0px;
 }
 .tile15 {
   width: 256px;
   height: 256px;
-  background: url('img/t.png') -3584px 0;
+  background: url('img/t.png') -512px 0px;
 }
 .tile16 {
   width: 256px;
   height: 256px;
-  background: url('img/t.png') -3840px 0;
+  background: url('img/t.png') -768px 0px;
 }
 .tile17 {
   width: 256px;
   height: 256px;
-  background: url('img/t.png') -4096px 0;
+  background: url('img/t.png') -1024px 0px;
 }
 .tile18 {
   width: 256px;
   height: 256px;
-  background: url('img/t.png') -4352px 0;
+  background: url('img/t.png') -1280px 0px;
 }
 .tile19 {
   width: 256px;
   height: 256px;
-  background: url('img/t.png') -4608px 0;
+  background: url('img/t.png') -1536px 0px;
 }
 .tile20 {
   width: 256px;
   height: 256px;
-  background: url('img/t.png') -4864px 0;
+  background: url('img/t.png') -1792px 0px;
 }
 .tile21 {
   width: 256px;
   height: 256px;
-  background: url('img/t.png') -5120px 0;
+  background: url('img/t.png') -2048px 0px;
 }
 .tile22 {
   width: 256px;
   height: 256px;
-  background: url('img/t.png') -5376px 0;
+  background: url('img/t.png') -2304px 0px;
 }
 .tile23 {
   width: 256px;
   height: 256px;
-  background: url('img/t.png') -5632px 0;
+  background: url('img/t.png') -2560px 0px;
 }
 .tile24 {
   width: 256px;
   height: 256px;
-  background: url('img/t.png') -5888px 0;
+  background: url('img/t.png') -2816px 0px;
 }
 
 #token0 {

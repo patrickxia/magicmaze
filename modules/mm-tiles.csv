@@ -234,7 +234,7 @@ tile_id,cell,walls,escalator,properties
 15,02,NEWS,,
 15,12,SW,,
 15,22,N,30,
-15,32,NES,,yexplore
+15,32,NES,,ywarp
 15,03,NWS,,crystal
 15,13,N,,
 15,23,SE,,
