@@ -7,11 +7,10 @@
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
  * -----
- * 
+ *
  * states.inc.php
  *
  * MagicMaze game states description
- *
  */
 
 /*
@@ -42,65 +41,64 @@
 //    !! It is not a good idea to modify this file when a game is running !!
 */
 
- 
 $machinestates = array(
 
     // The initial state. Please do not modify.
     1 => array(
-        "name" => "gameSetup",
-        "description" => "",
-        "type" => "manager",
-        "action" => "stGameSetup",
-        "transitions" => array( "" => 2 )
+        'name' => 'gameSetup',
+        'description' => '',
+        'type' => 'manager',
+        'action' => 'stGameSetup',
+        'transitions' => array('' => 2),
     ),
-    
+
     2 => array(
-            "name" => "steal_loud",
-            "description" => clienttranslate('Steal the items!'),
-            "descriptionmyturn" => clienttranslate('Steal the items!'),
-            "type" => "multipleactiveplayer",
-            "updateGameProgression" => true,
-            "possibleactions" => array( "talk", "move", "warp", "steal", "lose" ),
+            'name' => 'steal_loud',
+            'description' => clienttranslate('Steal the items!'),
+            'descriptionmyturn' => clienttranslate('Steal the items!'),
+            'type' => 'multipleactiveplayer',
+            'updateGameProgression' => true,
+            'possibleactions' => array('talk', 'move', 'warp', 'steal', 'lose'),
             // I'm not convinced you can steal the items and remain in the loud state.
-            "transitions" => array( "talk" => 2, "move" => 3, "warp" => 3, "steal" => 5,  "lose" => 99 )
+            'transitions' => array('talk' => 2, 'move' => 3, 'warp' => 3, 'steal' => 5,  'lose' => 99),
     ),
 
     3 => array(
-            "name" => "steal_quiet",
-            "description" => clienttranslate('Quietly steal the items!'),
-            "descriptionmyturn" => clienttranslate('Quietly steal the items!'),
-            "type" => "multipleactiveplayer",
-            "possibleactions" => array( "talk", "move", "warp", "steal", "lose" ),
-            "transitions" => array( "talk" => 2, "move" => 3, "warp" => 3, "steal" => 5,  "lose" => 99 )
+            'name' => 'steal_quiet',
+            'description' => clienttranslate('Quietly steal the items!'),
+            'descriptionmyturn' => clienttranslate('Quietly steal the items!'),
+            'type' => 'multipleactiveplayer',
+            'possibleactions' => array('talk', 'move', 'warp', 'steal', 'lose'),
+            'transitions' => array('talk' => 2, 'move' => 3, 'warp' => 3, 'steal' => 5,  'lose' => 99),
     ),
 
     4 => array(
-            "name" => "escape_loud",
-            "description" => clienttranslate('Escape with the items!'),
-            "descriptionmyturn" => clienttranslate('Escape with the items!'),
-            "type" => "multipleactiveplayer",
-            "updateGameProgression" => true,
-            "possibleactions" => array( "talk", "move", "win", "lose"  ),
-            "transitions" => array( "talk" => 4, "move" => 5, "win" => 99,  "lose" => 99)
+            'name' => 'escape_loud',
+            'description' => clienttranslate('Escape with the items!'),
+            'descriptionmyturn' => clienttranslate('Escape with the items!'),
+            'type' => 'multipleactiveplayer',
+            'updateGameProgression' => true,
+            'possibleactions' => array('talk', 'move', 'win', 'lose'),
+            'transitions' => array('talk' => 4, 'move' => 5, 'win' => 99,  'lose' => 99),
     ),
 
     5 => array(
-            "name" => "escape_quiet",
-            "description" => clienttranslate('Quietly escape with the items!'),
-            "descriptionmyturn" => clienttranslate('Quietly escape with the items!'),
-            "type" => "multipleactiveplayer",
-            "possibleactions" => array( "talk", "move", "win", "lose"  ),
-            "transitions" => array( "move" => 5, "talk" => 4, "win" => 99,  "lose" => 99)
+            'name' => 'escape_quiet',
+            'description' => clienttranslate('Quietly escape with the items!'),
+            'descriptionmyturn' => clienttranslate('Quietly escape with the items!'),
+            'type' => 'multipleactiveplayer',
+            'possibleactions' => array('talk', 'move', 'win', 'lose'),
+            'transitions' => array('move' => 5, 'talk' => 4, 'win' => 99,  'lose' => 99),
     ),
 
     // Final state.
     // Please do not modify (and do not overload action/args methods).
     99 => array(
-        "name" => "gameEnd",
-        "description" => clienttranslate("End of game"),
-        "type" => "manager",
-        "action" => "stGameEnd",
-        "args" => "argGameEnd"
-    )
+        'name' => 'gameEnd',
+        'description' => clienttranslate('End of game'),
+        'type' => 'manager',
+        'action' => 'stGameEnd',
+        'args' => 'argGameEnd',
+    ),
 
 );
