@@ -476,6 +476,7 @@ SQL;
     }
 
     public function attemptExplore($tokenId) {
+        $this->checkAction('move');
         $this->checkOk('H');
         // TODO: write test cases for whether or not we transition states properly
         // with a wizexplore while an elf is standing at an explore
@@ -561,8 +562,8 @@ SQL;
     }
 
     public function attemptWarp($x, $y) {
-        $this->checkOk('P');
         $this->checkAction('warp');
+        $this->checkOk('P');
         $sql = <<<SQL
 update tokens t
 join properties p
@@ -600,6 +601,7 @@ SQL;
     }
 
     public function attemptEscalator($token_id) {
+        $this->checkAction('move');
         $this->checkOk('R');
         $res = self::DbQuery(updateEscalatorQuery($token_id));
         if (self::DbAffectedRow() === 0) {
@@ -619,6 +621,7 @@ SQL;
     }
 
     public function attemptMove($token_id, $x, $y) {
+        $this->checkAction('move');
         $this->gamestate->nextState('move');
         // TODO: the move should be a string and we should not parse this nonsense
         // (legacy of how this was developed)
