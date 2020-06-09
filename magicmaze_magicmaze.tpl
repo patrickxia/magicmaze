@@ -21,28 +21,28 @@ Time remaining: <div id="timer_numbers">--:--</div>
   <div id="area_surface"></div>
   <div id="area_scrollable_oversurface">
     <div id="token0">
-      <div class="action actionN" style="position: absolute; left: 10px; top: -15px;">↑</div>
-      <div class="action actionE" style="position: absolute; left: 20px; top: 0px;">→</div>
-      <div class="action actionS" style="position: absolute; left: 10px; top: 15px;">↓</div>
-      <div class="action actionW" style="position: absolute; left: -15px; top: 0px;">←</div>
+      <div class="mm_action mm_actionN" style="position: absolute; left: 10px; top: -15px;">↑</div>
+      <div class="mm_action mm_actionE" style="position: absolute; left: 20px; top: 0px;">→</div>
+      <div class="mm_action mm_actionS" style="position: absolute; left: 10px; top: 15px;">↓</div>
+      <div class="mm_action mm_actionW" style="position: absolute; left: -15px; top: 0px;">←</div>
     </div>
     <div id="token1">
-      <div class="action actionN" style="position: absolute; left: 10px; top: -15px;">↑</div>
-      <div class="action actionE" style="position: absolute; left: 20px; top: 0px;">→</div>
-      <div class="action actionS" style="position: absolute; left: 10px; top: 15px;">↓</div>
-      <div class="action actionW" style="position: absolute; left: -15px; top: 0px;">←</div>
+      <div class="mm_action mm_actionN" style="position: absolute; left: 10px; top: -15px;">↑</div>
+      <div class="mm_action mm_actionE" style="position: absolute; left: 20px; top: 0px;">→</div>
+      <div class="mm_action mm_actionS" style="position: absolute; left: 10px; top: 15px;">↓</div>
+      <div class="mm_action mm_actionW" style="position: absolute; left: -15px; top: 0px;">←</div>
     </div>
     <div id="token2">
-      <div class="action actionN" style="position: absolute; left: 10px; top: -15px;">↑</div>
-      <div class="action actionE" style="position: absolute; left: 20px; top: 0px;">→</div>
-      <div class="action actionS" style="position: absolute; left: 10px; top: 15px;">↓</div>
-      <div class="action actionW" style="position: absolute; left: -15px; top: 0px;">←</div>
+      <div class="mm_action mm_actionN" style="position: absolute; left: 10px; top: -15px;">↑</div>
+      <div class="mm_action mm_actionE" style="position: absolute; left: 20px; top: 0px;">→</div>
+      <div class="mm_action mm_actionS" style="position: absolute; left: 10px; top: 15px;">↓</div>
+      <div class="mm_action mm_actionW" style="position: absolute; left: -15px; top: 0px;">←</div>
     </div>
     <div id="token3">
-      <div class="action actionN" style="position: absolute; left: 10px; top: -15px;">↑</div>
-      <div class="action actionE" style="position: absolute; left: 20px; top: 0px;">→</div>
-      <div class="action actionS" style="position: absolute; left: 10px; top: 15px;">↓</div>
-      <div class="action actionW" style="position: absolute; left: -15px; top: 0px;">←</div>
+      <div class="mm_action mm_actionN" style="position: absolute; left: 10px; top: -15px;">↑</div>
+      <div class="mm_action mm_actionE" style="position: absolute; left: 20px; top: 0px;">→</div>
+      <div class="mm_action mm_actionS" style="position: absolute; left: 10px; top: 15px;">↓</div>
+      <div class="mm_action mm_actionW" style="position: absolute; left: -15px; top: 0px;">←</div>
     </div>
   </div>
   <a id="movetop" href="#"></a>
@@ -58,45 +58,43 @@ Next explore tile:
 </div>
 
 
-<div id="border"></div>
+<div id="mm_border"></div>
 
-<table id="controls0">
-<tr><td colspan="3" class="actionN">Up</td></tr>
-<tr><td class="actionW">Left</td><td>Green</td><td class="actionE">Right</td></tr>
-<tr><td colspan="3" class="actionS">Down</td></tr>
-<tr><td colspan="3" class="actionH">Explore</td></tr>
-<tr><td colspan="3" class="actionR">Escalator</td></tr>
-</table>
-
-<table id="controls1">
-<tr><td colspan="3" class="actionN">Up</td></tr>
-<tr><td class="actionW">Left</td><td>Orange</td><td class="actionE">Right</td></tr>
-<tr><td colspan="3" class="actionS">Down</td></tr>
-<tr><td colspan="3" class="actionH">Explore</td></tr>
-<tr><td colspan="3" class="actionR">Escalator</td></tr>
-</table>
-
-<table id="controls2">
-<tr><td colspan="3" class="actionN">Up</td></tr>
-<tr><td class="actionW">Left</td><td>Yellow</td><td class="actionE">Right</td></tr>
-<tr><td colspan="3" class="actionS">Down</td></tr>
-<tr><td colspan="3" class="actionH">Explore</td></tr>
-<tr><td colspan="3" class="actionR">Escalator</td></tr>
-</table>
-
-<table id="controls3">
-<tr><td colspan="3" class="actionN">Up</td></tr>
-<tr><td class="actionW">Left</td><td>Purple</td><td class="actionE">Right</td></tr>
-<tr><td colspan="3" class="actionS">Down</td></tr>
-<tr><td colspan="3" class="actionH">Explore</td></tr>
-<tr><td colspan="3" class="actionR">Escalator</td></tr>
-</table>
+<div id="mm_control0" class="mm_control">
+<div class="mm_actionW mm_abilityW"></div>
+<div class="mm_actionN mm_abilityN"></div>
+<div class="mm_actionS mm_abilityS"></div>
+<div class="mm_actionE mm_abilityE"></div>
+<div class="mm_actionR mm_abilityR"></div>
+<div class="mm_actionH mm_abilityH"></div>
+</div>
+<div id="mm_control1" class="mm_control">
+<div class="mm_actionW mm_abilityW"></div>
+<div class="mm_actionN mm_abilityN"></div>
+<div class="mm_actionS mm_abilityS"></div>
+<div class="mm_actionE mm_abilityE"></div>
+<div class="mm_actionR mm_abilityR"></div>
+<div class="mm_actionH mm_abilityH"></div>
+</div>
+<div id="mm_control2" class="mm_control">
+<div class="mm_actionW mm_abilityW"></div>
+<div class="mm_actionN mm_abilityN"></div>
+<div class="mm_actionS mm_abilityS"></div>
+<div class="mm_actionE mm_abilityE"></div>
+<div class="mm_actionR mm_abilityR"></div>
+<div class="mm_actionH mm_abilityH"></div>
+</div>
+<div id="mm_control3" class="mm_control">
+<div class="mm_actionW mm_abilityW"></div>
+<div class="mm_actionN mm_abilityN"></div>
+<div class="mm_actionS mm_abilityS"></div>
+<div class="mm_actionE mm_abilityE"></div>
+<div class="mm_actionR mm_abilityR"></div>
+<div class="mm_actionH mm_abilityH"></div>
+</div>
 
 <div id="playerlist">
 
-</div>
-
-<div id="giganticRedPawn">
 </div>
 
 

@@ -232,49 +232,54 @@
   display: inline-block;
 }
 
-.abilityN {
+.mm_ability {
+  background-color: #0994dc;
+  display: inline-block;
+}
+
+.mm_abilityN {
   width: 30px;
   height: 24px;
   background: url('img/dirs.png') 0px 0;
   display: inline-block;
 }
 
-.abilityS {
+.mm_abilityS {
   width: 30px;
   height: 24px;
   background: url('img/dirs.png') -30px 0;
   display: inline-block;
 }
 
-.abilityW {
+.mm_abilityW {
   width: 30px;
   height: 24px;
   background: url('img/dirs.png') -60px 0;
   display: inline-block;
 }
 
-.abilityE {
+.mm_abilityE {
   width: 30px;
   height: 24px;
   background: url('img/dirs.png') -90px 0;
   display: inline-block;
 }
 
-.abilityP {
+.mm_abilityP {
   width: 30px;
   height: 24px;
   background: url('img/dirs.png') -120px 0;
   display: inline-block;
 }
 
-.abilityR {
+.mm_abilityR {
   width: 30px;
   height: 24px;
   background: url('img/dirs.png') -150px 0;
   display: inline-block;
 }
 
-.abilityH {
+.mm_abilityH {
   width: 30px;
   height: 24px;
   background: url('img/dirs.png') -180px 0;
@@ -295,7 +300,7 @@
   }
 }
 
-#border {
+#mm_border {
   /* bgg tries to interfere with this as much as possible. */
   z-index: 100000;
   position: fixed;
@@ -304,35 +309,43 @@
   bottom: 0;
   left: 0;
   overflow: auto;
-  border: 6px solid red;
+  border: 5px solid red;
   pointer-events: none; 
   visibility: hidden;
 }
 
-.action {
+.mm_control {
+  position: fixed;
+  z-index: 100;
+}
+
+#mm_control0 {
+  background-color: #0a0;
+  bottom: 80px;
+  left: 5px;
+}
+
+#mm_control1 {
+  background-color: #f90;
+  bottom: 55px;
+  left: 5px;
+}
+
+#mm_control2 {
+  background-color: #aa0;
+  bottom: 30px;
+  left: 5px;
+}
+
+#mm_control3 {
+  background-color: #90f;
+  bottom: 5px;
+  left: 5px;
+}
+
+.mm_action {
   cursor: pointer;
   z-index: 1;
   padding: 5px;
   display: inline-block;
-}
-/* temporary crap */
-
-table {border-collapse: collapse; display: inline; }
-table, th, td {border: 1px #000 solid;}
-td {
-  padding: 5px;
-  text-align: center;
-}
-/* goyp */
-#controls0, #controls0 > *, #controls0 > * > * {
-  background-color: #0f0;
-}
-#controls1, #controls1 > *, #controls1 > * > * {
-  background-color: #f90;
-}
-#controls2, #controls2 > *, #controls2 > * > * {
-  background-color: #ff0;
-}
-#controls3, #controls3 > *, #controls > *  > * {
-  background-color: #90f;
 }

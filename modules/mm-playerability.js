@@ -6,22 +6,23 @@ function getRoles(nPlayers, player, flips) {
   player = parseInt(player);
   flips = parseInt(flips);
   var res = [];
+  // Keep the results in WNSERHP order; it matters for the UI.
   switch (nPlayers) {
     case 1:
-      res = ['NESWHPR'];
+      res = ['WNSERHP'];
       break;
     case 2:
       // Two players:
       // player1: escalator search south west
       // player2: portal north east
-      res = ['RHSW', 'PNE'];
+      res = ['WSRH', 'NEP'];
       break;
     case 3:
       // Three players:
       // player1: north east
       // player2: west portal
       // player3: escalator search south
-      res = ['NE', 'WP', 'RHS'];
+      res = ['NE', 'WP', 'SRH'];
       break;
     case 8:
       // 4-8 players use the same base set of 4.
@@ -52,7 +53,7 @@ function getRoles(nPlayers, player, flips) {
       // player4: north
       res[0] = 'SH';
       res[1] = 'WP';
-      res[2] = 'RE';
+      res[2] = 'ER';
       res[3] = 'N';
   }
   return res[(player + flips) % nPlayers];

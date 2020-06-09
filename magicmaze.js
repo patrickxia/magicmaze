@@ -22,7 +22,7 @@ const BORDER_WIDTH = 20
 const CELL_SIZE = 54
 const MEEPLE_SIZE = 30
 
-const VALID_MOVES = 'NESWRPH'
+const VALID_MOVES = 'WNSERPH'
 
 function toScreenCoords (x, y) {
   // Thanks Sarah Howell (soasrsamh@gmail.com) for the
@@ -117,6 +117,9 @@ function setupAbilities (dojo, obj) {
     const playerEl = dojo.create('div', {
       innerHTML: `${player.player_name}: `
     }, $('playerlist'))
+    const backgroundEl = dojo.create('div', {
+      class: 'mm_ability'
+    }, playerEl)
     const abilities =
           getRoles(
             Object.keys(obj.players).length,
@@ -125,8 +128,8 @@ function setupAbilities (dojo, obj) {
     obj.abilities[playerId] = abilities
     for (const ability of abilities) {
       dojo.create('div', {
-        class: `ability${ability}`
-      }, playerEl)
+        class: `mm_ability${ability}`
+      }, backgroundEl)
     }
     if (parseInt(obj.attention_pawn) === parseInt(playerId)) {
       dojo.create('div', {
@@ -138,11 +141,11 @@ function setupAbilities (dojo, obj) {
     }
   }
   for (const c of VALID_MOVES) {
-    const node = dojo.query(`.action${c}`)
+    const node = dojo.query(`.mm_action${c}`)
     if (!(obj.player_id in obj.abilities) || obj.abilities[obj.player_id].indexOf(c) === -1) {
-      node.style('visibility', 'hidden')
+      node.style('display', 'none')
     } else {
-      node.style('visibility', 'visible')
+      node.style('display', 'inline-block')
     }
   }
 }
@@ -348,7 +351,7 @@ function (dojo, declare) {
         this.attention_pawn = parseInt(gamedatas.attention_pawn)
       }
       if (parseInt(this.player_id) === this.attention_pawn) {
-        dojo.query('#border').style('visibility', 'visible')
+        dojo.query('#mm_border').style('visibility', 'visible')
       }
 
       this.flips = gamedatas.flips
@@ -378,46 +381,47 @@ function (dojo, declare) {
       for (const key in gamedatas.tokens) {
         placeCharacter(this, gamedatas.tokens[key])
         const tokenId = gamedatas.tokens[key].token_id
-        const base = `#controls${tokenId} `
-        dojo.connect(document.querySelector(base + '> tbody > tr:nth-child(1) > td '), 'onclick', this, function (evt) {
+        const base = `#mm_control${tokenId} `
+        dojo.connect(document.querySelector(base + '> .mm_actionN'), 'onclick', this, function (evt) {
           // up
           dispatchMove(this, tokenId, [0, -1])
         })
-        dojo.connect(document.querySelector(base + '> tbody > tr:nth-child(2) > td:nth-child(1)'), 'onclick', this, function (evt) {
+        dojo.connect(document.querySelector(base + '> .mm_actionW'), 'onclick', this, function (evt) {
           // left
           dispatchMove(this, tokenId, [-1, 0])
         })
-        dojo.connect(document.querySelector(base + '> tbody > tr:nth-child(2) > td:nth-child(3)'), 'onclick', this, function (evt) {
+        dojo.connect(document.querySelector(base + '> .mm_actionE'), 'onclick', this, function (evt) {
           // right
           dispatchMove(this, tokenId, [1, 0])
         })
-        dojo.connect(document.querySelector(base + '> tbody > tr:nth-child(3) > td'), 'onclick', this, function (evt) {
+        dojo.connect(document.querySelector(base + '> .mm_actionS'), 'onclick', this, function (evt) {
           // down
           dispatchMove(this, tokenId, [0, 1])
         })
-        dojo.connect(document.querySelector(base + '> tbody > tr:nth-child(4) > td'), 'onclick', this, function (evt) {
+        dojo.connect(document.querySelector(base + '> .mm_actionH'), 'onclick', this, function (evt) {
           // explore
           dispatchMove(this, tokenId, [0])
         })
-        dojo.connect(document.querySelector(base + '> tbody > tr:nth-child(5) > td'), 'onclick', this, function (evt) {
+        dojo.connect(document.querySelector(base + '> .mm_actionR'), 'onclick', this, function (evt) {
           // escalator
           dispatchMove(this, tokenId, [1])
         })
 
         const base2 = `#token${tokenId}`
-        dojo.connect(document.querySelector(base2 + '> .actionN'), 'onclick', this, function (evt) {
+
+        dojo.connect(document.querySelector(base2 + '> .mm_actionN'), 'onclick', this, function (evt) {
           // up
           dispatchMove(this, tokenId, [0, -1])
         })
-        dojo.connect(document.querySelector(base2 + '> .actionW'), 'onclick', this, function (evt) {
+        dojo.connect(document.querySelector(base2 + '> .mm_actionW'), 'onclick', this, function (evt) {
           // left
           dispatchMove(this, tokenId, [-1, 0])
         })
-        dojo.connect(document.querySelector(base2 + '> .actionE'), 'onclick', this, function (evt) {
+        dojo.connect(document.querySelector(base2 + '> .mm_actionE'), 'onclick', this, function (evt) {
           // up
           dispatchMove(this, tokenId, [1, 0])
         })
-        dojo.connect(document.querySelector(base2 + '> .actionS'), 'onclick', this, function (evt) {
+        dojo.connect(document.querySelector(base2 + '> .mm_actionS'), 'onclick', this, function (evt) {
           // down
           dispatchMove(this, tokenId, [0, 1])
         })
@@ -631,7 +635,7 @@ function (dojo, declare) {
     notif_attention: function (notif) {
       this.attention_pawn = notif.args.player_id
       setupAbilities(dojo, this)
-      const el = dojo.query('#border')
+      const el = dojo.query('#mm_border')
       if (parseInt(notif.args.player_id) === parseInt(this.player_id)) {
         el.style('animation', 'none')
         setTimeout(function () {
