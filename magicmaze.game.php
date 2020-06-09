@@ -857,7 +857,7 @@ SQL;
             set p.property = 'used'
             where t.token_id = $mage
 SQL;
-            self::dbQuery($sql);
+            self::DbQuery($sql);
             $sql = <<<SQL
             select
                 t.position_x, t.position_y
@@ -881,7 +881,7 @@ SQL;
         if ($drawNew) {
             $this->informNextTile();
         } else {
-            self::dbQuery('update tokens set locked = false, dummy = false');
+            self::DbQuery('update tokens set locked = false, dummy = false');
         }
     }
 
