@@ -143,9 +143,9 @@ function setupAbilities (dojo, obj) {
   for (const c of VALID_MOVES) {
     const node = dojo.query(`.mm_action${c}`)
     if (!(obj.player_id in obj.abilities) || obj.abilities[obj.player_id].indexOf(c) === -1) {
-      node.style('display', 'none')
+      node.style('visibility', 'hidden')
     } else {
-      node.style('display', 'inline-block')
+      node.style('visibility', 'visible')
     }
   }
 }

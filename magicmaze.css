@@ -314,33 +314,31 @@
   visibility: hidden;
 }
 
+/* TODO: Make these line up with the player guides */
 .mm_control {
   position: fixed;
   z-index: 100;
+  left: 5px;
 }
 
 #mm_control0 {
   background-color: #0a0;
   bottom: 80px;
-  left: 5px;
 }
 
 #mm_control1 {
   background-color: #f90;
   bottom: 55px;
-  left: 5px;
 }
 
 #mm_control2 {
   background-color: #aa0;
   bottom: 30px;
-  left: 5px;
 }
 
 #mm_control3 {
   background-color: #90f;
   bottom: 5px;
-  left: 5px;
 }
 
 .mm_action {
