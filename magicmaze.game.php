@@ -757,6 +757,10 @@ SQL;
     }
 
     public function placeTileFrom($tile_id, $x, $y, $is_absolute = false) {
+        // TODO: Maybe we shouldn't directly call here
+        $this->checkAction('move');
+        $this->checkOk('H');
+
         $this->gamestate->nextState('move');
         $coords = $this->tileCoords($tile_id);
         if ($is_absolute) {
