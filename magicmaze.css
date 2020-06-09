@@ -294,9 +294,15 @@
   background: #000;
 }
 
-@keyframes blink {
+@keyframes mm_blink {
   50% {
     opacity: 0;
+  }
+}
+
+@keyframes mm_inverseblink {
+  50% {
+    opacity: 0.3;
   }
 }
 
@@ -312,6 +318,11 @@
   border: 5px solid red;
   pointer-events: none; 
   visibility: hidden;
+}
+
+.mm_filterwarp {
+  background: #444;
+  opacity: 0.3;
 }
 
 /* TODO: Make these line up with the player guides */

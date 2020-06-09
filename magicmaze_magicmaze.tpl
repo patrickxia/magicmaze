@@ -10,7 +10,6 @@
 -------
 -->
 
-Double click on warps to warp.
 <div id="nuke" style="display: none;">nuke it</div>
 <div id="mm_timer">
 Time remaining: <div id="mm_timer_numbers">--:--</div>
@@ -67,6 +66,7 @@ Next explore tile:
 <div class="mm_actionE mm_abilityE"></div>
 <div class="mm_actionR mm_abilityR"></div>
 <div class="mm_actionH mm_abilityH"></div>
+<div class="mm_actionP mm_abilityP"></div>
 </div>
 <div id="mm_control1" class="mm_control">
 <div class="mm_actionW mm_abilityW"></div>
@@ -75,6 +75,7 @@ Next explore tile:
 <div class="mm_actionE mm_abilityE"></div>
 <div class="mm_actionR mm_abilityR"></div>
 <div class="mm_actionH mm_abilityH"></div>
+<div class="mm_actionP mm_abilityP"></div>
 </div>
 <div id="mm_control2" class="mm_control">
 <div class="mm_actionW mm_abilityW"></div>
@@ -83,6 +84,7 @@ Next explore tile:
 <div class="mm_actionE mm_abilityE"></div>
 <div class="mm_actionR mm_abilityR"></div>
 <div class="mm_actionH mm_abilityH"></div>
+<div class="mm_actionP mm_abilityP"></div>
 </div>
 <div id="mm_control3" class="mm_control">
 <div class="mm_actionW mm_abilityW"></div>
@@ -91,6 +93,7 @@ Next explore tile:
 <div class="mm_actionE mm_abilityE"></div>
 <div class="mm_actionR mm_abilityR"></div>
 <div class="mm_actionH mm_abilityH"></div>
+<div class="mm_actionP mm_abilityP"></div>
 </div>
 
 <div id="playerlist">

@@ -928,16 +928,6 @@ SQL;
         ));
     }
 
-    public function nukeIt() {
-        $sql = 'delete from tiles where 1=1';
-        self::DbQuery($sql);
-        $sql = 'delete from walls where 1=1';
-        self::DbQuery($sql);
-        self::DbQuery('delete from escalators where 1=1');
-        self::DbQuery('delete from properties where 1=1');
-        $this->createTile(1, 0, 0, 0);
-    }
-
     //////////////////////////////////////////////////////////////////////////////
     //////////// Zombie
     ////////////

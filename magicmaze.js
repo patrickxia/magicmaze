@@ -13,7 +13,7 @@
 
 // Define the libraries that the BGA framework gives us to begin with
 // and the imports.
-/* global $, define, ebg, dojo, g_gamethemeurl, getRoles */
+/* global $, define, ebg, dojo, g_gamethemeurl, getRoles, _ */
 
 const SECS_TO_MILLIS = 1000.0
 const MILLIS_TO_SECS = 0.001
@@ -148,6 +148,18 @@ function setupAbilities (dojo, obj) {
       node.style('visibility', 'visible')
     }
   }
+
+  const node = dojo.query('.mm_filterwarp')
+  // If spectator or we have the warp ability
+  if (!(obj.player_id in obj.abilities) || obj.abilities[obj.player_id].indexOf('P') !== -1) {
+    node.style('opacity', '0.0')
+    node.style('pointer-events', 'auto')
+    node.attr('title', _('double-click to warp'))
+  } else {
+    node.style('opacity', '0.3')
+    node.style('pointer-events', 'none')
+    node.attr('title', '')
+  }
 }
 
 function previewNextTile (obj, info) {
@@ -196,7 +208,7 @@ function drawProperties (obj, properties) {
       const cellLeft = obj.lefts.get(key)
       const cellTop = obj.tops.get(key)
       const clickableZone = dojo.create('div', {
-        // class: 'debug',
+        class: 'mm_filterwarp',
         style: {
           position: 'absolute',
           width: CELL_SIZE + 'px',
@@ -312,13 +324,6 @@ function (dojo, declare) {
 
     setup: function (gamedatas) {
       const game = this
-      $('nuke').onclick = function (evt) {
-        game.ajaxcall('/magicmaze/magicmaze/nuke.html', {}, this, function (res) {
-          window.location.reload()
-        }, function (error) {
-          console.log(error)
-        })
-      }
 
       this.abilities = []
       this.players = filterZombies(gamedatas.players)
@@ -332,7 +337,6 @@ function (dojo, declare) {
 
       this.flips = gamedatas.flips
 
-      setupAbilities(dojo, this)
       // TODO: Set up your game interface here, according to "gamedatas"
       if (gamedatas.deadline) {
         this.deadline = gamedatas.deadline
@@ -382,6 +386,14 @@ function (dojo, declare) {
           // escalator
           dispatchMove(this, tokenId, [1])
         })
+        dojo.connect(document.querySelector(base + '> .mm_actionP'), 'onclick', this, function (evt) {
+          const el = dojo.query('.mm_filterwarp')
+          el.style('animation', 'none')
+          setTimeout(function () {
+            el.style('animation', 'mm_inverseblink 0.3s')
+            el.style('animation-iteration-count', 2)
+          }, 0)
+        })
 
         const base2 = `#token${tokenId}`
 
@@ -407,6 +419,8 @@ function (dojo, declare) {
       dojo.connect($('mm_moveright'), 'onclick', this, 'onMoveRight')
       dojo.connect($('mm_movedown'), 'onclick', this, 'onMoveDown')
 
+      // This needs to access some properties created earlier, do this as late as possible.
+      setupAbilities(dojo, this)
       // Setup game notifications to handle (see "setupNotifications" method below)
       this.setupNotifications()
 
@@ -616,7 +630,7 @@ function (dojo, declare) {
         el.style('animation', 'none')
         setTimeout(function () {
           el.style('visibility', 'visible')
-          el.style('animation', 'blink 0.3s')
+          el.style('animation', 'mm_blink 0.3s')
           el.style('animation-iteration-count', 10)
         }, 0)
       } else {
