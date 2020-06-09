@@ -110,6 +110,20 @@ function dispatchMove (obj, tokenId, arr) {
     }, function (error) { console.log(error) })
 }
 
+function updateWarpHighlight (dojo, obj) {
+  const node = dojo.query('.mm_filterwarp')
+  // If spectator or we have the warp ability
+  if (!(obj.player_id in obj.abilities) || obj.abilities[obj.player_id].indexOf('P') !== -1) {
+    node.style('opacity', '0.0')
+    node.style('pointer-events', 'auto')
+    node.attr('title', _('double-click to warp'))
+  } else {
+    node.style('opacity', '0.3')
+    node.style('pointer-events', 'none')
+    node.attr('title', '')
+  }
+}
+
 function setupAbilities (dojo, obj) {
   $('playerlist').innerText = ''
   for (const playerId in obj.players) {
@@ -149,17 +163,7 @@ function setupAbilities (dojo, obj) {
     }
   }
 
-  const node = dojo.query('.mm_filterwarp')
-  // If spectator or we have the warp ability
-  if (!(obj.player_id in obj.abilities) || obj.abilities[obj.player_id].indexOf('P') !== -1) {
-    node.style('opacity', '0.0')
-    node.style('pointer-events', 'auto')
-    node.attr('title', _('double-click to warp'))
-  } else {
-    node.style('opacity', '0.3')
-    node.style('pointer-events', 'none')
-    node.attr('title', '')
-  }
+  updateWarpHighlight(dojo, obj)
 }
 
 function previewNextTile (obj, info) {
@@ -225,6 +229,8 @@ function drawProperties (obj, properties) {
       obj.clickableCells.set(key, clickableZone)
     }
   }
+  updateWarpHighlight(dojo, obj)
+
   if (properties.used) {
     for (let i = 0; i < properties.used.length; ++i) {
       const used = properties.used[i]
