@@ -310,6 +310,10 @@
   }
 }
 
+#mm_next_explore_container {
+  visibility: hidden;
+}
+
 #mm_border {
   /* bgg tries to interfere with this as much as possible. */
   z-index: 100000;

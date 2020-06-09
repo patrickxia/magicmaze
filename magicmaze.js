@@ -166,11 +166,13 @@ function previewNextTile (obj, info) {
   const tileId = parseInt(info.tile_id)
   dojo.create('div', {
     class: `tile${tileId}`
-  }, $('next_explore'))
+  }, $('mm_next_explore'))
+  dojo.query('#mm_next_explore_container').style('visibility', 'visible')
 }
 
 function placeTile (obj, tile) {
-  $('next_explore').innerHTML = ''
+  $('mm_next_explore').innerHTML = ''
+  dojo.query('#mm_next_explore_container').style('visibility', 'hidden')
   const x = parseInt(tile.position_x)
   const y = parseInt(tile.position_y)
   const screenCoords = toScreenCoords(x, y)

@@ -10,9 +10,8 @@
 -------
 -->
 
-<div id="nuke" style="display: none;">nuke it</div>
 <div id="mm_timer">
-Time remaining: <div id="mm_timer_numbers">--:--</div>
+{TEXT_TIME_REMAIN} <div id="mm_timer_numbers">--:--</div>
 </div>
 
 <div id="mm_area_container">
@@ -50,12 +49,11 @@ Time remaining: <div id="mm_timer_numbers">--:--</div>
   <a id="mm_movedown" href="#"></a>
 </div>
 
-<div id="next_explore_container">
-Next explore tile:
-<div id="next_explore">
+<div id="mm_next_explore_container">
+{TEXT_NEXT_EXPLORE}
+<div id="mm_next_explore">
 </div>
 </div>
-
 
 <div id="mm_border"></div>
 
@@ -96,6 +94,7 @@ Next explore tile:
 <div class="mm_actionP mm_abilityP"></div>
 </div>
 
+{TEXT_PLAYER_LIST}
 <div id="playerlist">
 
 </div>
