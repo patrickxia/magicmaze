@@ -170,41 +170,17 @@ function placeTile (obj, tile) {
       top: (screenCoords[1] - BORDER_WIDTH) + 'px',
       transform: 'rotate(' + tile.rotation + 'deg)'
     }
-  }, $('area_scrollable'))
+  }, $('mm_area_scrollable'))
   for (let i = 0; i < 4; ++i) {
     for (let j = 0; j < 4; ++j) {
       const key = getKey(x + i, y + j)
       const cellLeft = screenCoords[0] + i * CELL_SIZE
       const cellTop = screenCoords[1] + j * CELL_SIZE
-      /*
-      const cellStyle = {
-        // class: 'debug',
-        style: {
-          position: 'absolute',
-          width: CELL_SIZE + 'px',
-          height: CELL_SIZE + 'px',
-          left: cellLeft + 'px',
-          top: cellTop + 'px'
-        }
-      }
-      var clickableZone = dojo.create('div',
-        cellStyle, $('area_scrollable_oversurface'))
-      clickableZone.onclick = function (evt) {
-        dispatchClick(obj, evt, tile.tile_id, i, j, i + x, j + y)
-      }
-      obj.clickableCells.set(key, clickableZone)
-      */
-
       obj.tileIds.set(key, tile.tile_id)
       obj.relativexs.set(key, i)
       obj.relativeys.set(key, j)
       obj.lefts.set(key, cellLeft)
       obj.tops.set(key, cellTop)
-      /*
-      const zone = dojo.create('div',
-        cellStyle, $('area_scrollable'))
-      obj.visualCells.set(key, zone)
-      */
     }
   }
 }
@@ -228,7 +204,7 @@ function drawProperties (obj, properties) {
           left: cellLeft + 'px',
           top: cellTop + 'px'
         }
-      }, $('area_scrollable_oversurface'))
+      }, $('mm_area_scrollable_oversurface'))
       clickableZone.ondblclick = function (evt) {
         dispatchMove(obj, -1, [warp.position_x, warp.position_y])
       }
@@ -257,7 +233,7 @@ function drawProperties (obj, properties) {
           top: cellTop + 'px',
           'z-index': 0
         }
-      }, $('area_scrollable_oversurface'))
+      }, $('mm_area_scrollable_oversurface'))
 
       el.onclick = function (evt) {
         dispatchClick(obj, evt, obj.tileIds.get(key),
@@ -278,7 +254,7 @@ function drawUsed (obj, x, y) {
       left: cellLeft + 'px',
       top: cellTop + 'px'
     }
-  }, $('area_scrollable'))
+  }, $('mm_area_scrollable'))
 }
 
 function getKey (x, y) {
@@ -363,10 +339,10 @@ function (dojo, declare) {
       }
 
       this.scrollmap.create(
-        $('area_container'),
-        $('area_scrollable'),
-        $('area_surface'),
-        $('area_scrollable_oversurface')
+        $('mm_area_container'),
+        $('mm_area_scrollable'),
+        $('mm_area_surface'),
+        $('mm_area_scrollable_oversurface')
       )
       this.scrollmap.setupOnScreenArrows(150)
       for (const key in gamedatas.tiles) {
@@ -426,15 +402,15 @@ function (dojo, declare) {
           dispatchMove(this, tokenId, [0, 1])
         })
       }
-      dojo.connect($('movetop'), 'onclick', this, 'onMoveTop')
-      dojo.connect($('moveleft'), 'onclick', this, 'onMoveLeft')
-      dojo.connect($('moveright'), 'onclick', this, 'onMoveRight')
-      dojo.connect($('movedown'), 'onclick', this, 'onMoveDown')
+      dojo.connect($('mm_movetop'), 'onclick', this, 'onMoveTop')
+      dojo.connect($('mm_moveleft'), 'onclick', this, 'onMoveLeft')
+      dojo.connect($('mm_moveright'), 'onclick', this, 'onMoveRight')
+      dojo.connect($('mm_movedown'), 'onclick', this, 'onMoveDown')
 
       // Setup game notifications to handle (see "setupNotifications" method below)
       this.setupNotifications()
 
-      window.setInterval(function () { updateTimer(game, $('timer_numbers')) }, 500)
+      window.setInterval(function () { updateTimer(game, $('mm_timer_numbers')) }, 500)
     },
 
     onMoveTop: function (evt) {

@@ -12,14 +12,14 @@
 
 Double click on warps to warp.
 <div id="nuke" style="display: none;">nuke it</div>
-<div id="timer">
-Time remaining: <div id="timer_numbers">--:--</div>
+<div id="mm_timer">
+Time remaining: <div id="mm_timer_numbers">--:--</div>
 </div>
 
-<div id="area_container">
-  <div id="area_scrollable"></div>
-  <div id="area_surface"></div>
-  <div id="area_scrollable_oversurface">
+<div id="mm_area_container">
+  <div id="mm_area_scrollable"></div>
+  <div id="mm_area_surface"></div>
+  <div id="mm_area_scrollable_oversurface">
     <div id="token0">
       <div class="mm_action mm_actionN" style="position: absolute; left: 10px; top: -15px;">↑</div>
       <div class="mm_action mm_actionE" style="position: absolute; left: 20px; top: 0px;">→</div>
@@ -45,10 +45,10 @@ Time remaining: <div id="timer_numbers">--:--</div>
       <div class="mm_action mm_actionW" style="position: absolute; left: -15px; top: 0px;">←</div>
     </div>
   </div>
-  <a id="movetop" href="#"></a>
-  <a id="moveleft" href="#"></a>
-  <a id="moveright" href="#"></a>
-  <a id="movedown" href="#"></a>
+  <a id="mm_movetop" href="#"></a>
+  <a id="mm_moveleft" href="#"></a>
+  <a id="mm_moveright" href="#"></a>
+  <a id="mm_movedown" href="#"></a>
 </div>
 
 <div id="next_explore_container">
