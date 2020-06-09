@@ -11,6 +11,7 @@
  */
 require_once(APP_GAMEMODULE_PATH . 'module/table/table.game.php');
 require_once('modules/mm-playerability.php');
+require_once('modules/mm-tiles.php');
 
 define('TIMER_VALUE', 180);
 // Be nice to the players: let them overshoot their timers by a tiny bit.
@@ -212,29 +213,7 @@ class MagicMaze extends Table {
         if (count($this->tileinfo) > 0) {
             return;
         }
-
-        $handle = fopen(dirname(__FILE__) . '/modules/mm-tiles.csv', 'r');
-
-        $firstrow = 1;
-        while (($data = fgetcsv($handle)) !== false) {
-            if ($firstrow) {
-                $firstrow = 0;
-
-                continue;
-            }
-            $num = count($data);
-            // tile_id, cell, walls, escalator, properties
-            $tile_id = $data[0];
-            $cellx = intval($data[1][0]);
-            $celly = intval($data[1][1]);
-            $res = array(
-                'walls' => $data[2],
-                'escalator' => $data[3],
-                'properties' => $data[4],
-            );
-            $this->tileinfo[$tile_id][$cellx][$celly] = $res;
-        }
-        fclose($handle);
+        $this->tileinfo = MM_TILEINFO;
     }
 
     public function generateConnectionsForTile($tile_id, $x_coord, $y_coord, $rotation) {
