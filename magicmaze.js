@@ -166,12 +166,15 @@ function setupAbilities (dojo, obj) {
   updateWarpHighlight(dojo, obj)
 }
 
-function previewNextTile (obj, info) {
+function previewNextTile (obj, dojo, info) {
   const tileId = parseInt(info.tile_id)
   dojo.create('div', {
     class: `tile${tileId}`
   }, $('mm_next_explore'))
   dojo.query('#mm_next_explore_container').style('visibility', 'visible')
+  if (!(obj.player_id in obj.abilities) || obj.abilities[obj.player_id].indexOf('H') !== -1) {
+    dojo.window.scrollIntoView('mm_next_explore')
+  }
 }
 
 function placeTile (obj, tile) {
@@ -363,7 +366,7 @@ function (dojo, declare) {
 
       drawProperties(this, gamedatas.properties)
       if (gamedatas.next_tile) {
-        previewNextTile(this, gamedatas.next_tile)
+        previewNextTile(this, dojo, gamedatas.next_tile)
       }
 
       for (const key in gamedatas.tokens) {
@@ -612,7 +615,7 @@ function (dojo, declare) {
       placeCharacter(this, notif.args)
     },
     notif_nextTile: function (notif) {
-      previewNextTile(this, notif.args)
+      previewNextTile(this, dojo, notif.args)
     },
     notif_newDeadline: function (notif) {
       if (notif.args.deadline) {

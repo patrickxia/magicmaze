@@ -33,7 +33,7 @@
           $players = $this->game->loadPlayersBasicInfos();
           $players_nbr = count($players);
           $this->tpl['TEXT_TIME_REMAIN'] = self::_('Time remaining:');
-          $this->tpl['TEXT_NEXT_EXPLORE'] = self::_('Next exploration tile:');
+          $this->tpl['TEXT_NEXT_EXPLORE'] = self::_('Next exploration tile (click on cell to explore):');
           $this->tpl['TEXT_PLAYER_LIST'] = self::_('List of players. Double-click to notify.');
       }
   }
