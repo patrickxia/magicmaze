@@ -296,8 +296,15 @@ function placeCharacter (obj, info) {
   el.style.top = `${top + adjust}px`
 }
 
+function fromEntries (iterable) {
+  return [...iterable].reduce((obj, [key, val]) => {
+    obj[key] = val
+    return obj
+  }, {})
+}
+
 function filterZombies (obj) {
-  return Object.fromEntries(Object.entries(obj).filter(function (pair) { return !pair[1].player_zombie }))
+  return fromEntries(Object.entries(obj).filter(function (pair) { return !pair[1].player_zombie }))
 }
 
 define([
