@@ -53,6 +53,7 @@ class MagicMaze extends Table {
             'num_flips' => 11,
             'mage_status' => 12,
             'attention_pawn' => 13,
+            'explore_status' => 14,
             //    "my_first_game_variant" => 100,
             //    "my_second_game_variant" => 101,
         ));
@@ -117,6 +118,7 @@ class MagicMaze extends Table {
         self::setGameStateInitialValue('num_flips', 0);
         self::setGameStateInitialValue('mage_status', 0);
         self::setGameStateInitialValue('attention_pawn', -1);
+        self::setGameStateInitialValue('explore_status', 0);
 
         // Init game statistics
         // (note: statistics used in this file must be defined in your stats.inc.php file)
@@ -469,6 +471,28 @@ SQL;
                 return;
             }
         }
+        if (intval(self::getGameStateValue('mage_status')) !== 0) {
+            throw new BgaUserException(self::_('you are already exploring with the mage. click where you would like the tile.'));
+        }
+        if (intval(self::getGameStateValue('explore_status')) === 1) {
+            $sql = <<<SQL
+              select
+                position_x, position_y, find_tile(position_x, position_y) tile_id
+              from tokens
+              where
+                token_id = $tokenId
+                and
+                locked
+SQL;
+            $res = self::getObjectFromDb($sql);
+            if (!$res) {
+                throw new BgaUserException(self::_('that token was not on an explore space when you started the explore action'));
+            }
+            $this->placeTileFrom($res['tile_id'], $res['position_x'], $res['position_y'], true);
+
+            return;
+        }
+        self::setGameStateValue('explore_status', 1);
         $sql = <<<SQL
 update tokens t
 join properties p
@@ -486,13 +510,16 @@ where
 SQL;
         self::DbQuery($sql);
         if (self::DbAffectedRow() === 0) {
-            throw new BgaUserException(self::_("can't explore: invalid or already exploring"));
+            throw new BgaUserException(self::_("can't explore: no eligible explorations"));
         }
         if (self::DbAffectedRow() === 1) {
             $sql = <<<SQL
 select token_id, position_x, position_y, find_tile(position_x, position_y) tile_id from tokens where locked;
 SQL;
             $res = self::getNonEmptyObjectFromDb($sql);
+            if (intval($tokenId) !== intval($res['token_id'])) {
+                throw new BgaUserException(self::_("can't explore: that token is not on an explore space"));
+            }
             if ($this->isElf($res['token_id'])) {
                 $this->gamestate->nextState('talk');
             }
@@ -857,6 +884,7 @@ SQL;
                 'x' => $res['position_x'],
                 'y' => $res['position_y'],
             ));
+            self::setGameStateValue('mage_status', 0);
         }
 
         $this->createTile($nextId, $newx, $newy, $rotation);
@@ -864,6 +892,7 @@ SQL;
         if ($drawNew) {
             $this->informNextTile();
         } else {
+            self::setGameStateValue('explore_status', 0);
             self::DbQuery('update tokens set locked = false, dummy = false');
         }
     }
