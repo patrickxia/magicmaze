@@ -340,8 +340,10 @@
   left: 5px;
 }
 
-.mobile_version .mm_control {
-  left: 20%;
+@media only screen and (max-width: 665px)  {
+  .mobile_version .mm_control {
+    left: 20%;
+  }
 }
 
 #mm_control0 {
