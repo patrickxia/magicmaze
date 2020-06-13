@@ -13,11 +13,40 @@ require_once(APP_GAMEMODULE_PATH . 'module/table/table.game.php');
 require_once('modules/mm-playerability.php');
 require_once('modules/mm-tiles.php');
 
-define('TIMER_VALUE', 180);
 // Be nice to the players: let them overshoot their timers by a tiny bit.
 define('TIMER_SLOP', 2);
 // The mage is special for one SQL query. TODO: Refactor this crap out of here.
 define('MAGE', 3);
+
+function getTimerValue($option) {
+    switch ($option) {
+        case 30:
+            return 420;
+        case 20:
+            return 240;
+        case 10:
+        default:
+            return 180;
+    }
+}
+
+function getTileset($option) {
+    switch ($option) {
+        case 50:
+            return array(0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24);
+        case 40:
+            return array(0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22);
+        case 30:
+            return array(0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19);
+        case 20:
+            return array(0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17);
+        case 10:
+            return array(0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+        case 0:
+        default:
+            return array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
+    }
+}
 
 function getKey($inx, $iny) {
     return "${inx}_${iny}";
@@ -54,8 +83,8 @@ class MagicMaze extends Table {
             'mage_status' => 12,
             'attention_pawn' => 13,
             'explore_status' => 14,
-            //    "my_first_game_variant" => 100,
-            //    "my_second_game_variant" => 101,
+            'option_time_limit' => 100,
+            'option_tile_set' => 102,
         ));
     }
 
@@ -86,8 +115,7 @@ class MagicMaze extends Table {
         $sql .= implode($values, ',');
         self::DbQuery($sql);
 
-        // XXX don't hardcode
-        $tiles = array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
+        $tiles = getTileset(self::getGameStateValue('option_tile_set'));
         shuffle($tiles);
         $sql = 'insert into tiles (tile_id, tile_order) values ';
         for ($i = 0; $i < count($tiles); ++$i) {
@@ -98,7 +126,11 @@ class MagicMaze extends Table {
         }
         self::DbQuery($sql);
 
-        $this->createTile(1, 0, 0, 0);
+        if (in_array(0, $tiles)) {
+            $this->createTile(0, 0, 0, 0);
+        } else {
+            $this->createTile(1, 0, 0, 0);
+        }
         self::reattributeColorsBasedOnPreferences($players, $gameinfos['player_colors']);
         self::reloadPlayersBasicInfos();
 
@@ -551,7 +583,7 @@ SQL;
     public function checkDeadline() {
         $deadline = floatval(self::getGameStateValue('timer_deadline_micros'));
         if ($deadline === -1.) {
-            $newDeadline = microtime(true) + TIMER_VALUE;
+            $newDeadline = microtime(true) + getTimerValue(self::getGameStateValue('option_time_limit'));
             $this->setDeadline($newDeadline);
             $this->notifyAllPlayers('newDeadline', clienttranslate('Timer started!'), array(
                 'flips' => self::getGameStateValue('num_flips'),
@@ -748,7 +780,7 @@ SQL;
             }
             $newDeadline = 2 * microtime(true) -
                 self::getGameStateValue('timer_deadline_micros') +
-                TIMER_VALUE;
+                getTimerValue(self::getGameStateValue('option_time_limit'));
 
             $this->setDeadline($newDeadline);
             self::notifyAllPlayers('newUsed', '', array(

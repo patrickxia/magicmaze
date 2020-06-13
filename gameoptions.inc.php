@@ -23,6 +23,26 @@
  * !! It is not a good idea to modify this file when a game is running !!
  */
 $game_options = array(
+    100 => array(
+        'name' => totranslate('Time limit'),
+        'values' => array(
+            10 => array('name' => totranslate('Original time limits')),
+            20 => array('name' => totranslate('Extended time limits for online play')),
+            30 => array('name' => totranslate('Very relaxed time limits to explore with')),
+        ),
+    ),
+    // 101 is reserved for possibly the 1a/1b split
+    102 => array(
+       'name' => totranslate('Tile set'),
+       'values' => array(
+           0 => array('name' => totranslate('The base game (1a, 2-12)')),
+           10 => array('name' => totranslate('The mage special ability (1b, 2-15)')),
+           20 => array('name' => totranslate('The barbarian special ability (1b, 2-17)'), 'nobeginner' => true),
+           30 => array('name' => totranslate('The full game (1b, 2-19)'), 'nobeginner' => true),
+           40 => array('name' => totranslate('The full game plus a few more tiles (1b, 2-22)'), 'nobeginner' => true),
+           50 => array('name' => totranslate('Every single tile available (1b, 2-24)'), 'nobeginner' => true),
+       ),
+    ),
 
     /*
 
