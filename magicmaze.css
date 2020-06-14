@@ -295,12 +295,11 @@
   display: inline-block;
 }
 
-.used {
+.mm_used {
   position: absolute;
   width: 55px;
   height: 55px;
-  /* TODO: get an image here */
-  background: #000;
+  background: url('img/crosses.png') 0px 0px;
 }
 
 @keyframes mm_blink {

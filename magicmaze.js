@@ -272,7 +272,7 @@ function drawUsed (obj, x, y) {
   const cellLeft = obj.lefts.get(key)
   const cellTop = obj.tops.get(key)
   dojo.create('div', {
-    class: 'used',
+    class: 'mm_used',
     style: {
       left: cellLeft + 'px',
       top: cellTop + 'px'
