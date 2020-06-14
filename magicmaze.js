@@ -469,21 +469,16 @@ function (dojo, declare) {
     //                  You can use this method to perform some user interface changes at this moment.
     //
     onEnteringState: function (stateName, args) {
-      console.log('Entering state: ' + stateName)
-
       switch (stateName) {
-        /* Example:
-
-            case 'myGameState':
-
-            // Show some HTML block at this game state
-                dojo.style( 'my_html_block_id', 'display', 'block' );
-
-                break;
-                */
-
-        case 'dummmy':
-          break
+        case 'escape_loud':
+        case 'escape_quiet':
+          dojo.query('.mm_abilityP').forEach(function (node, index, arr) {
+            node.innerText = ''
+            dojo.create('div', {
+              class: 'mm_crossout'
+            }, node)
+          }
+          )
       }
     },
 
@@ -491,19 +486,7 @@ function (dojo, declare) {
     //                 You can use this method to perform some user interface changes at this moment.
     //
     onLeavingState: function (stateName) {
-      console.log('Leaving state: ' + stateName)
-
       switch (stateName) {
-        /* Example:
-
-            case 'myGameState':
-
-            // Hide the HTML block we are displaying only during this game state
-                dojo.style( 'my_html_block_id', 'display', 'none' );
-
-                break;
-                */
-
         case 'dummmy':
           break
       }

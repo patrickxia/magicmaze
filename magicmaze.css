@@ -302,6 +302,12 @@
   background: url('img/crosses.png') 0px 0px;
 }
 
+.mm_crossout {
+  width: 30px;
+  height: 24px;
+  background: url('img/crosses.png') -55px 0px;
+}
+
 @keyframes mm_blink {
   50% {
     opacity: 0;
