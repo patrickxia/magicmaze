@@ -210,7 +210,7 @@ tile_id,cell,walls,escalator,properties
 13,00,NW,,
 13,10,Ns,,
 13,20,N,,
-13,30,NW,,
+13,30,NE,,
 13,01,ES,,gexplore
 13,11,nEW,,
 13,21,SEW,,pwarp

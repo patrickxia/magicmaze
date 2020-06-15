@@ -1532,7 +1532,7 @@ array (
     array (
       0 => 
       array (
-        'walls' => 'NW',
+        'walls' => 'NE',
         'escalator' => '',
         'properties' => '',
       ),
