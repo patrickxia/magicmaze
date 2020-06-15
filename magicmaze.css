@@ -324,6 +324,21 @@
   visibility: hidden;
 }
 
+.mm_can_H #mm_next_explore_container {
+  position: fixed;
+  z-index: 9;
+  left: 5px;
+  bottom: 105px;
+  display: block;
+  padding: 0;
+  transform: scale(0.9);
+  transform-origin: bottom left;
+}
+
+.mm_can_H #mm_next_explore {
+  filter: opacity(90%);
+}
+
 #mm_border {
   /* bgg tries to interfere with this as much as possible. */
   z-index: 100000;

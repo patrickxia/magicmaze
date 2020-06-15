@@ -154,12 +154,15 @@ function setupAbilities (dojo, obj) {
       dispatchMove(obj, null, [playerId])
     }
   }
+  const body = document.getElementsByTagName('body')[0]
   for (const c of VALID_MOVES) {
     const node = dojo.query(`.mm_action${c}`)
     if (!(obj.player_id in obj.abilities) || obj.abilities[obj.player_id].indexOf(c) === -1) {
       node.style('visibility', 'hidden')
+      dojo.removeClass(body, `mm_can_${c}`)
     } else {
       node.style('visibility', 'visible')
+      dojo.addClass(body, `mm_can_${c}`)
     }
   }
 
@@ -172,9 +175,6 @@ function previewNextTile (obj, dojo, info) {
     class: `tile${tileId}`
   }, $('mm_next_explore'))
   dojo.query('#mm_next_explore_container').style('visibility', 'visible')
-  if (!(obj.player_id in obj.abilities) || obj.abilities[obj.player_id].indexOf('H') !== -1) {
-    dojo.window.scrollIntoView('mm_next_explore')
-  }
 }
 
 function placeTile (obj, tile) {
