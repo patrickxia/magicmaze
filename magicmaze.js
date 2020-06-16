@@ -290,7 +290,7 @@ function placeCharacter (obj, info) {
   const key = getKey(x, y)
   const top = obj.tops.get(key)
   const left = obj.lefts.get(key)
-  const el = $(`token${info.token_id}`)
+  const el = $(`mm_token${info.token_id}`)
   const adjust = (CELL_SIZE - MEEPLE_SIZE) / 2
   el.style.left = `${left + adjust}px`
   el.style.top = `${top + adjust}px`
@@ -413,7 +413,7 @@ function (dojo, declare) {
           }, 0)
         })
 
-        const base2 = `#token${tokenId}`
+        const base2 = `#mm_token${tokenId}`
 
         dojo.connect(document.querySelector(base2 + '> .mm_actionN'), 'onclick', this, function (evt) {
           // up

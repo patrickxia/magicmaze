@@ -202,42 +202,42 @@
   background: url('img/t.png') -2816px 0px;
 }
 
-#token0 {
+#mm_token0 {
   width: 30px;
   height: 30px;
-  background: url('img/30_30_meeple.png') -30px 0;
+  background: url('img/sprites.png') 0px -55px;
   position: absolute;
   z-index: 1;
 }
 
-#token1 {
+#mm_token1 {
   width: 30px;
   height: 30px;
-  background: url('img/30_30_meeple.png') -90px 0;
+  background: url('img/sprites.png') -30px -55px;
   position: absolute;
   z-index: 1;
 }
 
-#token2 {
+#mm_token2 {
   width: 30px;
   height: 30px;
-  background: url('img/30_30_meeple.png') -210px 0;
+  background: url('img/sprites.png') -60px -55px;
   position: absolute;
   z-index: 1;
 }
 
-#token3 {
+#mm_token3 {
   width: 30px;
   height: 30px;
-  background: url('img/30_30_meeple.png') -270px 0;
+  background: url('img/sprites.png') -90px -55px;
   position: absolute;
   z-index: 1;
 }
 
 .redpawn {
-  width: 30px;
-  height: 30px;
-  background: url('img/30_30_meeple.png') -180px 0;
+  width: 24px;
+  height: 48px;
+  background: url('img/sprites.png') -85px 0px;
   display: inline-block;
 }
 
@@ -299,13 +299,13 @@
   position: absolute;
   width: 55px;
   height: 55px;
-  background: url('img/crosses.png') 0px 0px;
+  background: url('img/sprites.png') 0px 0px;
 }
 
 .mm_crossout {
   width: 30px;
   height: 24px;
-  background: url('img/crosses.png') -55px 0px;
+  background: url('img/sprites.png') -55px 0px;
 }
 
 @keyframes mm_blink {
@@ -372,22 +372,22 @@
 }
 
 #mm_control0 {
-  background-color: #0a0;
+  background-color: #74c936;
   bottom: 80px;
 }
 
 #mm_control1 {
-  background-color: #f90;
+  background-color: #f47b1c;
   bottom: 55px;
 }
 
 #mm_control2 {
-  background-color: #aa0;
+  background-color: #fcd112;
   bottom: 30px;
 }
 
 #mm_control3 {
-  background-color: #90f;
+  background-color: #7f48a9;
   bottom: 5px;
 }
 
