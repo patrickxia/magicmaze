@@ -10,7 +10,7 @@ tile_id,cell,walls,escalator,properties
 0,02,W,,
 0,12,S,,
 0,22,SE,,
-0,32,W,23,yexplore
+0,32,WS,23,yexplore
 0,03,SW,,
 0,13,N,,oexplore
 0,23,NES,32,
@@ -124,7 +124,7 @@ tile_id,cell,walls,escalator,properties
 7,22,NEWS,,
 7,32,W,,pexplore
 7,03,NEWS,,
-7,13,EW,21,
+7,13,NEW,21,
 7,23,NEWS,,
 7,33,ESW,,ywarp
 8,00,NW,,
@@ -149,7 +149,7 @@ tile_id,cell,walls,escalator,properties
 9,30,NE,,
 9,01,EW,,
 9,11,NEWS,,
-9,21,NS,,owarp
+9,21,NWS,,owarp
 9,31,E,,
 9,02,WS,,
 9,12,NE,,
@@ -161,7 +161,7 @@ tile_id,cell,walls,escalator,properties
 9,33,ESW,,pitem
 10,00,SWN,,gexit
 10,10,N,,
-10,20,NE,,owarp
+10,20,NES,,owarp
 10,30,NEWS,,
 10,01,NS,,pexplore
 10,11,SE,22,
@@ -276,7 +276,7 @@ tile_id,cell,walls,escalator,properties
 17,20,NEWS,,
 17,30,NEW,,crystal
 17,01,NW,,
-17,11,,,
+17,11,S,,
 17,21,N,,
 17,31,SE,,
 17,02,SW,,
@@ -378,7 +378,7 @@ tile_id,cell,walls,escalator,properties
 23,02,SEW,,gwarp
 23,12,SW,,
 23,22,NE,,
-23,32,W,,pexplore
+23,32,NW,,pexplore
 23,03,NEWS,,
 23,13,NW,,
 23,23,S,,

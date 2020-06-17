@@ -28,6 +28,51 @@ define('MM_TILEINFO',
             $tileinfo[$tile_id][$cellx][$celly] = $res;
         }
         fclose($handle);
-        var_export($tileinfo); 
+
+        $dirs = array(
+            'N' => array(0, -1),
+            'S' => array(0, 1),
+            'W' => array(-1, 0),
+            'E' => array(1, 0),
+        );
+        $opps = array(
+            'N' => 'S',
+            'S' => 'N',
+            'E' => 'W',
+            'W' => 'E',
+            'n' => 's',
+            's' => 'n',
+            'e' => 'w',
+            'w' => 'e',
+        );
+        foreach ($tileinfo as $tileid => $arr) {
+            for ($x = 0; $x < 4; $x++) {
+                for ($y = 0; $y < 4; $y++) {
+                    $walls = str_split($arr[$x][$y]['walls']);
+                    foreach ($walls as $wall) {
+                        if (!in_array($wall, $opps)) {
+                            continue;
+                        }
+                        $newx = $x + $dirs[strtoupper($wall)][0];
+                        $newy = $y + $dirs[strtoupper($wall)][1];
+                        if ($newx < 0 || $newx >= 4) {
+                            continue;
+                        }
+                        if ($newy < 0 || $newy >= 4) {
+                            continue;
+                        }
+                        $flip = $opps[$wall];
+                        if (strpos($arr[$newx][$newy]['walls'], $flip) === false) {
+                            print_r($arr[$x][$y]);
+                            print_r($arr[$newx][$newy]);
+
+                            throw new Exception("tile $tileid x $x y $y no match on $flip for newx $newx and newy $newy");
+                        }
+                    }
+                }
+            }
+        }
+
+        var_export($tileinfo);
 
 ?>);

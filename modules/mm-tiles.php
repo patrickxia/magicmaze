@@ -101,7 +101,7 @@ array (
       ),
       2 => 
       array (
-        'walls' => 'W',
+        'walls' => 'WS',
         'escalator' => '23',
         'properties' => 'yexplore',
       ),
@@ -830,7 +830,7 @@ array (
       ),
       3 => 
       array (
-        'walls' => 'EW',
+        'walls' => 'NEW',
         'escalator' => '21',
         'properties' => '',
       ),
@@ -1067,7 +1067,7 @@ array (
       ),
       1 => 
       array (
-        'walls' => 'NS',
+        'walls' => 'NWS',
         'escalator' => '',
         'properties' => 'owarp',
       ),
@@ -1172,7 +1172,7 @@ array (
     array (
       0 => 
       array (
-        'walls' => 'NE',
+        'walls' => 'NES',
         'escalator' => '',
         'properties' => 'owarp',
       ),
@@ -1928,7 +1928,7 @@ array (
       ),
       1 => 
       array (
-        'walls' => '',
+        'walls' => 'S',
         'escalator' => '',
         'properties' => '',
       ),
@@ -2654,7 +2654,7 @@ array (
       ),
       2 => 
       array (
-        'walls' => 'W',
+        'walls' => 'NW',
         'escalator' => '',
         'properties' => 'pexplore',
       ),
