@@ -12,11 +12,10 @@
 require_once(APP_GAMEMODULE_PATH . 'module/table/table.game.php');
 require_once('modules/mm-playerability.php');
 require_once('modules/mm-tiles.php');
+require_once('modules/mm-sql.php');
 
 // Be nice to the players: let them overshoot their timers by a tiny bit.
 define('TIMER_SLOP', 2);
-// The mage is special for one SQL query. TODO: Refactor this crap out of here.
-define('MAGE', 3);
 
 function getTimerValue($option) {
     switch ($option) {
@@ -50,24 +49,6 @@ function getTileset($option) {
 
 function getKey($inx, $iny) {
     return "${inx}_${iny}";
-}
-
-function updateEscalatorQuery($token_id) {
-    return <<<EOT
-update
-    `tokens` t
-join
-    `escalators` e
-on t.position_x = e.old_x and t.position_y = e.old_y
-set t.position_x = e.new_x, t.position_y = e.new_y
-where
-    t.token_id = $token_id
-and not t.locked
-and not exists (
-    select 1 from (select * from `tokens` for update) t2
-    where t2.position_x = e.new_x and t2.position_y = e.new_y
-)
-EOT;
 }
 
 class MagicMaze extends Table {
@@ -467,22 +448,7 @@ class MagicMaze extends Table {
     }
 
     public function attemptWizExplore() {
-        $mage = MAGE;
-        $sql = <<<SQL
-        update tokens t
-        join properties p
-        on t.position_x = p.position_x and t.position_y = p.position_y
-        set
-          t.locked = true
-        where
-          t.token_id = $mage
-          and not t.locked
-          and p.property = 'crystal'
-          and not exists (
-              select 1 from (select * from tokens for update) t2 where locked
-          )
-SQL;
-        self::DbQuery($sql);
+        self::DbQuery(wizExploreQuery());
         if (self::DbAffectedRow() === 0) {
             return false;
         }
@@ -510,16 +476,7 @@ SQL;
             throw new BgaUserException(self::_('you are already exploring with the mage. click where you would like the tile.'));
         }
         if (intval(self::getGameStateValue('explore_status')) === 1) {
-            $sql = <<<SQL
-              select
-                position_x, position_y, find_tile(position_x, position_y) tile_id
-              from tokens
-              where
-                token_id = $tokenId
-                and
-                locked
-SQL;
-            $res = self::getObjectFromDb($sql);
+            $res = self::getObjectFromDb(findLockedTokenQuery($tokenId));
             if (!$res) {
                 throw new BgaUserException(self::_('that token was not on an explore space when you started the explore action'));
             }
@@ -528,30 +485,12 @@ SQL;
             return;
         }
         self::setGameStateValue('explore_status', 1);
-        $sql = <<<SQL
-update tokens t
-join properties p
-on t.token_id = p.token_id
-set 
-  t.locked = true
-where
-  p.position_x = t.position_x
-  and p.position_y = t.position_y
-  and not t.locked
-  and p.property = 'explore'
-  and not exists (
-      select 1 from (select * from tokens for update) t2 where locked
-  )
-SQL;
-        self::DbQuery($sql);
+        self::DbQuery(exploreAllEligibleQuery());
         if (self::DbAffectedRow() === 0) {
             throw new BgaUserException(self::_("can't explore: no eligible explorations"));
         }
         if (self::DbAffectedRow() === 1) {
-            $sql = <<<SQL
-select token_id, position_x, position_y, find_tile(position_x, position_y) tile_id from tokens where locked;
-SQL;
-            $res = self::getNonEmptyObjectFromDb($sql);
+            $res = self::getNonEmptyObjectFromDb(findLockedTokensQuery());
             if (intval($tokenId) !== intval($res['token_id'])) {
                 throw new BgaUserException(self::_("can't explore: that token is not on an explore space"));
             }
@@ -589,24 +528,7 @@ SQL;
     public function attemptWarp($x, $y) {
         $this->checkAction('warp');
         $this->checkOk('P');
-        $sql = <<<SQL
-update tokens t
-join properties p
-on t.token_id = p.token_id
-set
-  t.position_x = p.position_x,
-  t.position_y = p.position_y
-where
-  p.position_x = $x
-  and p.position_y = $y
-  and not t.locked
-  and p.property = 'warp' 
-  and not exists (
-      select 1 from (select * from tokens for update) t2 where
-      t2.position_x = p.position_x and t2.position_y = p.position_y
-  )
-SQL;
-        self::DbQuery($sql);
+        self::DbQuery(warpToLocationQuery($x, $y));
         if (self::DbAffectedRow() === 0) {
             throw new BgaUserException(self::_("you can't warp there"));
         }
@@ -712,56 +634,22 @@ SQL;
         }
 
         $target = ($this->checkAction('steal', false) ? 'item' : 'exit');
-        $sql = <<<SQL
-        select
-          1
-        from tokens t join properties p
-        on t.token_id = p.token_id
-        where p.property = "$target"
-        and t.position_x = p.position_x
-        and t.position_y = p.position_y
-SQL;
-        self::DbQuery($sql);
+        self::DbQuery(checkVictoryConditionQuery($target));
 
         // TODO maybe move this logic down and refactor it out of here...
         if (self::DbAffectedRow() === 4) {
             if ($this->checkAction('steal', false)) {
                 $this->gamestate->nextState('steal');
             } else {
-                $sql = <<<SQL
-                  update player set player_score = 1
-SQL;
-                self::DbQuery($sql);
+                self::DbQuery('update player set player_score = 1');
                 $this->gamestate->nextState('win');
                 $this->notifyAllPlayers('message', clienttranslate('Congratulations!'), array());
             }
         }
         // XXX roundtrips
-        $sql = <<<SQL
-        select
-            t.token_id, t.position_x, t.position_y, p.property
-        from
-            tokens t
-            left join
-            properties p
-            on t.position_x = p.position_x and t.position_y = p.position_y
-        where
-            t.token_id = $token_id
-SQL;
-        $res = self::getNonEmptyObjectFromDb($sql);
+        $res = self::getNonEmptyObjectFromDb(getTokenInfoQuery($token_id));
         if ($res['property'] === 'timer') {
-            $sql = <<<SQL
-            update properties
-            set property = 'used'
-            where position_x = $res[position_x]
-            and position_y = $res[position_y]
-            and exists
-              (select
-                count(*)
-              from (select * from properties where property = 'camera') p
-              having count(*) < 2)
-SQL;
-            self::DbQuery($sql);
+            self::DbQuery(attemptConsumeTimerQuery($res['position_x'], $res['position_y']));
             if (self::DbAffectedRow() === 0) {
                 throw new BgaUserException(self::_("can't move there: security cameras"));
             }
@@ -782,13 +670,7 @@ SQL;
             ));
             self::incStat(1, 'timer_flips');
         } elseif ($this->isBarbarian($res['token_id']) && $res['property'] === 'camera') {
-            $sql = <<<SQL
-            update properties
-            set property = 'used'
-            where position_x = $res[position_x]
-            and position_y = $res[position_y]
-SQL;
-            self::DbQuery($sql);
+            self::DbQuery(attemptConsumeCameraQuery($res['position_x'], $res['position_y']));
             self::notifyAllPlayers('newUsed', '', array(
                 'x' => $res['position_x'],
                 'y' => $res['position_y'],
@@ -859,18 +741,7 @@ SQL;
         $drawNew = false;
         $mageStatus = intval(self::getGameStateValue('mage_status'));
         if ($mageStatus === 0) {
-            $sql = <<<SQL
-            select t.token_id from tokens t
-            join properties p
-            on t.token_id = p.token_id
-            where
-            p.position_x = t.position_x
-            and p.position_y = t.position_y
-            and p.position_x = $oldx
-            and p.position_y = $oldy
-            and (p.property = 'explore')
-SQL;
-            $tokenId = self::getObjectFromDb($sql);
+            $tokenId = self::getObjectFromDb(getTokenExploringQuery($oldx, $oldy));
             if (!$tokenId) {
                 throw new BgaUserException(self::_("you can't place a tile there"));
             }
@@ -879,30 +750,12 @@ SQL;
             }
         } elseif ($mageStatus === 1) {
             // TODO: allow user to opt out? I don't know why they would...
+            // XXX: what if this is the last tile!
             $drawNew = true;
             self::setGameStateValue('mage_status', 2);
         } else {
-            $mage = MAGE;
-            $sql = <<<SQL
-            update tokens t
-            join properties p
-            on t.position_x = p.position_x and t.position_y = p.position_y
-            set p.property = 'used'
-            where t.token_id = $mage
-SQL;
-            self::DbQuery($sql);
-            $sql = <<<SQL
-            select
-                t.position_x, t.position_y
-            from
-                tokens t
-                join
-                properties p
-                on t.position_x = p.position_x and t.position_y = p.position_y
-            where
-                t.token_id = 3 and p.property = "used"
-SQL;
-            $res = self::getNonEmptyObjectFromDb($sql);
+            self::DbQuery(consumeMageTileQuery());
+            $res = self::getNonEmptyObjectFromDb(findConsumedMageTileQuery());
             self::notifyAllPlayers('newUsed', '', array(
                 'x' => $res['position_x'],
                 'y' => $res['position_y'],
@@ -921,37 +774,15 @@ SQL;
     }
 
     public function createTile($nextId, $newx, $newy, $rotation) {
-        $sql = <<<SQL
-        update tiles set
-          placed = true,
-          position_x = $newx,
-          position_y = $newy,
-          rotation = $rotation
-        where tile_id = $nextId and
-        not exists (
-            select 1 from (select * from tiles for update) t2
-            where position_x = $newx and position_y = $newy
-        )
-SQL;
-        self::DbQuery($sql);
+        self::DbQuery(placeTileQuery($nextId, $newx, $newy, $rotation));
         if (self::DbAffectedRow() === 0) {
             throw new BgaUserException(self::_("you can't create a tile there"));
         }
 
-        $sql = <<<SQL
-        delete from properties
-        where
-          property = 'explore'
-          and
-          (find_tile(position_x + 1, position_y) = $nextId
-            or
-          find_tile(position_x - 1, position_y) = $nextId
-            or
-          find_tile(position_x, position_y + 1) = $nextId
-            or
-          find_tile(position_x, position_y - 1) = $nextId)
-SQL;
-        self::DbQuery($sql);
+        self::DbQuery(deleteUnneededExplores($nextId));
+        // TODO: tell the client to stop allowing clicks too
+        // XXX: i don't think this actually works, what if you create two tiles that
+        // face each other? an explore that's generated after the tile is placed.
 
         $clickables = $this->generateConnectionsForTile($nextId, $newx, $newy, $rotation);
         self::notifyAllPlayers('tileAdded', clienttranslate('tile added!'), array(
@@ -1001,12 +832,7 @@ SQL;
     public function stGiveTime() {
         // There are four available timers.
         $maxTime = 5 * (TIMER_SLOP + getTimerValue(self::getGameStateValue('option_time_limit')));
-        $sql = <<<SQL
-update player
-set player_start_reflexion_time = now(),
-player_remaining_reflexion_time = $maxTime;
-SQL;
-        self::DbQuery($sql);
+        self::DbQuery(giveReflexionTime($maxTime));
 
         $this->gamestate->nextState('');
     }
