@@ -121,12 +121,24 @@ function setupAbilities (dojo, obj) {
   $('playerlist').innerText = ''
   for (const playerId in obj.players) {
     const player = obj.players[playerId]
-    const playerEl = dojo.create('div', {
-      innerHTML: `${player.player_name}: `
-    }, $('playerlist'))
+    const parentID = `player_board_${playerId}`
+    const els = dojo.query(`#${parentID} .mm_abilityblock`)
+    if (els.length === 0) {
+      const overallID = `overall_player_board_${playerId}`
+      dojo.connect($(overallID), 'ondblclick', this, function (evt) {
+        dispatchMove(obj, null, [playerId])
+      })
+
+      dojo.query(`#${overallID}`).attr('title', _('Double-click to notify'))
+    }
+    const playerEl = (els.length === 0) ? dojo.create('div', {
+      class: 'mm_abilityblock'
+    }, $(parentID)) : els[0]
+    playerEl.innerText = ''
     const backgroundEl = dojo.create('div', {
       class: 'mm_ability'
     }, playerEl)
+    console.log(backgroundEl)
     const abilities =
           getRoles(
             Object.keys(obj.players).length,
@@ -142,9 +154,6 @@ function setupAbilities (dojo, obj) {
       dojo.create('div', {
         class: 'redpawn'
       }, playerEl)
-    }
-    playerEl.ondblclick = function (evt) {
-      dispatchMove(obj, null, [playerId])
     }
   }
   const body = document.getElementsByTagName('body')[0]

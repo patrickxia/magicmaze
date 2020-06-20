@@ -248,6 +248,10 @@
   display: inline-block;
 }
 
+.mm_abilityblock {
+  display: block;
+}
+
 .mm_ability {
   background-color: #0994dc;
   display: inline-block;

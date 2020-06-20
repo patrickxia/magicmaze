@@ -34,6 +34,6 @@
           $players_nbr = count($players);
           $this->tpl['TEXT_TIME_REMAIN'] = self::_('Time remaining:');
           $this->tpl['TEXT_NEXT_EXPLORE'] = self::_('Next exploration tile (click on cell to explore):');
-          $this->tpl['TEXT_PLAYER_LIST'] = self::_('List of players. Double-click to notify.');
+          $this->tpl['TEXT_PLAYER_LIST'] = self::_('Double-click a player in the player list (top or right) to give them the red pawn.');
       }
   }
