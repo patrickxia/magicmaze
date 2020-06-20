@@ -74,6 +74,20 @@ class MagicMaze extends Table {
         return 'magicmaze';
     }
 
+    public static function tokenName($tokenID) {
+        switch ($tokenID) {
+            case 0:
+                return clienttranslate('elf');
+            case 1:
+                return clienttranslate('dwarf');
+            case 2:
+                return clienttranslate('barbarian');
+            case 3:
+                return clienttranslate('mage');
+            default:
+                throw new Exception('invalid token ID');
+        }
+    }
     /*
         setupNewGame:
 
@@ -540,8 +554,11 @@ class MagicMaze extends Table {
         $res = self::getNonEmptyObjectFromDb($sql);
 
         $this->gamestate->nextState('warp');
-        self::notifyAllPlayers('tokenMoved', clienttranslate('token moved'), array(
+        self::notifyAllPlayers('tokenMoved', clienttranslate('${player_name} warps the ${token_name}'), array(
+            'i18n' => array('token_name'),
             'token_id' => $res['token_id'],
+            'token_name' => self::tokenName($res['token_id']),
+            'player_name' => self::getCurrentPlayerName(),
             'position_x' => $res['position_x'],
             'position_y' => $res['position_y'],
         ));
@@ -560,8 +577,11 @@ class MagicMaze extends Table {
         $sql = "select position_x, position_y from tokens where token_id = $token_id";
         $res = self::getNonEmptyObjectFromDb($sql);
         $this->gamestate->nextState('move');
-        self::notifyAllPlayers('tokenMoved', clienttranslate('token moved'), array(
+        self::notifyAllPlayers('tokenMoved', clienttranslate('${player_name} moves the ${token_name} along an escalator'), array(
+            'i18n' => array('token_name'),
             'token_id' => $token_id,
+            'token_name' => self::tokenName($token_id),
+            'player_name' => self::getCurrentPlayerName(),
             'position_x' => $res['position_x'],
             'position_y' => $res['position_y'],
         ));
@@ -678,9 +698,11 @@ class MagicMaze extends Table {
         }
         // XXX conflicts, need a lot better than this (possibly timestamp the
         // insertions).
-
-        self::notifyAllPlayers('tokenMoved', clienttranslate('token moved'), array(
+        self::notifyAllPlayers('tokenMoved', clienttranslate('${player_name} moves the ${token_name}'), array(
+            'i18n' => array('token_name'),
             'token_id' => $token_id,
+            'token_name' => self::tokenName($token_id),
+            'player_name' => self::getCurrentPlayerName(),
             'position_x' => $res['position_x'],
             'position_y' => $res['position_y'],
         ));
