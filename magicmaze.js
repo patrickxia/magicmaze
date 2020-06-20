@@ -285,8 +285,11 @@ function placeCharacter (obj, info) {
   const left = obj.lefts.get(key)
   const el = $(`mm_token${info.token_id}`)
   const adjust = (CELL_SIZE - MEEPLE_SIZE) / 2
-  el.style.left = `${left + adjust}px`
-  el.style.top = `${top + adjust}px`
+  obj.slideToObjectPos(`mm_token${info.token_id}`,
+    'mm_area_scrollable_oversurface',
+    left + adjust,
+    top + adjust,
+    /* duration */ 200).play()
 }
 
 function fromEntries (iterable) {
