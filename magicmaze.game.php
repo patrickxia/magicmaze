@@ -156,7 +156,6 @@ class MagicMaze extends Table {
         // (note: statistics used in this file must be defined in your stats.inc.php file)
         //self::initStat( 'table', 'table_teststat1', 0 );    // Init a table statistics
         //self::initStat( 'player', 'player_teststat1', 0 );  // Init a player statistics (for all players)
-
         $this->gamestate->setAllPlayersMultiactive();
 
         /************ End of the game initialization *****/
@@ -200,7 +199,7 @@ class MagicMaze extends Table {
         $result['flips'] = self::getGameStateValue('num_flips');
         $deadline = floatval(self::getGameStateValue('timer_deadline_micros'));
         if ($deadline !== -1.) {
-            $result['deadline'] = $deadline;
+            $result['time_left'] = $deadline - microtime(true);
         }
         $attention = intval(self::getGameStateValue('attention_pawn'));
         if ($attention !== -1) {
@@ -561,33 +560,17 @@ SQL;
 
     public function setDeadline($newDeadline) {
         self::setGameStateValue('timer_deadline_micros', $newDeadline);
-        $deadlineInt = intval($newDeadline);
-        $remain = intval($deadlineInt - microtime(true));
-        // Warning! MySQL DATETIME - DATETIME gives you a number in the format yyyyMMddhhmmss.
-        // It's crazy.
-        $sql = <<<SQL
-  update player
-  set player_start_reflexion_time = now(),
-  player_remaining_reflexion_time = $deadlineInt - unix_timestamp(now())
-SQL;
-        self::DbQuery($sql);
-
-        $state = $this->gamestate->state();
-        $players = $this->gamestate->getActivePlayerList();
-        foreach ($players as $player) {
-            $state['reflexion']['total'][$player] = $remain;
-        }
-        $this->notifyAllPlayers('gameStateChange', '', $state);
     }
 
     public function checkDeadline() {
         $deadline = floatval(self::getGameStateValue('timer_deadline_micros'));
         if ($deadline === -1.) {
+            $this->gamestate->nextState('startTimer');
             $newDeadline = microtime(true) + getTimerValue(self::getGameStateValue('option_time_limit'));
             $this->setDeadline($newDeadline);
             $this->notifyAllPlayers('newDeadline', clienttranslate('Timer started!'), array(
                 'flips' => self::getGameStateValue('num_flips'),
-                'deadline' => $newDeadline,
+                'time_left' => $newDeadline - microtime(true),
             ));
         } elseif (microtime(true) > $deadline + TIMER_SLOP) {
             $this->gamestate->nextState('lose');
@@ -778,6 +761,7 @@ SQL;
             if (self::DbAffectedRow() === 0) {
                 throw new BgaUserException(self::_("can't move there: security cameras"));
             }
+
             $newDeadline = 2 * microtime(true) -
                 self::getGameStateValue('timer_deadline_micros') +
                 getTimerValue(self::getGameStateValue('option_time_limit'));
@@ -790,7 +774,7 @@ SQL;
             $this->gamestate->nextState('talk');
             self::notifyAllPlayers('newDeadline', clienttranslate('timer flipped!'), array(
                 'flips' => self::incGameStateValue('num_flips', 1),
-                'deadline' => $newDeadline,
+                'time_left' => $newDeadline - microtime(true),
             ));
         } elseif ($this->isBarbarian($res['token_id']) && $res['property'] === 'camera') {
             $sql = <<<SQL
@@ -1004,6 +988,20 @@ SQL;
         }
 
         throw new feException('Zombie mode not supported at this game state: ' . $statename);
+    }
+
+    // states
+    public function stGiveTime() {
+        // There are four available timers.
+        $maxTime = 5 * (TIMER_SLOP + getTimerValue(self::getGameStateValue('option_time_limit')));
+        $sql = <<<SQL
+update player
+set player_start_reflexion_time = now(),
+player_remaining_reflexion_time = $maxTime;
+SQL;
+        self::DbQuery($sql);
+
+        $this->gamestate->nextState('');
     }
 
     ///////////////////////////////////////////////////////////////////////////////////:

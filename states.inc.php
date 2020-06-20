@@ -52,6 +52,17 @@ $machinestates = array(
         'transitions' => array('' => 2),
     ),
 
+    // This is a dummy state used to add sufficient time to the timer for all
+    // players so they don't get time strikes. It's a "state" because I want to
+    // force the framework to refresh the reflexion_time after I've written to it.
+    6 => array(
+            'name' => 'update_timer',
+            'description' => '',
+            'type' => 'game',
+            'action' => 'stGiveTime',
+            'transitions' => array('' => 3),
+    ),
+
     2 => array(
             'name' => 'steal_loud',
             'description' => clienttranslate('Steal the items!'),
@@ -60,7 +71,7 @@ $machinestates = array(
             'updateGameProgression' => true,
             'possibleactions' => array('talk', 'move', 'warp', 'steal', 'lose'),
             // I'm not convinced you can steal the items and remain in the loud state.
-            'transitions' => array('talk' => 2, 'move' => 3, 'warp' => 3, 'steal' => 5,  'lose' => 99),
+            'transitions' => array('talk' => 2, 'move' => 3, 'warp' => 3, 'startTimer' => 6, 'steal' => 5, 'lose' => 99),
     ),
 
     3 => array(
@@ -69,7 +80,7 @@ $machinestates = array(
             'descriptionmyturn' => clienttranslate('Quietly steal the items!'),
             'type' => 'multipleactiveplayer',
             'possibleactions' => array('talk', 'move', 'warp', 'steal', 'lose'),
-            'transitions' => array('talk' => 2, 'move' => 3, 'warp' => 3, 'steal' => 5,  'lose' => 99),
+            'transitions' => array('talk' => 2, 'move' => 3, 'warp' => 3, 'startTimer' => 6, 'steal' => 5, 'lose' => 99),
     ),
 
     4 => array(

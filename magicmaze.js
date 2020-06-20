@@ -49,13 +49,6 @@ function updateTimer (obj, el) {
     return
   }
 
-  const serverDeadline = $('reflexiontime_value').innerText
-  if (serverDeadline.length > 0) {
-    el.textContent = serverDeadline
-    return
-  }
-
-  // In single-player mode we can't just crib off of the UI.
   const deadline = SECS_TO_MILLIS * obj.deadline
   const left = Math.max(0, Math.floor(MILLIS_TO_SECS * (deadline - Date.now())))
   const minutes = Math.floor(left / 60)
@@ -356,8 +349,8 @@ function (dojo, declare) {
       this.flips = gamedatas.flips
 
       // TODO: Set up your game interface here, according to "gamedatas"
-      if (gamedatas.deadline) {
-        this.deadline = gamedatas.deadline
+      if (gamedatas.time_left) {
+        this.deadline = (Date.now() / 1000.0) + parseFloat(gamedatas.time_left)
       }
 
       this.scrollmap.create(
@@ -608,8 +601,8 @@ function (dojo, declare) {
       previewNextTile(this, dojo, notif.args)
     },
     notif_newDeadline: function (notif) {
-      if (notif.args.deadline) {
-        this.deadline = notif.args.deadline
+      if (notif.args.time_left) {
+        this.deadline = (Date.now() / 1000.0) + parseFloat(notif.args.time_left)
       }
       if (notif.args.flips) {
         this.flips = notif.args.flips
