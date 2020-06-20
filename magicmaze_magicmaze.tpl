@@ -57,6 +57,13 @@
 
 <div id="mm_border"></div>
 
+<div id="mm_objectives">
+<div id="mm_objectives_container">
+<div id="mm_objectives_front"></div>
+<div id="mm_objectives_back"></div>
+</div>
+</div>
+
 <div id="mm_control0" class="mm_control">
 <div class="mm_actionW mm_abilityW"></div>
 <div class="mm_actionN mm_abilityN"></div>

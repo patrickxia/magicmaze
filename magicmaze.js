@@ -318,6 +318,8 @@ function (dojo, declare) {
       this.clickableCells = new Map()
       this.visualCells = new Map()
       this.scrollmap = new ebg.scrollmap() // eslint-disable-line new-cap
+      this.displayedSteal = false
+      this.displayedEscape = false
     },
 
     /*
@@ -430,6 +432,11 @@ function (dojo, declare) {
       dojo.connect($('mm_moveright'), 'onclick', this, 'onMoveRight')
       dojo.connect($('mm_movedown'), 'onclick', this, 'onMoveDown')
 
+      const objEl = dojo.query('#mm_objectives_container')
+      dojo.connect($('mm_objectives_container'), 'onclick', this, function (evt) {
+        objEl.style('visibility', 'hidden')
+      })
+
       // This needs to access some properties created earlier, do this as late as possible.
       setupAbilities(dojo, this)
       // Setup game notifications to handle (see "setupNotifications" method below)
@@ -461,17 +468,43 @@ function (dojo, declare) {
     // onEnteringState: this method is called each time we are entering into a new game state.
     //                  You can use this method to perform some user interface changes at this moment.
     //
+    //
+    /*
+#mm_objectives:hover #mm_objectives_container {
+  transform: rotateY(180deg);
+}
+*/
+
     onEnteringState: function (stateName, args) {
+      const el = dojo.query('#mm_objectives_container')
       switch (stateName) {
+        case 'steal_loud':
+        case 'steal_quiet':
+          if (!this.displayedSteal) {
+            this.displayedSteal = true
+            el.style('visibility', 'visible')
+            setTimeout(function () {
+              el.style('visibility', 'hidden')
+            }, 4500)
+          }
+          break
         case 'escape_loud':
         case 'escape_quiet':
-          dojo.query('.mm_abilityP').forEach(function (node, index, arr) {
-            node.innerText = ''
-            dojo.create('div', {
-              class: 'mm_crossout'
-            }, node)
+          if (!this.displayedEscape) {
+            this.displayedEscape = true
+            el.style('visibility', 'visible')
+            el.style('transform', 'rotateY(180deg)')
+            setTimeout(function () {
+              el.style('visibility', 'hidden')
+            }, 4500)
+            dojo.query('.mm_abilityP').forEach(function (node, index, arr) {
+              node.innerText = ''
+              dojo.create('div', {
+                class: 'mm_crossout'
+              }, node)
+            }
+            )
           }
-          )
       }
     },
 
