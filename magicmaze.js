@@ -506,6 +506,12 @@ function (dojo, declare) {
             )
           }
       }
+      const bEl = dojo.query('#mm_talk_border')
+      if (stateName.includes('loud')) {
+        bEl.style('visibility', 'visible')
+      } else {
+        bEl.style('visibility', 'hidden')
+      }
     },
 
     // onLeavingState: this method is called each time we are leaving a game state.

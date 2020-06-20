@@ -56,6 +56,7 @@
 </div>
 
 <div id="mm_border"></div>
+<div id="mm_talk_border"></div>
 
 <div id="mm_objectives">
 <div id="mm_objectives_container">

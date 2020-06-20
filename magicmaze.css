@@ -360,6 +360,19 @@
   visibility: hidden;
 }
 
+#mm_talk_border {
+  border: 5px dashed #74c936;
+  pointer-events: none; 
+  z-index: 100001;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow: auto;
+  visibility: hidden;
+}
+
 .mm_filterwarp {
   background: #111;
   opacity: 0.3;
