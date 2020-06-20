@@ -152,10 +152,11 @@ class MagicMaze extends Table {
         self::setGameStateInitialValue('attention_pawn', -1);
         self::setGameStateInitialValue('explore_status', 0);
 
-        // Init game statistics
-        // (note: statistics used in this file must be defined in your stats.inc.php file)
-        //self::initStat( 'table', 'table_teststat1', 0 );    // Init a table statistics
-        //self::initStat( 'player', 'player_teststat1', 0 );  // Init a player statistics (for all players)
+        self::initStat('table', 'actions_number', 0);
+        self::initStat('table', 'tiles_explored', 0);
+        self::initStat('table', 'timer_flips', 0);
+
+        self::initStat('player', 'actions_number', 0);
         $this->gamestate->setAllPlayersMultiactive();
 
         /************ End of the game initialization *****/
@@ -223,6 +224,9 @@ class MagicMaze extends Table {
         if (strpos($allowable, $action) === false) {
             throw new BgaUserException(self::_("you don't have that ability"));
         }
+
+        self::incStat(1, 'actions_number');
+        self::incStat(1, 'actions_number', self::getCurrentPlayerId());
     }
 
     /*
@@ -776,6 +780,7 @@ SQL;
                 'flips' => self::incGameStateValue('num_flips', 1),
                 'time_left' => $newDeadline - microtime(true),
             ));
+            self::incStat(1, 'timer_flips');
         } elseif ($this->isBarbarian($res['token_id']) && $res['property'] === 'camera') {
             $sql = <<<SQL
             update properties
@@ -803,6 +808,8 @@ SQL;
         // TODO: Maybe we shouldn't directly call here
         $this->checkAction('move');
         $this->checkOk('H');
+
+        self::incStat(1, 'tiles_explored');
 
         $this->gamestate->nextState('move');
         $coords = $this->tileCoords($tile_id);
