@@ -138,7 +138,6 @@ function setupAbilities (dojo, obj) {
     const backgroundEl = dojo.create('div', {
       class: 'mm_ability'
     }, playerEl)
-    console.log(backgroundEl)
     const abilities =
           getRoles(
             Object.keys(obj.players).length,
@@ -481,11 +480,6 @@ function (dojo, declare) {
     //                  You can use this method to perform some user interface changes at this moment.
     //
     //
-    /*
-#mm_objectives:hover #mm_objectives_container {
-  transform: rotateY(180deg);
-}
-*/
 
     onEnteringState: function (stateName, args) {
       const el = dojo.query('#mm_objectives_container')
