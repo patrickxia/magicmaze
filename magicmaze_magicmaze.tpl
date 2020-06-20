@@ -11,7 +11,7 @@
 -->
 
 <div id="mm_timer">
-{TEXT_TIME_REMAIN} <div id="mm_timer_numbers">--:--</div>
+<div id="mm_timer_img"></div> <div id="mm_timer_numbers">--:--</div>
 </div>
 
 <div id="mm_area_container">

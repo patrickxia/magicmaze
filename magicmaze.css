@@ -17,6 +17,13 @@
   top: 5em;
   background: #fff;
   z-index: 10;
+  text-align: center;
+}
+
+#mm_timer_img {
+  width: 30px;
+  height: 45px;
+  background: url('img/sprites.png') -110px 0px;
 }
 
 #mm_area_container {
