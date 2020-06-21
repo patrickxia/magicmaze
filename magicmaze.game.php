@@ -15,7 +15,7 @@ require_once('modules/mm-tiles.php');
 require_once('modules/mm-sql.php');
 
 // Be nice to the players: let them overshoot their timers by a tiny bit.
-define('TIMER_SLOP', 2);
+define('TIMER_SLOP', 4);
 
 function getTimerValue($option) {
     switch ($option) {
@@ -195,7 +195,10 @@ class MagicMaze extends Table {
         $result['flips'] = self::getGameStateValue('num_flips');
         $deadline = floatval(self::getGameStateValue('timer_deadline_micros'));
         if ($deadline !== -1.) {
-            $result['time_left'] = $deadline - microtime(true);
+            // HACK: Subtract two seconds here because the js doesn't read the deadline
+            // until the page is mostly loaded. The correct way to do this is to have
+            // the js ask for the timer after it's been loaded.
+            $result['time_left'] = $deadline - microtime(true) - 2.0;
         }
         $attention = intval(self::getGameStateValue('attention_pawn'));
         if ($attention !== -1) {
