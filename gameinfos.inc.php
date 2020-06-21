@@ -132,7 +132,7 @@ $gameinfos = array(
 //  http://en.doc.boardgamearena.com/Game_meta-information:_gameinfos.inc.php
 //  IMPORTANT: this list should be ORDERED, with the most important tag first.
 //  IMPORTANT: it is mandatory that the FIRST tag is 1, 2, 3 and 4 (= game category)
-'tags' => array(2),
+'tags' => array(2, 11, 100, 104),
 
 //////// BGA SANDBOX ONLY PARAMETERS (DO NOT MODIFY)
 
