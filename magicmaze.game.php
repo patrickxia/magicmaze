@@ -195,10 +195,10 @@ class MagicMaze extends Table {
         $result['flips'] = self::getGameStateValue('num_flips');
         $deadline = floatval(self::getGameStateValue('timer_deadline_micros'));
         if ($deadline !== -1.) {
-            // HACK: Subtract two seconds here because the js doesn't read the deadline
-            // until the page is mostly loaded. The correct way to do this is to have
-            // the js ask for the timer after it's been loaded.
-            $result['time_left'] = $deadline - microtime(true) - 2.0;
+            // Subtract three seconds here because getAllDatas() is part of some complicated
+            // handling loop on the PHP side where by the time the client gets the deadline
+            // it is stale. The client will request the new deadline on load via userRefreshDeadline.
+            $result['time_left'] = $deadline - microtime(true) - 3.0;
         }
         $attention = intval(self::getGameStateValue('attention_pawn'));
         if ($attention !== -1) {
@@ -427,6 +427,20 @@ class MagicMaze extends Table {
     //////////////////////////////////////////////////////////////////////////////
     //////////// Player actions
     ////////////
+    public function userRefreshDeadline() {
+        $deadline = self::checkDeadline(false);
+        if ($deadline === false || $deadline === -1.) {
+            return;
+        }
+        $this->notifyPlayer(
+            self::getCurrentPlayerId(),
+            'newDeadline',
+            '',
+            array(
+                'time_left' => $deadline - microtime(true),
+            )
+        );
+    }
     public function setAttentionPawn($id) {
         self::setGameStateValue('attention_pawn', $id);
         $players = self::loadPlayersBasicInfos();
@@ -522,16 +536,18 @@ class MagicMaze extends Table {
         self::setGameStateValue('timer_deadline_micros', $newDeadline);
     }
 
-    public function checkDeadline() {
+    public function checkDeadline($shouldStart) {
         $deadline = floatval(self::getGameStateValue('timer_deadline_micros'));
         if ($deadline === -1.) {
-            $this->gamestate->nextState('startTimer');
-            $newDeadline = microtime(true) + getTimerValue(self::getGameStateValue('option_time_limit'));
-            $this->setDeadline($newDeadline);
-            $this->notifyAllPlayers('newDeadline', clienttranslate('Timer started!'), array(
-                'flips' => self::getGameStateValue('num_flips'),
-                'time_left' => $newDeadline - microtime(true),
-            ));
+            if ($shouldStart) {
+                $this->gamestate->nextState('startTimer');
+                $deadline = microtime(true) + getTimerValue(self::getGameStateValue('option_time_limit'));
+                $this->setDeadline($deadline);
+                $this->notifyAllPlayers('newDeadline', clienttranslate('Timer started!'), array(
+                    'flips' => self::getGameStateValue('num_flips'),
+                    'time_left' => $deadline - microtime(true),
+                ));
+            }
         } elseif (microtime(true) > $deadline + TIMER_SLOP) {
             $this->gamestate->nextState('lose');
             $this->notifyAllPlayers('message', clienttranslate('Oh no! You ran out of time.'), array());
@@ -539,7 +555,7 @@ class MagicMaze extends Table {
             return false;
         }
 
-        return true;
+        return $deadline;
     }
 
     public function attemptWarp($x, $y) {
@@ -549,7 +565,7 @@ class MagicMaze extends Table {
         if (self::DbAffectedRow() === 0) {
             throw new BgaUserException(self::_("you can't warp there"));
         }
-        if ($this->checkDeadline() === false) {
+        if ($this->checkDeadline(true) === false) {
             return;
         }
         // TODO: timestamp this
@@ -574,7 +590,7 @@ class MagicMaze extends Table {
         if (self::DbAffectedRow() === 0) {
             throw new BgaUserException(self::_('invalid escalator operation'));
         }
-        if ($this->checkDeadline() === false) {
+        if ($this->checkDeadline(true) === false) {
             return;
         }
         $sql = "select position_x, position_y from tokens where token_id = $token_id";
@@ -633,7 +649,7 @@ class MagicMaze extends Table {
         }
         $res->close();
 
-        if ($this->checkDeadline() === false) {
+        if ($this->checkDeadline(true) === false) {
             return;
         }
 

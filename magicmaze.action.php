@@ -77,4 +77,10 @@
           $this->game->setAttentionPawn($id);
           self::ajaxResponse();
       }
+
+      public function refreshDeadline() {
+          self::setAjaxMode();
+          $this->game->userRefreshDeadline();
+          self::ajaxResponse();
+      }
   }

@@ -50,7 +50,11 @@ function updateTimer (obj, el) {
   }
 
   const deadline = SECS_TO_MILLIS * obj.deadline
-  const left = Math.max(0, Math.floor(MILLIS_TO_SECS * (deadline - Date.now())))
+  const rawLeft = Math.floor(MILLIS_TO_SECS * (deadline - Date.now()))
+  if (rawLeft < -10) {
+    obj.refreshDeadline()
+  }
+  const left = Math.max(0, rawLeft)
   const minutes = Math.floor(left / 60)
   let seconds = left % 60
   if (seconds < 10) seconds = '0' + seconds
@@ -330,6 +334,7 @@ function (dojo, declare) {
       this.scrollmap = new ebg.scrollmap() // eslint-disable-line new-cap
       this.displayedSteal = false
       this.displayedEscape = false
+      this.lastRefreshDeadline = 0
     },
 
     setup: function (gamedatas) {
@@ -349,6 +354,7 @@ function (dojo, declare) {
 
       if (gamedatas.time_left) {
         this.deadline = (Date.now() / 1000.0) + parseFloat(gamedatas.time_left)
+        setTimeout(() => game.refreshDeadline(), 3000)
       }
 
       this.scrollmap.create(
@@ -534,6 +540,18 @@ function (dojo, declare) {
         }, this, function (result) {
           console.log(result)
         }, function (error) { console.log(error) })
+    },
+
+    refreshDeadline: function () {
+      // Stop refreshing after we've lost.
+      if (this.tableresults !== undefined) {
+        return
+      }
+      // Don't hammer the server if somehow the response is slow.
+      if (Date.now() / 1000.0 - this.lastRefreshDeadline > 3) {
+        this.lastRefreshDeadline = Date.now() / 1000.0
+        this.ajaxcall('/magicmaze/magicmaze/refreshDeadline.html', {}, this, function () {}, function () {})
+      }
     },
 
     /// ////////////////////////////////////////////////
