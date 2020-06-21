@@ -804,12 +804,9 @@ class MagicMaze extends Table {
             throw new BgaUserException(self::_("you can't create a tile there"));
         }
 
-        self::DbQuery(deleteUnneededExplores($nextId));
         // TODO: tell the client to stop allowing clicks too
-        // XXX: i don't think this actually works, what if you create two tiles that
-        // face each other? an explore that's generated after the tile is placed.
-
         $clickables = $this->generateConnectionsForTile($nextId, $newx, $newy, $rotation);
+        self::DbQuery(deleteUnneededExplores($nextId));
         self::notifyAllPlayers('tileAdded', clienttranslate('tile added!'), array(
             'tile_id' => $nextId,
             'position_x' => $newx,

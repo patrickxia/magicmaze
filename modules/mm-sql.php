@@ -205,17 +205,17 @@ SQL;
 
 function deleteUnneededExplores($id) {
     return <<<SQL
-delete from properties
-    where
-        property = 'explore'
-        and
-        (find_tile(position_x + 1, position_y) = $id
-        or
-        find_tile(position_x - 1, position_y) = $id
-        or
-        find_tile(position_x, position_y + 1) = $id
-        or
-        find_tile(position_x, position_y - 1) = $id)
+delete from properties where
+property = 'explore' and
+(
+    (case when find_tile(position_x + 1, position_y) is null then 1 else 0 end)
+    +
+    (case when find_tile(position_x - 1, position_y) is null then 1 else 0 end)
+    +
+    (case when find_tile(position_x, position_y + 1) is null then 1 else 0 end)
+    +
+    (case when find_tile(position_x, position_y - 1) is null then 1 else 0 end)
+) = 0
 SQL;
 }
 
