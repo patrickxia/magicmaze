@@ -30,6 +30,7 @@ class MagicMaze extends Table {
             'mage_status' => 12,
             'attention_pawn' => 13,
             'explore_status' => 14,
+            'tiles_remain' => 15,
             'option_time_limit' => 100,
             'option_tile_set' => 102,
         ));
@@ -74,9 +75,9 @@ class MagicMaze extends Table {
         self::DbQuery($sql);
 
         if (in_array(0, $tiles)) {
-            $this->createTile(0, 0, 0, 0);
+            $this->createTile(0, 0, 0, 0, false);
         } else {
-            $this->createTile(1, 0, 0, 0);
+            $this->createTile(1, 0, 0, 0, false);
         }
         self::reattributeColorsBasedOnPreferences($players, $gameinfos['player_colors']);
         self::reloadPlayersBasicInfos();
@@ -98,6 +99,7 @@ class MagicMaze extends Table {
         self::setGameStateInitialValue('mage_status', 0);
         self::setGameStateInitialValue('attention_pawn', -1);
         self::setGameStateInitialValue('explore_status', 0);
+        self::setGameStateInitialValue('tiles_remain', count($tiles) - 1);
 
         self::initStat('table', 'actions_number', 0);
         self::initStat('table', 'tiles_explored', 0);
@@ -363,20 +365,6 @@ class MagicMaze extends Table {
         return $ret;
     }
 
-    // goyp
-    public static function isElf($tokenID) {
-        return intval($tokenID) === 0;
-    }
-    public static function isDwarf($tokenID) {
-        return intval($tokenID) === 1;
-    }
-    public static function isBarbarian($tokenID) {
-        return intval($tokenID) === 2;
-    }
-    public static function isMage($tokenID) {
-        return intval($tokenID) === 3;
-    }
-
     //////////////////////////////////////////////////////////////////////////////
     //////////// Player actions
     ////////////
@@ -426,7 +414,7 @@ class MagicMaze extends Table {
             throw new BgaUserException(self::_('there are no tiles left!'));
         }
 
-        self::notifyAllPlayers('nextTile', clienttranslate('next tile available'), array(
+        self::notifyAllPlayers('nextTile', '', array(
             'tile_id' => $next,
         ));
     }
@@ -768,7 +756,7 @@ class MagicMaze extends Table {
         }
     }
 
-    public function createTile($nextId, $newx, $newy, $rotation) {
+    public function createTile($nextId, $newx, $newy, $rotation, $notify = true) {
         self::DbQuery(placeTileQuery($nextId, $newx, $newy, $rotation));
         if (self::DbAffectedRow() === 0) {
             throw new BgaUserException(self::_("you can't create a tile there"));
@@ -777,13 +765,24 @@ class MagicMaze extends Table {
         // TODO: tell the client to stop allowing clicks too
         $clickables = $this->generateConnectionsForTile($nextId, $newx, $newy, $rotation);
         self::DbQuery(deleteUnneededExplores($nextId));
-        self::notifyAllPlayers('tileAdded', clienttranslate('tile added!'), array(
-            'tile_id' => $nextId,
-            'position_x' => $newx,
-            'position_y' => $newy,
-            'rotation' => $rotation,
-            'clickables' => $clickables,
-        ));
+
+        if ($notify) {
+            $tilesRemain = self::getGameStateValue('tiles_remain');
+            $tilesRemain--;
+            self::setGameStateValue('tiles_remain', $tilesRemain);
+
+            self::notifyAllPlayers('tileAdded',
+                clienttranslate('${player_name} explores. ${tiles_remain} tile(s) are left.'),
+                array(
+                    'player_name' => self::getCurrentPlayerName(),
+                    'tile_id' => $nextId,
+                    'tiles_remain' => $tilesRemain,
+                    'position_x' => $newx,
+                    'position_y' => $newy,
+                    'rotation' => $rotation,
+                    'clickables' => $clickables,
+            ));
+        }
     }
 
     //////////////////////////////////////////////////////////////////////////////
