@@ -11,45 +11,11 @@
  */
 require_once(APP_GAMEMODULE_PATH . 'module/table/table.game.php');
 require_once('modules/mm-playerability.php');
-require_once('modules/mm-tiles.php');
 require_once('modules/mm-sql.php');
+require_once('modules/mm-util.php');
 
 // Be nice to the players: let them overshoot their timers by a tiny bit.
 define('TIMER_SLOP', 4);
-
-function getTimerValue($option) {
-    switch ($option) {
-        case 30:
-            return 420;
-        case 20:
-            return 240;
-        case 10:
-        default:
-            return 180;
-    }
-}
-
-function getTileset($option) {
-    switch ($option) {
-        case 50:
-            return array(0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24);
-        case 40:
-            return array(0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22);
-        case 30:
-            return array(0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19);
-        case 20:
-            return array(0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17);
-        case 10:
-            return array(0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
-        case 0:
-        default:
-            return array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
-    }
-}
-
-function getKey($inx, $iny) {
-    return "${inx}_${iny}";
-}
 
 class MagicMaze extends Table {
     // tile_id -> x -> y -> {"walls", "escalator", "properties"}
@@ -74,20 +40,6 @@ class MagicMaze extends Table {
         return 'magicmaze';
     }
 
-    public static function tokenName($tokenID) {
-        switch ($tokenID) {
-            case 0:
-                return clienttranslate('elf');
-            case 1:
-                return clienttranslate('dwarf');
-            case 2:
-                return clienttranslate('barbarian');
-            case 3:
-                return clienttranslate('mage');
-            default:
-                throw new Exception('invalid token ID');
-        }
-    }
     /*
         setupNewGame:
 
@@ -248,6 +200,7 @@ class MagicMaze extends Table {
         if (count($this->tileinfo) > 0) {
             return;
         }
+        require_once('modules/mm-tiles.php');
         $this->tileinfo = MM_TILEINFO;
     }
 
@@ -411,16 +364,16 @@ class MagicMaze extends Table {
     }
 
     // goyp
-    public function isElf($tokenID) {
+    public static function isElf($tokenID) {
         return intval($tokenID) === 0;
     }
-    public function isDwarf($tokenID) {
+    public static function isDwarf($tokenID) {
         return intval($tokenID) === 1;
     }
-    public function isBarbarian($tokenID) {
+    public static function isBarbarian($tokenID) {
         return intval($tokenID) === 2;
     }
-    public function isMage($tokenID) {
+    public static function isMage($tokenID) {
         return intval($tokenID) === 3;
     }
 
@@ -498,7 +451,7 @@ class MagicMaze extends Table {
         // TODO: this kind of sucks UI wise, display a little "locked" icon
         // TODO: clicking twice on explore should place
         $this->informNextTile();
-        if ($this->isMage($tokenId)) {
+        if (isMage($tokenId)) {
             if ($this->attemptWizExplore()) {
                 return;
             }
@@ -525,7 +478,7 @@ class MagicMaze extends Table {
             if (intval($tokenId) !== intval($res['token_id'])) {
                 throw new BgaUserException(self::_("can't explore: that token is not on an explore space"));
             }
-            if ($this->isElf($res['token_id'])) {
+            if (isElf($res['token_id'])) {
                 $this->gamestate->nextState('talk');
             }
             $this->placeTileFrom($res['tile_id'], $res['position_x'], $res['position_y'], true);
@@ -576,7 +529,7 @@ class MagicMaze extends Table {
         self::notifyAllPlayers('tokenMoved', clienttranslate('${player_name} warps the ${token_name}'), array(
             'i18n' => array('token_name'),
             'token_id' => $res['token_id'],
-            'token_name' => self::tokenName($res['token_id']),
+            'token_name' => tokenName($res['token_id']),
             'player_name' => self::getCurrentPlayerName(),
             'position_x' => $res['position_x'],
             'position_y' => $res['position_y'],
@@ -599,7 +552,7 @@ class MagicMaze extends Table {
         self::notifyAllPlayers('tokenMoved', clienttranslate('${player_name} moves the ${token_name} along an escalator'), array(
             'i18n' => array('token_name'),
             'token_id' => $token_id,
-            'token_name' => self::tokenName($token_id),
+            'token_name' => tokenName($token_id),
             'player_name' => self::getCurrentPlayerName(),
             'position_x' => $res['position_x'],
             'position_y' => $res['position_y'],
@@ -661,7 +614,7 @@ class MagicMaze extends Table {
 
         $sql = "update tokens set position_x = $newx, position_y = $newy where " .
         "token_id = $token_id";
-        $dwarfexclusion = (($this->isDwarf($token_id)) ? 'and not dwarf' : '');
+        $dwarfexclusion = ((isDwarf($token_id)) ? 'and not dwarf' : '');
         $wallrestriction = ' and not exists '
           . "(select 1 from walls where old_x = $oldx and old_y = $oldy and new_x = $newx and new_y = $newy $dwarfexclusion) ";
         $tilerestriction = ' and exists '
@@ -709,7 +662,7 @@ class MagicMaze extends Table {
                 'time_left' => $newDeadline - microtime(true),
             ));
             self::incStat(1, 'timer_flips');
-        } elseif ($this->isBarbarian($res['token_id']) && $res['property'] === 'camera') {
+        } elseif (isBarbarian($res['token_id']) && $res['property'] === 'camera') {
             self::DbQuery(attemptConsumeCameraQuery($res['position_x'], $res['position_y']));
             self::notifyAllPlayers('newUsed', '', array(
                 'x' => $res['position_x'],
@@ -721,7 +674,7 @@ class MagicMaze extends Table {
         self::notifyAllPlayers('tokenMoved', clienttranslate('${player_name} moves the ${token_name}'), array(
             'i18n' => array('token_name'),
             'token_id' => $token_id,
-            'token_name' => self::tokenName($token_id),
+            'token_name' => tokenName($token_id),
             'player_name' => self::getCurrentPlayerName(),
             'position_x' => $res['position_x'],
             'position_y' => $res['position_y'],
@@ -787,7 +740,7 @@ class MagicMaze extends Table {
             if (!$tokenId) {
                 throw new BgaUserException(self::_("you can't place a tile there"));
             }
-            if ($this->isElf($tokenId['token_id'])) {
+            if (isElf($tokenId['token_id'])) {
                 $this->gamestate->nextState('talk');
             }
         } elseif ($mageStatus === 1) {
