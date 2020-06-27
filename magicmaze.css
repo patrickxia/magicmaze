@@ -242,9 +242,15 @@
   background: url('img/sprites.png') -90px -55px;
   position: absolute;
   z-index: 1;
+  filter: drop-shadow(0px -5px 10px #000);
 }
 
-.redpawn {
+.mm_notify {
+  display: inline-block;
+  cursor: pointer;
+}
+
+.mm_redpawn {
   width: 24px;
   height: 48px;
   background: url('img/sprites.png') -85px 0px;

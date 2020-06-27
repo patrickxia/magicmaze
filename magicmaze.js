@@ -134,10 +134,24 @@ function setupAbilities (dojo, obj) {
       })
 
       dojo.query(`#${overallID}`).attr('title', _('Double-click to notify'))
+
+      els[0] = dojo.create('div', {
+        class: 'mm_abilityblock'
+      }, $(parentID))
+
+      const nameEl = $(`player_name_${playerId}`)
+      const notifyEl = dojo.create('div', {
+        class: 'mm_notify',
+        innerHTML: '←🔔'
+      }, nameEl)
+      dojo.connect(notifyEl, 'onmouseover', this, function (evt) {
+        evt.stopPropagation()
+      })
+      dojo.connect(notifyEl, 'onclick', this, function (evt) {
+        dispatchMove(obj, null, [playerId])
+      })
     }
-    const playerEl = (els.length === 0) ? dojo.create('div', {
-      class: 'mm_abilityblock'
-    }, $(parentID)) : els[0]
+    const playerEl = els[0]
     playerEl.innerText = ''
     const backgroundEl = dojo.create('div', {
       class: 'mm_ability'
@@ -155,7 +169,7 @@ function setupAbilities (dojo, obj) {
     }
     if (parseInt(obj.attention_pawn) === parseInt(playerId)) {
       dojo.create('div', {
-        class: 'redpawn'
+        class: 'mm_redpawn'
       }, playerEl)
     }
   }
