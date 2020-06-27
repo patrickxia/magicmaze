@@ -391,6 +391,15 @@
   opacity: 0.3;
 }
 
+#mm_warphelp {
+  visibility: hidden;
+  display: block;
+  position: absolute;
+  background: #333;
+  color: #fff;
+  z-index: 5;
+}
+
 /* TODO: Make these line up with the player guides */
 .mm_control {
   position: fixed;

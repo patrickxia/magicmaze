@@ -113,7 +113,7 @@ function updateWarpHighlight (dojo, obj) {
   if (!(obj.player_id in obj.abilities) || obj.abilities[obj.player_id].indexOf('P') !== -1) {
     node.style('opacity', '0.0')
     node.style('pointer-events', 'auto')
-    node.attr('title', _('double-click to warp'))
+    node.attr('title', _('Double-click to warp'))
   } else {
     node.style('opacity', '0.3')
     node.style('pointer-events', 'none')
@@ -245,7 +245,30 @@ function drawProperties (obj, properties) {
           top: cellTop + 'px'
         }
       }, $('mm_area_scrollable_oversurface'))
+      let timer
+      let prevent = false
+      const helpEl = dojo.query('#mm_warphelp')
+      clickableZone.onclick = function (evt) {
+        timer = setTimeout(function () {
+          if (!prevent) {
+            helpEl.style('top', '0')
+            helpEl.style('left', '0')
+            const tipRect = helpEl[0].getBoundingClientRect()
+            const rect = clickableZone.getBoundingClientRect()
+            helpEl.style('visibility', 'visible')
+            helpEl.style('top', `${rect.top - tipRect.top + CELL_SIZE / 2}px`)
+            helpEl.style('left', `${rect.left - tipRect.left + CELL_SIZE / 2}px`)
+            setTimeout(function () {
+              helpEl.style('visibility', 'hidden')
+            }, 2000)
+          }
+          prevent = false
+        }, 250)
+      }
       clickableZone.ondblclick = function (evt) {
+        clearTimeout(timer)
+        prevent = true
+        helpEl.style('visibility', 'hidden')
         dispatchMove(obj, -1, [warp.position_x, warp.position_y])
       }
       obj.clickableCells.set(key, clickableZone)
