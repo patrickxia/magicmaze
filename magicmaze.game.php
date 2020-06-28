@@ -383,6 +383,7 @@ class MagicMaze extends Table {
         );
     }
     public function setAttentionPawn($id) {
+        $this->checkAction('move');
         self::setGameStateValue('attention_pawn', $id);
         $players = self::loadPlayersBasicInfos();
         self::notifyAllPlayers('attention', clienttranslate('Player ${player_name} is asked to pay attention by ${src_player}'), array(
@@ -548,8 +549,8 @@ class MagicMaze extends Table {
     }
 
     public function attemptMove($token_id, $x, $y) {
+        $changedState = false;
         $this->checkAction('move');
-        $this->gamestate->nextState('move');
         // TODO: the move should be a string and we should not parse this nonsense
         // (legacy of how this was developed)
         switch ($x . $y) {
@@ -621,9 +622,11 @@ class MagicMaze extends Table {
             if ($this->checkAction('steal', false)) {
                 self::notifyAllPlayers('message', 'The items have been stolen! Escape!', array());
                 $this->gamestate->nextState('steal');
+                $changedState = true;
             } else {
                 self::DbQuery('update player set player_score = 1');
                 $this->gamestate->nextState('win');
+                $changedState = true;
                 $this->notifyAllPlayers('message', clienttranslate('Congratulations!'), array());
             }
         }
@@ -645,6 +648,7 @@ class MagicMaze extends Table {
                 'y' => $res['position_y'],
             ));
             $this->gamestate->nextState('talk');
+            $changedState = true;
             self::notifyAllPlayers('newDeadline', clienttranslate('timer flipped!'), array(
                 'flips' => self::incGameStateValue('num_flips', 1),
                 'time_left' => $newDeadline - microtime(true),
@@ -656,6 +660,9 @@ class MagicMaze extends Table {
                 'x' => $res['position_x'],
                 'y' => $res['position_y'],
             ));
+        }
+        if (!$changedState) {
+            $this->gamestate->nextState('move');
         }
         // XXX conflicts, need a lot better than this (possibly timestamp the
         // insertions).
