@@ -45,7 +45,8 @@
           $id = self::getArg('token_id', AT_int, true);
           $x = self::getArg('x', AT_int, true);
           $y = self::getArg('y', AT_int, true);
-          $this->game->attemptMove($id, $x, $y);
+          $keepmoving = self::getArg('keep_moving', AT_bool, false, false);
+          $this->game->attemptMove($id, $x, $y, $keepmoving);
           self::ajaxResponse();
       }
 

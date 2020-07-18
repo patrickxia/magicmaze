@@ -416,21 +416,25 @@
 #mm_control0 {
   background-color: #74c936;
   bottom: 80px;
+  user-select: none;
 }
 
 #mm_control1 {
   background-color: #f47b1c;
   bottom: 55px;
+  user-select: none;
 }
 
 #mm_control2 {
   background-color: #fcd112;
   bottom: 30px;
+  user-select: none;
 }
 
 #mm_control3 {
   background-color: #7f48a9;
   bottom: 5px;
+  user-select: none;
 }
 
 .mm_action {
@@ -438,6 +442,7 @@
   z-index: 1;
   padding: 5px;
   display: inline-block;
+  user-select: none;
 }
 
 #mm_objectives {

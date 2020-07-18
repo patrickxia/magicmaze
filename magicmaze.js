@@ -79,12 +79,13 @@ function dispatchMove (obj, tokenId, arr) {
       x: arr[0],
       y: arr[1]
     }
-  } else if (arr.length === 2) {
+  } else if (arr.length === 3) {
     path = '/magicmaze/magicmaze/attemptMove.html'
     arg = {
       token_id: tokenId,
       x: arr[0],
-      y: arr[1]
+      y: arr[1],
+      keep_moving: arr[2]
     }
   } else {
     if (arr[0] === 0) {
@@ -416,19 +417,19 @@ function (dojo, declare) {
         const base = `#mm_control${tokenId} `
         dojo.connect(document.querySelector(base + '> .mm_actionN'), 'onclick', this, function (evt) {
           // up
-          dispatchMove(this, tokenId, [0, -1])
+          dispatchMove(this, tokenId, [0, -1, evt.shiftKey])
         })
         dojo.connect(document.querySelector(base + '> .mm_actionW'), 'onclick', this, function (evt) {
           // left
-          dispatchMove(this, tokenId, [-1, 0])
+          dispatchMove(this, tokenId, [-1, 0, evt.shiftKey])
         })
         dojo.connect(document.querySelector(base + '> .mm_actionE'), 'onclick', this, function (evt) {
           // right
-          dispatchMove(this, tokenId, [1, 0])
+          dispatchMove(this, tokenId, [1, 0, evt.shiftKey])
         })
         dojo.connect(document.querySelector(base + '> .mm_actionS'), 'onclick', this, function (evt) {
           // down
-          dispatchMove(this, tokenId, [0, 1])
+          dispatchMove(this, tokenId, [0, 1, evt.shiftKey])
         })
         dojo.connect(document.querySelector(base + '> .mm_actionH'), 'onclick', this, function (evt) {
           // explore
@@ -451,19 +452,19 @@ function (dojo, declare) {
 
         dojo.connect(document.querySelector(base2 + '> .mm_actionN'), 'onclick', this, function (evt) {
           // up
-          dispatchMove(this, tokenId, [0, -1])
+          dispatchMove(this, tokenId, [0, -1, evt.shiftKey])
         })
         dojo.connect(document.querySelector(base2 + '> .mm_actionW'), 'onclick', this, function (evt) {
           // left
-          dispatchMove(this, tokenId, [-1, 0])
+          dispatchMove(this, tokenId, [-1, 0, evt.shiftKey])
         })
         dojo.connect(document.querySelector(base2 + '> .mm_actionE'), 'onclick', this, function (evt) {
           // up
-          dispatchMove(this, tokenId, [1, 0])
+          dispatchMove(this, tokenId, [1, 0, evt.shiftKey])
         })
         dojo.connect(document.querySelector(base2 + '> .mm_actionS'), 'onclick', this, function (evt) {
           // down
-          dispatchMove(this, tokenId, [0, 1])
+          dispatchMove(this, tokenId, [0, 1, evt.shiftKey])
         })
       }
       dojo.connect($('mm_movetop'), 'onclick', this, 'onMoveTop')

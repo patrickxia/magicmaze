@@ -548,7 +548,34 @@ class MagicMaze extends Table {
         ));
     }
 
-    public function attemptMove($token_id, $x, $y) {
+    public function attemptMove($token_id, $x, $y, $keepMoving) {
+        $res = $this->moveImpl($token_id, $x, $y);
+        if (is_null($res)) {
+            return;
+        }
+
+        while ($keepMoving) {
+            try {
+                $newRes = $this->moveImpl($token_id, $x, $y);
+                $res = $newRes;
+            } catch (BgaUserException $e) {
+                $keepMoving = false;
+            }
+        }
+
+        // XXX conflicts, need a lot better than this (possibly timestamp the
+        // insertions).
+        self::notifyAllPlayers('tokenMoved', clienttranslate('${player_name} moves the ${token_name}'), array(
+            'i18n' => array('token_name'),
+            'token_id' => $token_id,
+            'token_name' => tokenName($token_id),
+            'player_name' => self::getCurrentPlayerName(),
+            'position_x' => $res['position_x'],
+            'position_y' => $res['position_y'],
+        ));
+    }
+
+    public function moveImpl($token_id, $x, $y) {
         $changedState = false;
         $this->checkAction('move');
         // TODO: the move should be a string and we should not parse this nonsense
@@ -592,7 +619,7 @@ class MagicMaze extends Table {
         $res->close();
 
         if ($this->checkDeadline(true) === false) {
-            return;
+            return null;
         }
 
         $newx = $oldx + $x;
@@ -664,16 +691,8 @@ class MagicMaze extends Table {
         if (!$changedState) {
             $this->gamestate->nextState('move');
         }
-        // XXX conflicts, need a lot better than this (possibly timestamp the
-        // insertions).
-        self::notifyAllPlayers('tokenMoved', clienttranslate('${player_name} moves the ${token_name}'), array(
-            'i18n' => array('token_name'),
-            'token_id' => $token_id,
-            'token_name' => tokenName($token_id),
-            'player_name' => self::getCurrentPlayerName(),
-            'position_x' => $res['position_x'],
-            'position_y' => $res['position_y'],
-        ));
+
+        return $res;
     }
 
     public function placeTileFrom($tile_id, $x, $y, $is_absolute = false) {
