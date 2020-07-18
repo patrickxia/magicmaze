@@ -467,6 +467,7 @@
   height: 100%;
   transition: transform 0.8s;
   backface-visibility: hidden;
+  z-index: 1;
 }
 
 #mm_objectives_back {
