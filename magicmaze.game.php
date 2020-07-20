@@ -412,12 +412,14 @@ class MagicMaze extends Table {
     public function informNextTile() {
         $next = $this->nextAvailableTile();
         if ($next === -1) {
-            throw new BgaUserException(self::_('there are no tiles left!'));
+            return false;
         }
 
         self::notifyAllPlayers('nextTile', '', array(
             'tile_id' => $next,
         ));
+
+        return true;
     }
 
     public function attemptWizExplore() {
@@ -439,7 +441,9 @@ class MagicMaze extends Table {
         // TODO: mage action
         // TODO: this kind of sucks UI wise, display a little "locked" icon
         // TODO: clicking twice on explore should place
-        $this->informNextTile();
+        if (!$this->informNextTile()) {
+            throw new BgaUserException(self::_('there are no tiles left!'));
+        }
         if (isMage($tokenId)) {
             if ($this->attemptWizExplore()) {
                 return;
@@ -759,7 +763,6 @@ class MagicMaze extends Table {
             }
         } elseif ($mageStatus === 1) {
             // TODO: allow user to opt out? I don't know why they would...
-            // XXX: what if this is the last tile!
             $drawNew = true;
             self::setGameStateValue('mage_status', 2);
         } else {
@@ -775,8 +778,12 @@ class MagicMaze extends Table {
         $this->createTile($nextId, $newx, $newy, $rotation);
 
         if ($drawNew) {
-            $this->informNextTile();
-        } else {
+            if (!$this->informNextTile()) {
+                $drawNew = false;
+            }
+        }
+
+        if (!$drawNew) {
             self::setGameStateValue('explore_status', 0);
             self::DbQuery('update tokens set locked = false, dummy = false');
         }
