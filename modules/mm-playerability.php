@@ -71,12 +71,10 @@
                 // player2: west portal
                 // player3: escalator east
                 // player4: north
-                $res = array_merge($res, array(
-                    0 => 'SH',
-                    1 => 'WP',
-                    2 => 'RE',
-                    3 => 'N',
-                ));
+                $res[0] = 'SH';
+                $res[1] = 'WP';
+                $res[2] = 'RE';
+                $res[3] = 'N';
         }
 
         return $res[($player + $flips) % $nPlayers];
