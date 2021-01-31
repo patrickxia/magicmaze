@@ -77,6 +77,17 @@
     background-position: 32px 32px;
 }
 
+#mm_zoom_controls {
+  top: 0px;
+  right: 0px;
+  position: absolute;
+  display: block;
+  font-size: large;
+  cursor: pointer;
+  z-index: 1;
+  user-select: none;
+}
+
 .debug {
   background-color: #00b;
   opacity: .3;

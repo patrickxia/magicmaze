@@ -35,11 +35,11 @@ function toScreenCoords (x, y) {
   // 03 13 23 33 43 53 63 73
   //             44 54 64 74
 
-  var x0 = Math.floor((y + 4 * x) / 17)
-  var y0 = Math.floor((x - 4 * y) / 17)
+  const x0 = Math.floor((y + 4 * x) / 17)
+  const y0 = Math.floor((x - 4 * y) / 17)
 
-  var left = 2 * BORDER_WIDTH * x0 + x * CELL_SIZE
-  var top = -2 * BORDER_WIDTH * y0 + y * CELL_SIZE
+  const left = 2 * BORDER_WIDTH * x0 + x * CELL_SIZE
+  const top = -2 * BORDER_WIDTH * y0 + y * CELL_SIZE
 
   return [left, top]
 }
@@ -334,11 +334,13 @@ function placeCharacter (obj, info) {
   const top = obj.tops.get(key)
   const left = obj.lefts.get(key)
   const adjust = (CELL_SIZE - MEEPLE_SIZE) / 2
+  obj.rescale(1.0)
   obj.slideToObjectPos(`mm_token${info.token_id}`,
     'mm_area_scrollable_oversurface',
     left + adjust,
     top + adjust,
     /* duration */ 200).play()
+  obj.rescale()
 }
 
 function fromEntries (iterable) {
@@ -373,6 +375,7 @@ function (dojo, declare) {
       this.displayedSteal = false
       this.displayedEscape = false
       this.lastRefreshDeadline = 0
+      this.zoomLevel = 1.0
     },
 
     setup: function (gamedatas) {
@@ -471,6 +474,10 @@ function (dojo, declare) {
       dojo.connect($('mm_moveleft'), 'onclick', this, 'onMoveLeft')
       dojo.connect($('mm_moveright'), 'onclick', this, 'onMoveRight')
       dojo.connect($('mm_movedown'), 'onclick', this, 'onMoveDown')
+      dojo.connect($('mm_area_container'), 'onwheel', this, 'onWheel')
+      dojo.connect($('mm_area_container'), 'onwheel', this, 'onWheel')
+      dojo.connect($('mm_zoom_in'), 'onclick', this, 'onZoomIn')
+      dojo.connect($('mm_zoom_out'), 'onclick', this, 'onZoomOut')
 
       const objEl = dojo.query('#mm_objectives_container')
       dojo.connect($('mm_objectives_container'), 'onclick', this, function (evt) {
@@ -500,6 +507,45 @@ function (dojo, declare) {
     onMoveDown: function (evt) {
       evt.preventDefault()
       this.scrollmap.scroll(0, -300)
+    },
+    onWheel: function (evt) {
+      if (evt.ctrlKey) {
+        // either a pinch event or a whole-page zoom event (hitting the ctrl key while scrolling)
+        // either way, ignore it
+        return
+      }
+      if (!evt.wheelDeltaY || Math.abs(evt.wheelDeltaY) !== 120) {
+        // mouse wheels have exactly 120 for delta, everything else
+        // does not. there's some sort of thing where wheelDeltaY is not set
+        // and then we can condition on deltaMode, but idk what to do if there's
+        // no wheel delta anyway?
+        return
+      }
+      if (evt.deltaY < 0) {
+        this.onZoomIn(evt)
+      } else {
+        this.onZoomOut(evt)
+      }
+    },
+    onZoomIn: function (evt) {
+      evt.preventDefault()
+      this.zoomLevel += 0.1
+      this.rescale()
+    },
+    onZoomOut: function (evt) {
+      evt.preventDefault()
+      this.zoomLevel -= 0.1
+      this.rescale()
+    },
+    rescale: function (zoomLevel) {
+      if (zoomLevel === undefined) {
+        zoomLevel = this.zoomLevel
+      }
+      // You need to set these individually. If these divs are in a div that sets a transform, the mouse
+      // coordinates are all screwy and it will break click+drag.
+      for (const element of ['mm_area_scrollable', 'mm_area_scrollable_oversurface']) {
+        dojo.query('#' + element).style('transform', 'scale(' + zoomLevel + ')')
+      }
     },
 
     /// ////////////////////////////////////////////////
