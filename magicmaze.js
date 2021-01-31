@@ -375,7 +375,7 @@ function (dojo, declare) {
       this.displayedSteal = false
       this.displayedEscape = false
       this.lastRefreshDeadline = 0
-      this.zoomLevel = 1.0
+      this.zoomLevel = 0
     },
 
     setup: function (gamedatas) {
@@ -477,6 +477,7 @@ function (dojo, declare) {
       dojo.connect($('mm_area_container'), 'onwheel', this, 'onWheel')
       dojo.connect($('mm_area_container'), 'onwheel', this, 'onWheel')
       dojo.connect($('mm_zoom_in'), 'onclick', this, 'onZoomIn')
+      dojo.connect($('mm_zoom_reset'), 'onclick', this, 'onZoomReset')
       dojo.connect($('mm_zoom_out'), 'onclick', this, 'onZoomOut')
 
       const objEl = dojo.query('#mm_objectives_container')
@@ -529,22 +530,31 @@ function (dojo, declare) {
     },
     onZoomIn: function (evt) {
       evt.preventDefault()
-      this.zoomLevel += 0.1
+      this.zoomLevel += 1
+      // Don't allow zoom of more than 8 levels in (approx 2x)
+      this.zoomLevel = Math.min(4, this.zoomLevel)
       this.rescale()
     },
     onZoomOut: function (evt) {
       evt.preventDefault()
-      this.zoomLevel -= 0.1
+      this.zoomLevel -= 1
+      // Don't allow zoom of more than 20 levels out (approx 15%)
+      this.zoomLevel = Math.max(-20, this.zoomLevel)
       this.rescale()
     },
-    rescale: function (zoomLevel) {
-      if (zoomLevel === undefined) {
-        zoomLevel = this.zoomLevel
+    onZoomReset: function (evt) {
+      evt.preventDefault()
+      this.zoomLevel = 0
+      this.rescale()
+    },
+    rescale: function (zoomRatio) {
+      if (zoomRatio === undefined) {
+        zoomRatio = Math.pow(1.1, this.zoomLevel)
       }
       // You need to set these individually. If these divs are in a div that sets a transform, the mouse
       // coordinates are all screwy and it will break click+drag.
       for (const element of ['mm_area_scrollable', 'mm_area_scrollable_oversurface']) {
-        dojo.query('#' + element).style('transform', 'scale(' + zoomLevel + ')')
+        dojo.query('#' + element).style('transform', 'scale(' + zoomRatio + ')')
       }
     },
 

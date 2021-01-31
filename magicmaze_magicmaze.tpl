@@ -16,7 +16,8 @@
 
 <div id="mm_area_container">
   <div id="mm_zoom_controls">
-    <a href="#" class="mm_zoom" id="mm_zoom_in">+</a>
+    <a href="#" class="mm_zoom" id="mm_zoom_in">+</a> |
+    <a href="#" class="mm_zoom" id="mm_zoom_reset">o</a> |
     <a href="#" class="mm_zoom" id="mm_zoom_out">-</a>
   </div>
   <div id="mm_area_surface"></div>
