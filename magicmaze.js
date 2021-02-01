@@ -475,7 +475,6 @@ function (dojo, declare) {
       dojo.connect($('mm_moveright'), 'onclick', this, 'onMoveRight')
       dojo.connect($('mm_movedown'), 'onclick', this, 'onMoveDown')
       dojo.connect($('mm_area_container'), 'onwheel', this, 'onWheel')
-      dojo.connect($('mm_area_container'), 'onwheel', this, 'onWheel')
       dojo.connect($('mm_zoom_in'), 'onclick', this, 'onZoomIn')
       dojo.connect($('mm_zoom_reset'), 'onclick', this, 'onZoomReset')
       dojo.connect($('mm_zoom_out'), 'onclick', this, 'onZoomOut')
@@ -510,17 +509,23 @@ function (dojo, declare) {
       this.scrollmap.scroll(0, -300)
     },
     onWheel: function (evt) {
+      console.log(evt)
       if (evt.ctrlKey) {
         // either a pinch event or a whole-page zoom event (hitting the ctrl key while scrolling)
         // either way, ignore it
         return
       }
-      if (!evt.wheelDeltaY || Math.abs(evt.wheelDeltaY) !== 120) {
-        // mouse wheels have exactly 120 for delta, everything else
-        // does not. there's some sort of thing where wheelDeltaY is not set
-        // and then we can condition on deltaMode, but idk what to do if there's
-        // no wheel delta anyway?
-        return
+      if (evt.wheelDeltaY) {
+        if (Math.abs(evt.wheelDeltaY) !== 120) {
+          // mouse wheels have exactly 120 for delta, everything else
+          // does not. TODO: replace this with debounce for trackpad
+          return
+        }
+      } else {
+        // firefox: doesn't set wheelDeltaY, but does set the deltaMode to 1
+        if (evt.deltaMode === 0) {
+          return
+        }
       }
       if (evt.deltaY < 0) {
         this.onZoomIn(evt)
