@@ -509,7 +509,6 @@ function (dojo, declare) {
       this.scrollmap.scroll(0, -300)
     },
     onWheel: function (evt) {
-      console.log(evt)
       if (evt.ctrlKey) {
         // either a pinch event or a whole-page zoom event (hitting the ctrl key while scrolling)
         // either way, ignore it
