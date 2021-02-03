@@ -82,10 +82,15 @@
   right: 0px;
   position: absolute;
   display: block;
-  font-size: large;
+  font-size: x-large;
+  color: #000;
   cursor: pointer;
   z-index: 1;
   user-select: none;
+}
+
+.mm_zoom {
+
 }
 
 .debug {
