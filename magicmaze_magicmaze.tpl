@@ -18,7 +18,8 @@
   <div id="mm_zoom_controls">
     <a href="#" class="mm_zoom" id="mm_zoom_in">➕</a> |
     <a href="#" class="mm_zoom" id="mm_zoom_reset">⭯</a> |
-    <a href="#" class="mm_zoom" id="mm_zoom_out">➖</a>
+    <a href="#" class="mm_zoom" id="mm_zoom_out">➖</a> |
+    <a href="#" class="mm_zoom" id="mm_zoom_fit">⬚</a>
   </div>
   <div id="mm_area_surface"></div>
   <div id="mm_area_aggregate">

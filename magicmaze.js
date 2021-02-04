@@ -327,6 +327,19 @@ function getKey (x, y) {
   return `${x}_${y}`
 }
 
+function toZoomLevel (ratio) {
+  return Math.log(ratio) / Math.log(1.1)
+}
+
+function toZoomRatio (level) {
+  return Math.pow(1.1, level)
+}
+
+function clampLevel (level) {
+  // 4 is roughly 2x, -14 is roughly 25%
+  return Math.min(4, Math.max(-14, level))
+}
+
 function placeCharacter (obj, info) {
   const x = parseInt(info.position_x)
   const y = parseInt(info.position_y)
@@ -478,6 +491,7 @@ function (dojo, declare) {
       dojo.connect($('mm_zoom_in'), 'onclick', this, 'onZoomIn')
       dojo.connect($('mm_zoom_reset'), 'onclick', this, 'onZoomReset')
       dojo.connect($('mm_zoom_out'), 'onclick', this, 'onZoomOut')
+      dojo.connect($('mm_zoom_fit'), 'onclick', this, 'onZoomFit')
 
       const objEl = dojo.query('#mm_objectives_container')
       dojo.connect($('mm_objectives_container'), 'onclick', this, function (evt) {
@@ -535,16 +549,67 @@ function (dojo, declare) {
     onZoomIn: function (evt) {
       evt.preventDefault()
       this.zoomLevel += 1
-      // Don't allow zoom of more than 8 levels in (approx 2x)
-      this.zoomLevel = Math.min(4, this.zoomLevel)
+      this.zoomLevel = clampLevel(this.zoomLevel)
       this.rescale()
     },
     onZoomOut: function (evt) {
       evt.preventDefault()
       this.zoomLevel -= 1
-      // Don't allow zoom of more than 20 levels out (approx 15%)
-      this.zoomLevel = Math.max(-20, this.zoomLevel)
+      this.zoomLevel = clampLevel(this.zoomLevel)
       this.rescale()
+    },
+    onZoomFit: function (evt) {
+      const containerStyle = dojo.getComputedStyle(dojo.byId('mm_area_container'))
+      const viewWidth = parseInt(containerStyle.width, 10)
+      const viewHeight = parseInt(containerStyle.height, 10)
+      let minX, minY, maxX, maxY
+      dojo.query('#mm_area_scrollable > div').forEach(function (el) {
+        if (!el.className.startsWith('tile')) {
+          return
+        }
+        const x = parseInt(dojo.getStyle(el, 'left'), 10)
+        const y = parseInt(dojo.getStyle(el, 'top'), 10)
+        const height = parseInt(dojo.getStyle(el, 'height'), 10)
+        const width = parseInt(dojo.getStyle(el, 'width'), 10)
+        if (minX === undefined || x < minX) {
+          minX = x
+        }
+        if (maxX === undefined || (x + width) > maxX) {
+          maxX = x + width
+        }
+        if (minY === undefined || y < minY) {
+          minY = y
+        }
+        if (maxY === undefined || (y + height) > maxY) {
+          maxY = y + height
+        }
+      })
+      const widthRequired = maxX - minX
+      const heightRequired = maxY - minY
+      const ratio = Math.min(viewWidth / widthRequired, viewHeight / heightRequired)
+      const centerX = (maxX + minX) * 0.5
+      const centerY = (minY + maxY) * 0.5
+      const debugString = `${minX} ${minY} ${maxX} ${maxY} ${viewWidth} ${viewHeight}`
+      if (isNaN(ratio)) {
+        throw new Error(`error determining view ratio; ${debugString}`)
+      }
+      // Don't allow zoom in as part of this operation
+      this.zoomLevel = Math.min(0, clampLevel(toZoomLevel(ratio)))
+      this.rescale()
+
+      // Center the view
+      if (isNaN(centerX) || isNaN(centerY)) {
+        throw new Error(`could not determine center; ${debugString}`)
+      }
+
+      const newRatio = toZoomRatio(this.zoomLevel)
+      const newX = -(centerX * newRatio - viewWidth * 0.5)
+      const newY = -(centerY * newRatio - viewHeight * 0.5)
+
+      for (const element of ['mm_area_scrollable', 'mm_area_scrollable_oversurface']) {
+        dojo.query('#' + element).style('left', `${newX}px`)
+        dojo.query('#' + element).style('top', `${newY}px`)
+      }
     },
     onZoomReset: function (evt) {
       evt.preventDefault()
@@ -553,7 +618,7 @@ function (dojo, declare) {
     },
     rescale: function (zoomRatio) {
       if (zoomRatio === undefined) {
-        zoomRatio = Math.pow(1.1, this.zoomLevel)
+        zoomRatio = toZoomRatio(this.zoomLevel)
       }
       // You need to set these individually. If these divs are in a div that sets a transform, the mouse
       // coordinates are all screwy and it will break click+drag.
@@ -561,7 +626,6 @@ function (dojo, declare) {
         dojo.query('#' + element).style('transform', 'scale(' + zoomRatio + ')')
       }
     },
-
     /// ////////////////////////////////////////////////
     /// / Game & client states
 
