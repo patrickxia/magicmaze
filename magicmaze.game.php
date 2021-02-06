@@ -553,6 +553,7 @@ class MagicMaze extends Table {
     }
 
     public function attemptMove($token_id, $x, $y, $keepMoving) {
+        $this->delayedNotification = null;
         $res = $this->moveImpl($token_id, $x, $y);
         if (is_null($res)) {
             return;
@@ -564,6 +565,12 @@ class MagicMaze extends Table {
             if (!$this->checkAction('move', false)) {
                 break;
             }
+            // It's likely to run into a wall after this happens, but
+            // just in case somebody adds a new map where this isn't
+            // the case...
+            if ($this->delayedNotification !== null) {
+                break;
+            }
             try {
                 $newRes = $this->moveImpl($token_id, $x, $y);
                 $res = $newRes;
@@ -572,9 +579,6 @@ class MagicMaze extends Table {
             }
         }
 
-        // TODO This order of notifications isn't correct, but it's doubtful people will
-        // really notice (the moveImpl will tell you "timer flipped" or "escape", etc, but
-        // we don't publish the tokenMoved until after the sequence of moves is done).
         // XXX conflicts, need a lot better than this (possibly timestamp the
         // insertions).
         self::notifyAllPlayers('tokenMoved', clienttranslate('${player_name} moves the ${token_name}'), array(
@@ -585,6 +589,18 @@ class MagicMaze extends Table {
             'position_x' => $res['position_x'],
             'position_y' => $res['position_y'],
         ));
+        if ($this->delayedNotification !== null) {
+            self::notifyAllPlayers(
+                $this->delayedNotification[0],
+                $this->delayedNotification[1],
+                $this->delayedNotification[2]
+            );
+        }
+    }
+
+    // Only useful in the middle of moves.
+    public function delayedNotifyAllPlayers($type, $msg, $args) {
+        $this->delayedNotification = array($type, $msg, $args);
     }
 
     public function moveImpl($token_id, $x, $y) {
@@ -659,14 +675,14 @@ class MagicMaze extends Table {
         // TODO maybe move this logic down and refactor it out of here...
         if (self::DbAffectedRow() === 4) {
             if ($this->checkAction('steal', false)) {
-                self::notifyAllPlayers('message', clienttranslate('The items have been stolen! Escape!'), array());
+                $this->delayedNotifyAllPlayers('message', clienttranslate('The items have been stolen! Escape!'), array());
                 $this->gamestate->nextState('steal');
                 $changedState = true;
             } else {
                 self::DbQuery('update player set player_score = 1');
                 $this->gamestate->nextState('win');
                 $changedState = true;
-                $this->notifyAllPlayers('message', clienttranslate('Congratulations!'), array());
+                $this->delayedNotifyAllPlayers('message', clienttranslate('Congratulations!'), array());
             }
         }
         // XXX roundtrips
@@ -688,7 +704,7 @@ class MagicMaze extends Table {
             ));
             $this->gamestate->nextState('talk');
             $changedState = true;
-            self::notifyAllPlayers('newDeadline', clienttranslate('timer flipped!'), array(
+            $this->delayedNotifyAllPlayers('newDeadline', clienttranslate('timer flipped!'), array(
                 'flips' => self::incGameStateValue('num_flips', 1),
                 'time_left' => $newDeadline - microtime(true),
             ));
