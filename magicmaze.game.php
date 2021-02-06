@@ -651,7 +651,7 @@ class MagicMaze extends Table {
         // TODO maybe move this logic down and refactor it out of here...
         if (self::DbAffectedRow() === 4) {
             if ($this->checkAction('steal', false)) {
-                self::notifyAllPlayers('message', 'The items have been stolen! Escape!', array());
+                self::notifyAllPlayers('message', clienttranslate('The items have been stolen! Escape!'), array());
                 $this->gamestate->nextState('steal');
                 $changedState = true;
             } else {
