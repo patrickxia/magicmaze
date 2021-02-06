@@ -559,6 +559,11 @@ class MagicMaze extends Table {
         }
 
         while ($keepMoving) {
+            // Edge case: if we've won, we can't move any further, and
+            // the checkAction won't throw a BgaUserException...
+            if (!$this->checkAction('move', false)) {
+                break;
+            }
             try {
                 $newRes = $this->moveImpl($token_id, $x, $y);
                 $res = $newRes;
@@ -567,6 +572,9 @@ class MagicMaze extends Table {
             }
         }
 
+        // TODO This order of notifications isn't correct, but it's doubtful people will
+        // really notice (the moveImpl will tell you "timer flipped" or "escape", etc, but
+        // we don't publish the tokenMoved until after the sequence of moves is done).
         // XXX conflicts, need a lot better than this (possibly timestamp the
         // insertions).
         self::notifyAllPlayers('tokenMoved', clienttranslate('${player_name} moves the ${token_name}'), array(
