@@ -191,20 +191,22 @@ function previewNextTile (obj, dojo, info, onlyLocked) {
   const tileId = parseInt(info.tile_id)
   obj.nextTile = tileId
   // TODO Maybe consider disabling this feature. It makes it much easier.
-  obj.previewElements.forEach(function (el, tokenId) {
+  obj.previewElements.forEach(function (els, tokenId) {
     if (onlyLocked && !obj.locked.has(tokenId)) {
       return
     }
-    const newEl = dojo.create('div', {
-      class: `tile${tileId}`
-    }, el)
-    dojo.style(newEl, 'transform', `rotate(${el.mm_rot}deg)`)
-    dojo.style(newEl, 'opacity', '0.6')
-    // Float previews above "draw a tile", because "draw a new tile" can't
-    // actually isn't operable. This situation happens if we start an
-    // explore action and somebody else moves a meeple that is eligible for
-    // explore at the exact same new tile location.
-    dojo.style(el, 'z-index', '1')
+    for (const el of els) {
+      const newEl = dojo.create('div', {
+        class: `tile${tileId}`
+      }, el)
+      dojo.style(newEl, 'transform', `rotate(${el.mm_rot}deg)`)
+      dojo.style(newEl, 'opacity', '0.6')
+      // Float previews above "draw a tile", because "draw a new tile" can't
+      // actually isn't operable. This situation happens if we start an
+      // explore action and somebody else moves a meeple that is eligible for
+      // explore at the exact same new tile location.
+      dojo.style(el, 'z-index', '1')
+    }
   })
 }
 
@@ -216,13 +218,15 @@ function placeTile (obj, tile) {
   const x = parseInt(tile.position_x)
   const y = parseInt(tile.position_y)
 
-  obj.previewElements.forEach(function (el, tokenId, map) {
-    if (el.mm_key === getKey(x, y)) {
-      dojo.destroy(el)
-      map.delete(tokenId)
-    } else {
-      el.innerHTML = ''
-      dojo.style(el, 'z-index', '0')
+  obj.previewElements.forEach(function (els, tokenId, map) {
+    for (const el of els) {
+      if (el.mm_key === getKey(x, y)) {
+        dojo.destroy(el)
+        map.delete(tokenId)
+      } else {
+        el.innerHTML = ''
+        dojo.style(el, 'z-index', '0')
+      }
     }
   })
 
@@ -383,7 +387,9 @@ function placeCharacter (obj, info) {
   if (obj.previewElements.has(tokenId)) {
     // If two meeples can explore in the same location, we'll just
     // overlap two divs and only one will be deleted.
-    dojo.destroy(obj.previewElements.get(tokenId))
+    for (const el of obj.previewElements.get(tokenId)) {
+      dojo.destroy(el)
+    }
     obj.previewElements.delete(tokenId)
   }
 
@@ -438,7 +444,7 @@ function placeCharacter (obj, info) {
   dojo.connect(el, 'onclick', obj, function (evt) {
     dispatchMove(obj, tokenId, [0])
   })
-  obj.previewElements.set(tokenId, el)
+  obj.previewElements.set(tokenId, [el])
 }
 
 function fromEntries (iterable) {
