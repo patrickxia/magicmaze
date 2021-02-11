@@ -147,6 +147,7 @@ class MagicMaze extends Table {
         $result['properties']['used'] = self::getObjectListFromDB($sql);
 
         $result['flips'] = self::getGameStateValue('num_flips');
+        $result['tile_remain'] = self::getGameStateValue('tiles_remain');
         $deadline = floatval(self::getGameStateValue('timer_deadline_micros'));
         if ($deadline !== -1.) {
             // Subtract three seconds here because getAllDatas() is part of some complicated
@@ -349,6 +350,7 @@ class MagicMaze extends Table {
                     $ret[$type][] = array(
                         'position_x' => $oldx,
                         'position_y' => $oldy,
+                        'token_id' => $color,
                     );
                     $propertystring .= "($oldx, $oldy, $color, '$type')";
                 }

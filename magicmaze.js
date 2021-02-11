@@ -103,9 +103,7 @@ function dispatchMove (obj, tokenId, arr) {
     }
   }
   obj.ajaxcall(path,
-    arg, this, function (result) {
-      console.log(result)
-    }, function (error) { console.log(error) })
+    arg, this, function (result) {}, function (error) { if (error) console.log(error) })
 }
 
 function updateWarpHighlight (dojo, obj) {
@@ -191,10 +189,14 @@ function setupAbilities (dojo, obj) {
 
 function previewNextTile (obj, dojo, info) {
   const tileId = parseInt(info.tile_id)
-  dojo.create('div', {
-    class: `tile${tileId}`
-  }, $('mm_next_explore'))
-  dojo.query('#mm_next_explore_container').style('visibility', 'visible')
+  // TODO Maybe consider disabling this feature. It makes it much easier.
+  obj.previewElements.forEach(function (value) {
+    const newEl = dojo.create('div', {
+      class: `tile${tileId}`
+    }, value)
+    dojo.style(newEl, 'transform', `rotate(${value.mm_rot}deg)`)
+    dojo.style(newEl, 'opacity', '0.6')
+  })
 }
 
 function placeTile (obj, tile) {
@@ -202,6 +204,16 @@ function placeTile (obj, tile) {
   dojo.query('#mm_next_explore_container').style('visibility', 'hidden')
   const x = parseInt(tile.position_x)
   const y = parseInt(tile.position_y)
+
+  obj.previewElements.forEach(function (value, key, map) {
+    if (value.mm_key === getKey(x, y)) {
+      dojo.destroy(value)
+      map.delete(key)
+    } else {
+      value.innerHTML = ''
+    }
+  })
+
   const screenCoords = toScreenCoords(x, y)
   dojo.create('div', {
     class: `tile${tile.tile_id}`,
@@ -231,8 +243,6 @@ function drawProperties (obj, properties) {
     for (let i = 0; i < properties.warp.length; ++i) {
       const warp = properties.warp[i]
       const key = getKey(warp.position_x, warp.position_y)
-      // XXX: this doesn't work
-      // if (key in obj.clickableCells) continue
       if (obj.clickableCells.has(key)) continue
       const cellLeft = obj.lefts.get(key)
       const cellTop = obj.tops.get(key)
@@ -287,6 +297,7 @@ function drawProperties (obj, properties) {
     for (let i = 0; i < properties.explore.length; ++i) {
       const explore = properties.explore[i]
       const key = getKey(explore.position_x, explore.position_y)
+      const tokenId = parseInt(explore.token_id)
       const cellLeft = obj.lefts.get(key)
       const cellTop = obj.tops.get(key)
       if (obj.clickableCells.has(key)) continue
@@ -306,6 +317,7 @@ function drawProperties (obj, properties) {
           obj.relativexs.get(key), obj.relativeys.get(key), false, false)
       }
       obj.clickableCells.set(key, el)
+      obj.explores.set(key, tokenId)
     }
   }
 }
@@ -343,6 +355,7 @@ function clampLevel (level) {
 function placeCharacter (obj, info) {
   const x = parseInt(info.position_x)
   const y = parseInt(info.position_y)
+  const tokenId = parseInt(info.token_id)
   const key = getKey(x, y)
   const top = obj.tops.get(key)
   const left = obj.lefts.get(key)
@@ -354,6 +367,69 @@ function placeCharacter (obj, info) {
     top + adjust,
     /* duration */ 200).play()
   obj.rescale()
+
+  if (obj.previewElements.has(tokenId)) {
+    // If two meeples can explore in the same location, we'll just
+    // overlap two divs and only one will be deleted.
+    // XXX this doesn't work if one of them arrives later.
+    dojo.destroy(obj.previewElements.get(tokenId))
+    obj.previewElements.delete(tokenId)
+  }
+
+  if (obj.explores.get(key) !== tokenId) {
+    return
+  }
+  if (obj.tilesRemain === 0) {
+    return
+  }
+  // XXX do not display preview if we're already in an explore step!
+  // XXX mage move. Add "purple explore tiles" wherever we can (z-index lower than
+  // normal explores) whenever the mage is on an unused crystal. Then if wizexplore state
+  // advances, we put all of those previews in there.
+
+  const relativeloc = getKey(obj.relativexs.get(key), obj.relativeys.get(key))
+  // NB this map looks different than the PHP one because the PHP one maps tile -> tile
+  // whereas we're mapping meeple_loc -> new_tile_loc
+  const dx = new Map([
+    ['2_0', [-1, -4]],
+    ['3_2', [1, -1]],
+    ['1_3', [-2, 1]],
+    ['0_1', [-4, -2]]
+  ]).get(relativeloc)
+  if (dx === undefined) {
+    throw new Error(`internal error: explore on unexpected space ${relativeloc}`)
+  }
+  const newx = x + dx[0]
+  const newy = y + dx[1]
+  if (obj.tileIds.has(getKey(newx, newy))) {
+    return
+  }
+  const screenCoords = toScreenCoords(newx, newy)
+  const rot = new Map([
+    ['2_0', 0],
+    ['3_2', 90],
+    ['1_3', 180],
+    ['0_1', -90]
+  ]).get(relativeloc)
+  if (rot === undefined) {
+    throw new Error(`internal error: explore on unexpected space ${relativeloc}`)
+  }
+  // TODO: factor this with the placeTile impl
+  const el = dojo.create('div', {
+    class: 'mm_preview_tile',
+    style: {
+      position: 'absolute',
+      left: (screenCoords[0] - BORDER_WIDTH) + 'px',
+      top: (screenCoords[1] - BORDER_WIDTH) + 'px'
+    }
+  }, $('mm_area_scrollable_oversurface'))
+  el.mm_key = getKey(newx, newy)
+  el.mm_rot = rot
+  dojo.connect(el, 'onclick', obj, function (evt) {
+    dispatchMove(obj, tokenId, [0])
+  })
+  obj.previewElements.set(tokenId, el)
+  // XXX next thing to do is put the tile preview
 }
 
 function fromEntries (iterable) {
@@ -382,6 +458,8 @@ function (dojo, declare) {
       this.tileIds = new Map()
       this.relativexs = new Map()
       this.relativeys = new Map()
+      this.explores = new Map()
+      this.previewElements = new Map() // coord key -> dom element
       this.clickableCells = new Map()
       this.visualCells = new Map()
       this.scrollmap = new ebg.scrollmap() // eslint-disable-line new-cap
@@ -405,6 +483,7 @@ function (dojo, declare) {
       }
 
       this.flips = gamedatas.flips
+      this.tilesRemain = gamedatas.tiles_remain
 
       if (gamedatas.time_left) {
         this.deadline = (Date.now() / 1000.0) + parseFloat(gamedatas.time_left)
@@ -423,10 +502,6 @@ function (dojo, declare) {
       }
 
       drawProperties(this, gamedatas.properties)
-      if (gamedatas.next_tile) {
-        previewNextTile(this, dojo, gamedatas.next_tile)
-      }
-
       for (const key in gamedatas.tokens) {
         placeCharacter(this, gamedatas.tokens[key])
         const tokenId = gamedatas.tokens[key].token_id
@@ -497,6 +572,11 @@ function (dojo, declare) {
       dojo.connect($('mm_objectives_container'), 'onclick', this, function (evt) {
         objEl.style('visibility', 'hidden')
       })
+
+      // Needs to be after placeCharacter
+      if (gamedatas.next_tile) {
+        previewNextTile(this, dojo, gamedatas.next_tile)
+      }
 
       // This needs to access some properties created earlier, do this as late as possible.
       setupAbilities(dojo, this)

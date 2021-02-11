@@ -203,6 +203,9 @@ not exists (
 SQL;
 }
 
+// We already can't explore from these spaces (would error during tile placement),
+// but we shouldn't lock tokens that are on "used explores" if an explore is started
+// from elsewhere.
 function deleteUnneededExplores($id) {
     return <<<SQL
 delete from properties where
