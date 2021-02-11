@@ -30,7 +30,8 @@ const VALID_MOVES = 'WNSERPH'
 function toScreenCoords (x, y) {
   // Thanks Sarah Howell (soasrsamh@gmail.com) for the
   // lovely math behind this implementation. Note that this only
-  // works for each start tile.
+  // works for the coordinates of the cell in the top left of every
+  // tile.
 
   // 00 10 20 30
   // 01 11 21 31 41 51 61 71
