@@ -17,6 +17,7 @@
 // Define the libraries that the BGA framework gives us to begin with
 // and the imports.
 /* global $, define, ebg, dojo, g_gamethemeurl, getRoles, _ */
+'use strict'
 
 const SECS_TO_MILLIS = 1000.0
 const MILLIS_TO_SECS = 0.001
