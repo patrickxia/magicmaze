@@ -10,6 +10,9 @@
 
 // This is written in JavaScript Standard Style.
 // (https://standardjs.com)
+// If you are seeing semicolons and bizarre loop variables named _loop#,
+// this is because you are reading the babelified version of this source code.
+// Please refer to the github for the non-transformed version.
 
 // Define the libraries that the BGA framework gives us to begin with
 // and the imports.
@@ -256,8 +259,7 @@ function placeTile (obj, tile) {
 
 function drawProperties (obj, properties) {
   if (properties.warp) {
-    for (let i = 0; i < properties.warp.length; ++i) {
-      const warp = properties.warp[i]
+    for (const warp of properties.warp) {
       const key = getKey(warp.position_x, warp.position_y)
       if (obj.clickableCells.has(key)) continue
       const cellLeft = obj.lefts.get(key)
@@ -304,14 +306,12 @@ function drawProperties (obj, properties) {
   updateWarpHighlight(dojo, obj)
 
   if (properties.used) {
-    for (let i = 0; i < properties.used.length; ++i) {
-      const used = properties.used[i]
+    for (const used of properties.used) {
       drawUsed(obj, used.position_x, used.position_y)
     }
   }
   if (properties.explore) {
-    for (let i = 0; i < properties.explore.length; ++i) {
-      const explore = properties.explore[i]
+    for (const explore of properties.explore) {
       const key = getKey(explore.position_x, explore.position_y)
       const tokenId = parseInt(explore.token_id)
       const cellLeft = obj.lefts.get(key)
