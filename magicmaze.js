@@ -187,30 +187,42 @@ function setupAbilities (dojo, obj) {
   updateWarpHighlight(dojo, obj)
 }
 
-function previewNextTile (obj, dojo, info) {
+function previewNextTile (obj, dojo, info, onlyLocked) {
   const tileId = parseInt(info.tile_id)
+  obj.nextTile = tileId
   // TODO Maybe consider disabling this feature. It makes it much easier.
-  obj.previewElements.forEach(function (value) {
+  obj.previewElements.forEach(function (el, tokenId) {
+    if (onlyLocked && !obj.locked.has(tokenId)) {
+      return
+    }
     const newEl = dojo.create('div', {
       class: `tile${tileId}`
-    }, value)
-    dojo.style(newEl, 'transform', `rotate(${value.mm_rot}deg)`)
+    }, el)
+    dojo.style(newEl, 'transform', `rotate(${el.mm_rot}deg)`)
     dojo.style(newEl, 'opacity', '0.6')
+    // Float previews above "draw a tile", because "draw a new tile" can't
+    // actually isn't operable. This situation happens if we start an
+    // explore action and somebody else moves a meeple that is eligible for
+    // explore at the exact same new tile location.
+    dojo.style(el, 'z-index', '1')
   })
 }
 
 function placeTile (obj, tile) {
   $('mm_next_explore').innerHTML = ''
+  delete obj.nextTile
+  obj.locked.clear()
   dojo.query('#mm_next_explore_container').style('visibility', 'hidden')
   const x = parseInt(tile.position_x)
   const y = parseInt(tile.position_y)
 
-  obj.previewElements.forEach(function (value, key, map) {
-    if (value.mm_key === getKey(x, y)) {
-      dojo.destroy(value)
-      map.delete(key)
+  obj.previewElements.forEach(function (el, tokenId, map) {
+    if (el.mm_key === getKey(x, y)) {
+      dojo.destroy(el)
+      map.delete(tokenId)
     } else {
-      value.innerHTML = ''
+      el.innerHTML = ''
+      dojo.style(el, 'z-index', '0')
     }
   })
 
@@ -371,7 +383,6 @@ function placeCharacter (obj, info) {
   if (obj.previewElements.has(tokenId)) {
     // If two meeples can explore in the same location, we'll just
     // overlap two divs and only one will be deleted.
-    // XXX this doesn't work if one of them arrives later.
     dojo.destroy(obj.previewElements.get(tokenId))
     obj.previewElements.delete(tokenId)
   }
@@ -382,7 +393,6 @@ function placeCharacter (obj, info) {
   if (obj.tilesRemain === 0) {
     return
   }
-  // XXX do not display preview if we're already in an explore step!
   // XXX mage move. Add "purple explore tiles" wherever we can (z-index lower than
   // normal explores) whenever the mage is on an unused crystal. Then if wizexplore state
   // advances, we put all of those previews in there.
@@ -429,7 +439,6 @@ function placeCharacter (obj, info) {
     dispatchMove(obj, tokenId, [0])
   })
   obj.previewElements.set(tokenId, el)
-  // XXX next thing to do is put the tile preview
 }
 
 function fromEntries (iterable) {
@@ -463,6 +472,7 @@ function (dojo, declare) {
       this.clickableCells = new Map()
       this.visualCells = new Map()
       this.scrollmap = new ebg.scrollmap() // eslint-disable-line new-cap
+      this.locked = new Set()
       this.displayedSteal = false
       this.displayedEscape = false
       this.lastRefreshDeadline = 0
@@ -505,6 +515,9 @@ function (dojo, declare) {
       for (const key in gamedatas.tokens) {
         placeCharacter(this, gamedatas.tokens[key])
         const tokenId = gamedatas.tokens[key].token_id
+        if (gamedatas.tokens[key].locked === '1') {
+          this.locked.add(parseInt(tokenId, 10))
+        }
         const base = `#mm_control${tokenId} `
         dojo.connect(document.querySelector(base + '> .mm_actionN'), 'onclick', this, function (evt) {
           // up
@@ -575,7 +588,7 @@ function (dojo, declare) {
 
       // Needs to be after placeCharacter
       if (gamedatas.next_tile) {
-        previewNextTile(this, dojo, gamedatas.next_tile)
+        previewNextTile(this, dojo, gamedatas.next_tile, /* onlyLocked= */true)
       }
 
       // This needs to access some properties created earlier, do this as late as possible.
@@ -807,7 +820,7 @@ function (dojo, declare) {
       placeCharacter(this, notif.args)
     },
     notif_nextTile: function (notif) {
-      previewNextTile(this, dojo, notif.args)
+      previewNextTile(this, dojo, notif.args, /* onlyLocked= */false)
     },
     notif_newDeadline: function (notif) {
       if (notif.args.time_left) {
