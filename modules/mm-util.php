@@ -62,6 +62,7 @@ function isBarbarian($tokenID) {
     return intval($tokenID) === 2;
 }
 
+define('MAGE_ID', 3);
 function isMage($tokenID) {
-    return intval($tokenID) === 3;
+    return intval($tokenID) === MAGE_ID;
 }

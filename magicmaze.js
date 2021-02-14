@@ -49,6 +49,24 @@ function toScreenCoords (x, y) {
   return [left, top]
 }
 
+const mageId = 3
+function isMage (tokenId) {
+  return tokenId === mageId
+}
+
+function createTileEl (tileX, tileY, rot, cssClass, parent) {
+  const screenCoords = toScreenCoords(tileX, tileY)
+  return dojo.create('div', {
+    class: cssClass,
+    style: {
+      position: 'absolute',
+      left: (screenCoords[0] - BORDER_WIDTH) + 'px',
+      top: (screenCoords[1] - BORDER_WIDTH) + 'px',
+      transform: `rotate(${rot}deg)`
+    }
+  }, parent)
+}
+
 function updateTimer (obj, el) {
   if (!obj.deadline) {
     return
@@ -200,13 +218,19 @@ function previewNextTile (obj, dojo, info, onlyLocked) {
     if (onlyLocked && !obj.locked.has(tokenId)) {
       return
     }
+    if (obj.mageStatus !== 0 && !isMage(tokenId)) {
+      return
+    }
     for (const el of els) {
+      if (obj.mageStatus === 0 && 'mm_magepreview' in el) {
+        continue
+      }
       const newEl = dojo.create('div', {
         class: `tile${tileId}`
       }, el)
       dojo.style(newEl, 'transform', `rotate(${el.mm_rot}deg)`)
       dojo.style(newEl, 'opacity', '0.6')
-      // Float previews above "draw a tile", because "draw a new tile" can't
+      // Float previews above "draw a tile", because "draw a new tile"
       // actually isn't operable. This situation happens if we start an
       // explore action and somebody else moves a meeple that is eligible for
       // explore at the exact same new tile location.
@@ -223,28 +247,24 @@ function placeTile (obj, tile) {
   const x = parseInt(tile.position_x)
   const y = parseInt(tile.position_y)
 
+  const noMoreTiles = (obj.tilesRemain === 0)
+
   obj.previewElements.forEach(function (els, tokenId, map) {
     for (const el of els) {
-      if (el.mm_key === getKey(x, y)) {
+      if (noMoreTiles || el.mm_key === getKey(x, y)) {
         dojo.destroy(el)
         map.delete(tokenId)
       } else {
         el.innerHTML = ''
-        dojo.style(el, 'z-index', '0')
+        dojo.style(el, 'z-index', el.mm_zindex)
       }
     }
   })
 
+  createTileEl(x, y, tile.rotation, `tile${tile.tile_id}`, $('mm_area_scrollable'))
+  // TODO should this loop even be here? Could possibly place into createTileEl
+  // but it might get written to multiple times.
   const screenCoords = toScreenCoords(x, y)
-  dojo.create('div', {
-    class: `tile${tile.tile_id}`,
-    style: {
-      position: 'absolute',
-      left: (screenCoords[0] - BORDER_WIDTH) + 'px',
-      top: (screenCoords[1] - BORDER_WIDTH) + 'px',
-      transform: 'rotate(' + tile.rotation + 'deg)'
-    }
-  }, $('mm_area_scrollable'))
   for (let i = 0; i < 4; ++i) {
     for (let j = 0; j < 4; ++j) {
       const key = getKey(x + i, y + j)
@@ -338,10 +358,16 @@ function drawProperties (obj, properties) {
       obj.explores.set(key, tokenId)
     }
   }
+  if (properties.crystal) {
+    for (const crystal of properties.crystal) {
+      obj.crystals.add(getKey(crystal.position_x, crystal.position_y))
+    }
+  }
 }
 
 function drawUsed (obj, x, y) {
   const key = getKey(x, y)
+  obj.crystals.delete(key)
   const cellLeft = obj.lefts.get(key)
   const cellTop = obj.tops.get(key)
   dojo.create('div', {
@@ -357,6 +383,10 @@ function getKey (x, y) {
   return `${x}_${y}`
 }
 
+function splitKey (x) {
+  return x.split('_', 2).map(function (x) { return parseInt(x, 10) })
+}
+
 function toZoomLevel (ratio) {
   return Math.log(ratio) / Math.log(1.1)
 }
@@ -368,6 +398,84 @@ function toZoomRatio (level) {
 function clampLevel (level) {
   // 4 is roughly 2x, -14 is roughly 25%
   return Math.min(4, Math.max(-14, level))
+}
+
+// NB this map looks different than the PHP one because the PHP one maps tile -> tile
+// whereas we're mapping meeple_loc -> new_tile_loc
+function computeNewTileLoc (obj, exploreX, exploreY) {
+  const key = getKey(exploreX, exploreY)
+  const newTileLoc = new Map([
+    ['2_0', [-1, -4]],
+    ['3_2', [1, -1]],
+    ['1_3', [-2, 1]],
+    ['0_1', [-4, -2]]
+  ])
+  const newTileRot = new Map([
+    ['2_0', 0],
+    ['3_2', 90],
+    ['1_3', 180],
+    ['0_1', -90]
+  ])
+  const relativeloc = getKey(obj.relativexs.get(key), obj.relativeys.get(key))
+  const dx = newTileLoc.get(relativeloc)
+  if (dx === undefined) {
+    throw new Error(`internal error: explore on unexpected space ${relativeloc}`)
+  }
+  const newx = exploreX + dx[0]
+  const newy = exploreY + dx[1]
+  if (obj.tileIds.has(getKey(newx, newy))) {
+    return [false, 0, 0, 0]
+  }
+  const rot = newTileRot.get(relativeloc)
+  if (rot === undefined) {
+    throw new Error(`internal error: explore on unexpected space ${relativeloc}`)
+  }
+  return [true, newx, newy, rot]
+}
+
+function destroyPreviews (obj, tokenId) {
+  if (obj.previewElements.has(tokenId)) {
+    // If two meeples can explore in the same location, we'll just
+    // overlap two divs and only one will be deleted.
+    for (const el of obj.previewElements.get(tokenId)) {
+      dojo.destroy(el)
+    }
+    obj.previewElements.delete(tokenId)
+  }
+}
+
+function drawMagePreviews (obj) {
+  if (obj.tilesRemain === 0) {
+    return
+  }
+  obj.previewElements.set(mageId, [])
+  for (const key of obj.explores.keys()) {
+    const [exploreX, exploreY] = splitKey(key)
+    const [ok, newX, newY, rot] = computeNewTileLoc(obj, exploreX, exploreY)
+    if (!ok) continue
+    // TODO perhaps "mage preview tile" css class
+    const el = createTileEl(newX, newY, 0, 'mm_preview_tile', $('mm_area_scrollable_oversurface'))
+    el.mm_key = key
+    el.mm_rot = rot
+    el.mm_magepreview = true
+
+    const srcTileID = obj.tileIds.get(key)
+    const newRelativeX = obj.relativexs.get(key)
+    const newRelativeY = obj.relativeys.get(key)
+    dojo.connect(el, 'onclick', el, function (evt) {
+      if (obj.mageStatus !== 0) {
+        /// XXX this doesn't work, need to also put this on normal
+        /// explores...
+        obj.onCreateTile(srcTileID, newRelativeX, newRelativeY)
+      } else {
+        dispatchMove(obj, mageId, [0])
+      }
+    })
+    // Lower the priority of mage explores.
+    dojo.style(el, 'z-index', '-1')
+    obj.mm_zindex = -1
+    obj.previewElements.get(mageId).push(el)
+  }
 }
 
 function placeCharacter (obj, info) {
@@ -385,68 +493,33 @@ function placeCharacter (obj, info) {
     top + adjust,
     /* duration */ 200).play()
   obj.rescale()
+  destroyPreviews(obj, tokenId)
 
-  if (obj.previewElements.has(tokenId)) {
-    // If two meeples can explore in the same location, we'll just
-    // overlap two divs and only one will be deleted.
-    for (const el of obj.previewElements.get(tokenId)) {
-      dojo.destroy(el)
-    }
-    obj.previewElements.delete(tokenId)
-  }
+  console.log(obj)
 
-  if (obj.explores.get(key) !== tokenId) {
-    return
-  }
   if (obj.tilesRemain === 0) {
     return
   }
-  // XXX mage move. Add "purple explore tiles" wherever we can (z-index lower than
-  // normal explores) whenever the mage is on an unused crystal. Then if wizexplore state
-  // advances, we put all of those previews in there.
-
-  const relativeloc = getKey(obj.relativexs.get(key), obj.relativeys.get(key))
-  // NB this map looks different than the PHP one because the PHP one maps tile -> tile
-  // whereas we're mapping meeple_loc -> new_tile_loc
-  const dx = new Map([
-    ['2_0', [-1, -4]],
-    ['3_2', [1, -1]],
-    ['1_3', [-2, 1]],
-    ['0_1', [-4, -2]]
-  ]).get(relativeloc)
-  if (dx === undefined) {
-    throw new Error(`internal error: explore on unexpected space ${relativeloc}`)
-  }
-  const newx = x + dx[0]
-  const newy = y + dx[1]
-  if (obj.tileIds.has(getKey(newx, newy))) {
+  if (isMage(tokenId) && obj.crystals.has(key)) {
+    obj.drawingMagePreviews = true
+    drawMagePreviews(obj)
     return
   }
-  const screenCoords = toScreenCoords(newx, newy)
-  const rot = new Map([
-    ['2_0', 0],
-    ['3_2', 90],
-    ['1_3', 180],
-    ['0_1', -90]
-  ]).get(relativeloc)
-  if (rot === undefined) {
-    throw new Error(`internal error: explore on unexpected space ${relativeloc}`)
+  if (isMage(tokenId)) {
+    obj.drawingMagePreviews = false
   }
-  // TODO: factor this with the placeTile impl
-  const el = dojo.create('div', {
-    class: 'mm_preview_tile',
-    style: {
-      position: 'absolute',
-      left: (screenCoords[0] - BORDER_WIDTH) + 'px',
-      top: (screenCoords[1] - BORDER_WIDTH) + 'px'
-    }
-  }, $('mm_area_scrollable_oversurface'))
-  el.mm_key = getKey(newx, newy)
-  el.mm_rot = rot
-  dojo.connect(el, 'onclick', obj, function (evt) {
-    dispatchMove(obj, tokenId, [0])
-  })
-  obj.previewElements.set(tokenId, [el])
+  if (obj.explores.get(key) === tokenId) {
+    const [ok, newX, newY, rot] = computeNewTileLoc(obj, x, y)
+    if (!ok) return
+    const el = createTileEl(newX, newY, 0, 'mm_preview_tile', $('mm_area_scrollable_oversurface'))
+    el.mm_key = getKey(newX, newY)
+    el.mm_rot = rot
+    obj.mm_zindex = 0
+    dojo.connect(el, 'onclick', obj, function (evt) {
+      dispatchMove(obj, tokenId, [0])
+    })
+    obj.previewElements.set(tokenId, [el])
+  }
 }
 
 function fromEntries (iterable) {
@@ -475,6 +548,7 @@ function (dojo, declare) {
       this.tileIds = new Map()
       this.relativexs = new Map()
       this.relativeys = new Map()
+      this.crystals = new Set()
       this.explores = new Map()
       this.previewElements = new Map() // coord key -> dom element
       this.clickableCells = new Map()
@@ -485,6 +559,7 @@ function (dojo, declare) {
       this.displayedEscape = false
       this.lastRefreshDeadline = 0
       this.zoomLevel = 0
+      this.drawingMagePreviews = false
     },
 
     setup: function (gamedatas) {
@@ -501,7 +576,7 @@ function (dojo, declare) {
       }
 
       this.flips = gamedatas.flips
-      this.tilesRemain = gamedatas.tiles_remain
+      this.tilesRemain = parseInt(gamedatas.tiles_remain, 10)
 
       if (gamedatas.time_left) {
         this.deadline = (Date.now() / 1000.0) + parseFloat(gamedatas.time_left)
@@ -594,6 +669,7 @@ function (dojo, declare) {
         objEl.style('visibility', 'hidden')
       })
 
+      this.mageStatus = parseInt(gamedatas.mage_status, 10)
       // Needs to be after placeCharacter
       if (gamedatas.next_tile) {
         previewNextTile(this, dojo, gamedatas.next_tile, /* onlyLocked= */true)
@@ -821,13 +897,20 @@ function (dojo, declare) {
     /// / Reaction to cometD notifications
 
     notif_tileAdded: function (notif) {
+      this.tilesRemain = parseInt(notif.args.tiles_remain, 10)
+      this.mageStatus = parseInt(notif.args.mage_status, 10)
       placeTile(this, notif.args)
       drawProperties(this, notif.args.clickables)
+      if (this.drawingMagePreviews) {
+        destroyPreviews(this, mageId)
+        drawMagePreviews(this)
+      }
     },
     notif_tokenMoved: function (notif) {
       placeCharacter(this, notif.args)
     },
     notif_nextTile: function (notif) {
+      this.mageStatus = parseInt(notif.args.mage_status, 10)
       previewNextTile(this, dojo, notif.args, /* onlyLocked= */false)
     },
     notif_newDeadline: function (notif) {
@@ -845,6 +928,9 @@ function (dojo, declare) {
     },
     notif_newUsed: function (notif) {
       drawUsed(this, notif.args.x, notif.args.y)
+      if (isMage(parseInt(notif.args.token_id, 10))) {
+        this.drawingMagePreviews = false
+      }
     },
     notif_attention: function (notif) {
       this.attention_pawn = notif.args.player_id

@@ -143,11 +143,14 @@ class MagicMaze extends Table {
         $result['properties']['warp'] = self::getObjectListFromDB($sql);
         $sql = "select position_x, position_y, token_id from properties where property = 'explore'";
         $result['properties']['explore'] = self::getObjectListFromDB($sql);
+        $sql = "select position_x, position_y, token_id from properties where property = 'crystal'";
+        $result['properties']['crystal'] = self::getObjectListFromDB($sql);
         $sql = "select position_x, position_y, token_id from properties where property = 'used'";
         $result['properties']['used'] = self::getObjectListFromDB($sql);
 
         $result['flips'] = self::getGameStateValue('num_flips');
-        $result['tile_remain'] = self::getGameStateValue('tiles_remain');
+        $result['tiles_remain'] = self::getGameStateValue('tiles_remain');
+        $result['mage_status'] = self::getGameStateValue('mage_status');
         $deadline = floatval(self::getGameStateValue('timer_deadline_micros'));
         if ($deadline !== -1.) {
             // Subtract three seconds here because getAllDatas() is part of some complicated
@@ -419,6 +422,7 @@ class MagicMaze extends Table {
 
         self::notifyAllPlayers('nextTile', '', array(
             'tile_id' => $next,
+            'mage_status' => self::getGameStateValue('mage_status'),
         ));
 
         return true;
@@ -440,17 +444,22 @@ class MagicMaze extends Table {
         // TODO: write test cases for whether or not we transition states properly
         // with a wizexplore while an elf is standing at an explore
         $this->gamestate->nextState('move');
-        // TODO: mage action
         // TODO: this kind of sucks UI wise, display a little "locked" icon
         // TODO: clicking twice on explore should place
+        // This needs to be before informNextTile because we need the correct mageStatus in there...
+        $mageStatusChanged = false;
+        if (isMage($tokenId)) {
+            if ($this->attemptWizExplore()) {
+                $mageStatusChanged = true;
+            }
+        }
         if (!$this->informNextTile()) {
             throw new BgaUserException(self::_('there are no tiles left!'));
         }
-        if (isMage($tokenId)) {
-            if ($this->attemptWizExplore()) {
-                return;
-            }
+        if ($mageStatusChanged) {
+            return;
         }
+
         if (intval(self::getGameStateValue('mage_status')) !== 0) {
             throw new BgaUserException(self::_('you are already exploring with the mage. click where you would like the tile.'));
         }
@@ -703,6 +712,7 @@ class MagicMaze extends Table {
             self::notifyAllPlayers('newUsed', '', array(
                 'x' => $res['position_x'],
                 'y' => $res['position_y'],
+                'token_id' => $res['token_id'],
             ));
             $this->gamestate->nextState('talk');
             $changedState = true;
@@ -716,6 +726,7 @@ class MagicMaze extends Table {
             self::notifyAllPlayers('newUsed', '', array(
                 'x' => $res['position_x'],
                 'y' => $res['position_y'],
+                'token_id' => $res['token_id'],
             ));
         }
         if (!$changedState) {
@@ -797,6 +808,7 @@ class MagicMaze extends Table {
             self::notifyAllPlayers('newUsed', '', array(
                 'x' => $res['position_x'],
                 'y' => $res['position_y'],
+                'token_id' => MAGE_ID,
             ));
             self::setGameStateValue('mage_status', 0);
         }
@@ -804,6 +816,8 @@ class MagicMaze extends Table {
         $this->createTile($nextId, $newx, $newy, $rotation);
 
         if ($drawNew) {
+            // XXX this isn't good logic. We should just check if mageStatus === 1
+            // and we have 
             if (!$this->informNextTile()) {
                 $drawNew = false;
             }
@@ -840,6 +854,7 @@ class MagicMaze extends Table {
                     'position_y' => $newy,
                     'rotation' => $rotation,
                     'clickables' => $clickables,
+                    'mage_status' => self::getGameStateValue('mage_status'),
             ));
         }
     }
