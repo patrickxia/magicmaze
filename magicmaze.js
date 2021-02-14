@@ -347,8 +347,9 @@ function drawProperties (obj, properties) {
         evt.stopPropagation() // Or we get in a state where we regenerate this element
         clearTimeout(timer)
         prevent = true
-        if (confirmEl) {
+        if (confirmEl !== undefined) {
           dojo.destroy(confirmEl)
+          confirmEl = undefined
         }
         dispatchMove(obj, -1, [warp.position_x, warp.position_y])
       }
@@ -358,6 +359,11 @@ function drawProperties (obj, properties) {
             return
           }
           if (obj.abilities[obj.player_id].indexOf('P') === -1) {
+            return
+          }
+          if (confirmEl !== undefined) {
+            // Already clicked, but clicked again somehow before we
+            // rendered.
             return
           }
           if (!prevent) {
@@ -376,11 +382,15 @@ function drawProperties (obj, properties) {
               innerHTML: '✔'
             }, $('mm_area_scrollable_oversurface'))
             setTimeout(function () {
-              if (confirmEl) {
+              if (confirmEl !== undefined) {
                 dojo.destroy(confirmEl)
+                confirmEl = undefined
               }
             }, 4000)
-            dojo.connect(confirmEl, 'onclick', obj, warpFn)
+            dojo.connect(confirmEl, 'onclick', null, function (evt) {
+              dojo.destroy(this) // warpFn does this, but in case we've messed up the confirmEl
+              warpFn(evt)
+            })
           }
           prevent = false
         }, 250)
