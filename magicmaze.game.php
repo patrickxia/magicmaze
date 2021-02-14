@@ -148,6 +148,9 @@ class MagicMaze extends Table {
         $sql = "select position_x, position_y, token_id from properties where property = 'used'";
         $result['properties']['used'] = self::getObjectListFromDB($sql);
 
+        $sql = "select old_x, old_y, new_x, new_y from escalators";
+        $result['properties']['escalator'] = self::getObjectListFromDB($sql);
+
         $result['flips'] = self::getGameStateValue('num_flips');
         $result['tiles_remain'] = self::getGameStateValue('tiles_remain');
         $result['mage_status'] = self::getGameStateValue('mage_status');
@@ -329,6 +332,12 @@ class MagicMaze extends Table {
                     $newy = $y_coord + $tfnew[1];
                     $escalatorstring .= "($oldx, $oldy, $newx, $newy),";
                     $escalatorstring .= "($newx, $newy, $oldx, $oldy)";
+                    $ret['escalator'][] = array(
+                        'old_x' => $oldx,
+                        'old_y' => $oldy,
+                        'new_x' => $newx,
+                        'new_y' => $newy,
+                    );
                 }
 
                 if (strlen($tile['properties']) > 0) {

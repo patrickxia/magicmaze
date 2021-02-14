@@ -118,7 +118,6 @@ function dispatchMove (obj, tokenId, arr) {
       }
       // explore
     } else {
-      // warp
       path = '/magicmaze/magicmaze/attemptEscalator.html'
       arg = {
         token_id: tokenId
@@ -283,6 +282,48 @@ function placeTile (obj, tile) {
   }
 }
 
+function drawEscalators (obj) {
+  obj.escalators.forEach(function (dst, srcKey) {
+    if (obj.escalatorEls.has(srcKey)) {
+      return
+    }
+    const src = splitKey(srcKey)
+    const xs = [src[0], dst[0]].sort((a, b) => a - b)
+    const ys = [src[1], dst[1]].sort((a, b) => a - b)
+    const topLeft = getKey(xs[0], ys[0])
+    const left = obj.lefts.get(topLeft) + 0.4 * CELL_SIZE
+    const top = obj.tops.get(topLeft) + 0.4 * CELL_SIZE
+
+    // srcX is always least, so if dstY is less than srcY it is nesw
+    const dir = (dst[1] < src[1]) ? 'nesw' : 'nwse'
+
+    const el = dojo.create('div', {
+      class: `mm_escalator mm_escalator_${dir}`,
+      style: {
+        position: 'absolute',
+        width: `${(xs[1] - xs[0]) * 1.25 * CELL_SIZE}px`,
+        height: `${(ys[1] - ys[0]) * 1.25 * CELL_SIZE}px`,
+        left: `${left}px`,
+        top: `${top}px`
+      }
+    }, $('mm_area_scrollable_oversurface'))
+    obj.escalatorEls.set(srcKey, el)
+    dojo.connect(el, 'onclick', obj, function (evt) {
+      const eligible = new Set()
+      obj.characterLocs.forEach(function (loc, tokenId) {
+        if ((loc[0] === dst[0] && loc[1] === dst[1]) ||
+        (loc[0] === src[0] && loc[1] === src[1])) {
+          eligible.add(tokenId)
+        }
+      })
+      if (eligible.size !== 1) {
+        return
+      }
+      dispatchMove(obj, [...eligible][0], [1])
+    })
+  })
+}
+
 function drawProperties (obj, properties) {
   if (properties.warp) {
     for (const warp of properties.warp) {
@@ -366,6 +407,32 @@ function drawProperties (obj, properties) {
     for (const crystal of properties.crystal) {
       obj.crystals.add(getKey(crystal.position_x, crystal.position_y))
     }
+  }
+  if (properties.escalator) {
+    for (const escalator of properties.escalator) {
+      // Canonical element is the one with the lower x
+      const oldX = parseInt(escalator.old_x, 10)
+      const oldY = parseInt(escalator.old_y, 10)
+      const newX = parseInt(escalator.new_x, 10)
+      const newY = parseInt(escalator.new_y, 10)
+
+      // Why not just sort? Because < works terribly on arrays.
+      let srcX, srcY, dstX, dstY
+      if (oldX < newX) {
+        srcX = oldX
+        srcY = oldY
+        dstX = newX
+        dstY = newY
+      } else {
+        srcX = newX
+        srcY = newY
+        dstX = oldX
+        dstY = oldY
+      }
+
+      obj.escalators.set(getKey(srcX, srcY), [dstX, dstY])
+    }
+    drawEscalators(obj)
   }
 }
 
@@ -491,6 +558,7 @@ function placeCharacter (obj, info) {
   const x = parseInt(info.position_x)
   const y = parseInt(info.position_y)
   const tokenId = parseInt(info.token_id)
+  obj.characterLocs.set(tokenId, [x, y])
   const key = getKey(x, y)
   const top = obj.tops.get(key)
   const left = obj.lefts.get(key)
@@ -557,11 +625,14 @@ function (dojo, declare) {
       this.relativeys = new Map()
       this.crystals = new Set()
       this.explores = new Map()
+      this.escalators = new Map()
+      this.escalatorEls = new Map()
       this.previewElements = new Map() // coord key -> dom element
       this.clickableCells = new Map()
       this.visualCells = new Map()
       this.scrollmap = new ebg.scrollmap() // eslint-disable-line new-cap
       this.locked = new Set()
+      this.characterLocs = new Map()
       this.displayedSteal = false
       this.displayedEscape = false
       this.lastRefreshDeadline = 0

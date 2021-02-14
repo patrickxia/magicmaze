@@ -480,6 +480,22 @@
   opacity: 0.5;
 }
 
+.mm_escalator {
+  pointer-events: none;
+}
+
+.mm_can_R .mm_escalator {
+  pointer-events: auto;
+}
+
+.mm_can_R .mm_escalator_nesw {
+  cursor: nesw-resize;
+}
+
+.mm_can_R .mm_escalator_nwse {
+  cursor: nwse-resize;
+}
+
 .mm_action:hover {
   opacity: 1.0;
   font-weight: 900;
