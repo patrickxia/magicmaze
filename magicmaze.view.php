@@ -35,6 +35,5 @@
           $this->tpl['TEXT_TIME_REMAIN'] = self::_('Time remaining:');
           $this->tpl['TEXT_NEXT_EXPLORE'] = self::_('Next exploration tile (click on cell to explore):');
           $this->tpl['TEXT_PLAYER_LIST'] = self::_('Double-click a player in the player list (top or right) to give them the red pawn.');
-          $this->tpl['TEXT_WARP_HELP'] = self::_('Double-click to warp');
       }
   }

@@ -115,9 +115,6 @@
 
 </div>
 
-<div id="mm_warphelp">{TEXT_WARP_HELP}</div>
-
-
 <script type="text/javascript">
 
 // Javascript HTML templates

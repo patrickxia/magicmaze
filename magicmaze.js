@@ -134,7 +134,6 @@ function updateWarpHighlight (dojo, obj) {
   if (!(obj.player_id in obj.abilities) || obj.abilities[obj.player_id].indexOf('P') !== -1) {
     node.style('opacity', '0.0')
     node.style('pointer-events', 'auto')
-    node.attr('title', _('Double-click to warp'))
   } else {
     node.style('opacity', '0.3')
     node.style('pointer-events', 'none')
@@ -343,30 +342,50 @@ function drawProperties (obj, properties) {
       }, $('mm_area_scrollable_oversurface'))
       let timer
       let prevent = false
-      const helpEl = dojo.query('#mm_warphelp')
+      let confirmEl
+      const warpFn = function (evt) {
+        evt.stopPropagation() // Or we get in a state where we regenerate this element
+        clearTimeout(timer)
+        prevent = true
+        if (confirmEl) {
+          dojo.destroy(confirmEl)
+        }
+        dispatchMove(obj, -1, [warp.position_x, warp.position_y])
+      }
       clickableZone.onclick = function (evt) {
         timer = setTimeout(function () {
+          if (!(obj.player_id in obj.abilities)) {
+            return
+          }
+          if (obj.abilities[obj.player_id].indexOf('P') === -1) {
+            return
+          }
           if (!prevent) {
-            helpEl.style('top', '0')
-            helpEl.style('left', '0')
-            const tipRect = helpEl[0].getBoundingClientRect()
-            const rect = clickableZone.getBoundingClientRect()
-            helpEl.style('visibility', 'visible')
-            helpEl.style('top', `${rect.top - tipRect.top + CELL_SIZE / 2}px`)
-            helpEl.style('left', `${rect.left - tipRect.left + CELL_SIZE / 2}px`)
+            confirmEl = dojo.create('div', {
+              class: 'mm_action',
+              style: {
+                position: 'absolute',
+                width: CELL_SIZE + 'px',
+                height: CELL_SIZE + 'px',
+                left: cellLeft + 'px',
+                top: cellTop + 'px',
+                'text-align': 'center',
+                'line-height': CELL_SIZE + 'px',
+                'font-size': '48px'
+              },
+              innerHTML: '✔'
+            }, $('mm_area_scrollable_oversurface'))
             setTimeout(function () {
-              helpEl.style('visibility', 'hidden')
-            }, 2000)
+              if (confirmEl) {
+                dojo.destroy(confirmEl)
+              }
+            }, 4000)
+            dojo.connect(confirmEl, 'onclick', obj, warpFn)
           }
           prevent = false
         }, 250)
       }
-      clickableZone.ondblclick = function (evt) {
-        clearTimeout(timer)
-        prevent = true
-        helpEl.style('visibility', 'hidden')
-        dispatchMove(obj, -1, [warp.position_x, warp.position_y])
-      }
+      clickableZone.ondblclick = warpFn
       obj.clickableCells.set(key, clickableZone)
     }
   }
