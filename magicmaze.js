@@ -464,14 +464,15 @@ function drawMagePreviews (obj) {
     const newRelativeY = obj.relativeys.get(key)
     dojo.connect(el, 'onclick', el, function (evt) {
       if (obj.mageStatus !== 0) {
-        /// XXX this doesn't work, need to also put this on normal
-        /// explores...
         obj.onCreateTile(srcTileID, newRelativeX, newRelativeY)
       } else {
         dispatchMove(obj, mageId, [0])
       }
     })
-    // Lower the priority of mage explores.
+    // Lower the priority of mage explores. We want regular explores to be used
+    // before mage explores when clicking on the map. Note that there could exist
+    // regular explore / regular explore conflicts as well; those are resolved
+    // arbitrarily.
     dojo.style(el, 'z-index', '-1')
     obj.mm_zindex = -1
     obj.previewElements.get(mageId).push(el)
