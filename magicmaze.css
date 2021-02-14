@@ -98,8 +98,13 @@
 }
 
 .mm_preview_tile {
+  visibility: hidden;
+}
+
+.mm_can_H .mm_preview_tile {
   width: 256px;
   height: 256px;
+  visibility: visible;
   background: url('img/t.png') -3072px 0px;
 }
 
