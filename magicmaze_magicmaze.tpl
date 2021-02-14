@@ -26,28 +26,28 @@
     <div id="mm_area_scrollable"></div>
     <div id="mm_area_scrollable_oversurface">
       <div id="mm_token0">
-        <div class="mm_action mm_actionN" style="position: absolute; left: 10px; top: -15px;">↑</div>
-        <div class="mm_action mm_actionE" style="position: absolute; left: 20px; top: 0px;">→</div>
-        <div class="mm_action mm_actionS" style="position: absolute; left: 10px; top: 15px;">↓</div>
-        <div class="mm_action mm_actionW" style="position: absolute; left: -15px; top: 0px;">←</div>
+        <div class="mm_action mm_actionN" style="position: absolute; left: 5px; top: -15px;">🡹</div>
+        <div class="mm_action mm_actionE" style="position: absolute; left: 20px; top: 0px;">🡺</div>
+        <div class="mm_action mm_actionS" style="position: absolute; left: 5px; top: 15px;">🡻</div>
+        <div class="mm_action mm_actionW" style="position: absolute; left: -15px; top: 0px;">🡸</div>
       </div>
       <div id="mm_token1">
-        <div class="mm_action mm_actionN" style="position: absolute; left: 10px; top: -15px;">↑</div>
-        <div class="mm_action mm_actionE" style="position: absolute; left: 20px; top: 0px;">→</div>
-        <div class="mm_action mm_actionS" style="position: absolute; left: 10px; top: 15px;">↓</div>
-        <div class="mm_action mm_actionW" style="position: absolute; left: -15px; top: 0px;">←</div>
+        <div class="mm_action mm_actionN" style="position: absolute; left: 5px; top: -15px;">🡹</div>
+        <div class="mm_action mm_actionE" style="position: absolute; left: 20px; top: 0px;">🡺</div>
+        <div class="mm_action mm_actionS" style="position: absolute; left: 5px; top: 15px;">🡻</div>
+        <div class="mm_action mm_actionW" style="position: absolute; left: -15px; top: 0px;">🡸</div>
       </div>
       <div id="mm_token2">
-        <div class="mm_action mm_actionN" style="position: absolute; left: 10px; top: -15px;">↑</div>
-        <div class="mm_action mm_actionE" style="position: absolute; left: 20px; top: 0px;">→</div>
-        <div class="mm_action mm_actionS" style="position: absolute; left: 10px; top: 15px;">↓</div>
-        <div class="mm_action mm_actionW" style="position: absolute; left: -15px; top: 0px;">←</div>
+        <div class="mm_action mm_actionN" style="position: absolute; left: 5px; top: -15px;">🡹</div>
+        <div class="mm_action mm_actionE" style="position: absolute; left: 20px; top: 0px;">🡺</div>
+        <div class="mm_action mm_actionS" style="position: absolute; left: 5px; top: 15px;">🡻</div>
+        <div class="mm_action mm_actionW" style="position: absolute; left: -15px; top: 0px;">🡸</div>
       </div>
       <div id="mm_token3">
-        <div class="mm_action mm_actionN" style="position: absolute; left: 10px; top: -15px;">↑</div>
-        <div class="mm_action mm_actionE" style="position: absolute; left: 20px; top: 0px;">→</div>
-        <div class="mm_action mm_actionS" style="position: absolute; left: 10px; top: 15px;">↓</div>
-        <div class="mm_action mm_actionW" style="position: absolute; left: -15px; top: 0px;">←</div>
+        <div class="mm_action mm_actionN" style="position: absolute; left: 5px; top: -15px;">🡹</div>
+        <div class="mm_action mm_actionE" style="position: absolute; left: 20px; top: 0px;">🡺</div>
+        <div class="mm_action mm_actionS" style="position: absolute; left: 5px; top: 15px;">🡻</div>
+        <div class="mm_action mm_actionW" style="position: absolute; left: -15px; top: 0px;">🡸</div>
       </div>
     </div>
   </div>

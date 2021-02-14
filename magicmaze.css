@@ -89,9 +89,10 @@
   user-select: none;
 }
 
-.debug {
-  background-color: #00b;
-  opacity: .3;
+/* Used to highlight elements for debugging purposes. Don't use as final style. */
+.mm_debug {
+  background-color: #00b !important;
+  opacity: .3 !important;
   border-style: solid;
   border-width: 1px;
 }
@@ -476,6 +477,12 @@
   padding: 5px;
   display: inline-block;
   user-select: none;
+  opacity: 0.5;
+}
+
+.mm_action:hover {
+  opacity: 1.0;
+  font-weight: 900;
 }
 
 #mm_objectives {
