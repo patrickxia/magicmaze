@@ -495,8 +495,6 @@ function placeCharacter (obj, info) {
   obj.rescale()
   destroyPreviews(obj, tokenId)
 
-  console.log(obj)
-
   if (obj.tilesRemain === 0) {
     return
   }
@@ -877,8 +875,7 @@ function (dojo, declare) {
           y: y,
           lock: true
         }, this, function (result) {
-          console.log(result)
-        }, function (error) { console.log(error) })
+        }, function (error) { if (error) { console.log(error) } })
     },
 
     refreshDeadline: function () {
