@@ -228,6 +228,9 @@ function previewNextTile (obj, dojo, info, onlyLocked) {
       const newEl = dojo.create('div', {
         class: `tile${tileId}`
       }, el)
+      if ('mm_shadeelement' in el) {
+        dojo.style(el.mm_shadeelement, 'visibility', 'hidden')
+      }
       dojo.style(newEl, 'transform', `rotate(${el.mm_rot}deg)`)
       dojo.style(newEl, 'opacity', '0.6')
       // Float previews above "draw a tile", because "draw a new tile"
@@ -255,6 +258,7 @@ function placeTile (obj, tile) {
         dojo.destroy(el)
         map.delete(tokenId)
       } else {
+        // Shade / other nonsense will be regenerated
         el.innerHTML = ''
         dojo.style(el, 'z-index', el.mm_zindex)
       }
@@ -458,6 +462,10 @@ function drawMagePreviews (obj) {
     el.mm_key = key
     el.mm_rot = rot
     el.mm_magepreview = true
+
+    dojo.create('div', {
+      class: 'mm_shade_preview'
+    }, el)
 
     const srcTileID = obj.tileIds.get(key)
     const newRelativeX = obj.relativexs.get(key)

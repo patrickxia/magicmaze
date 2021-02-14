@@ -101,9 +101,20 @@
   height: 256px;
   background: url('img/t.png') -3072px 0px;
 }
+
+.mm_shade_preview {
+  width: 256px;
+  height: 256px;
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  opacity: 0.5;
+  background: #7f48a9;
+}
+
 /* These aren't prefixed with mm_ for legacy reasons but
    if you fix this, you need to make sure onZoomFit also does
-   not break! Also, these need to be AFTER mm_preview_tile. */
+   not break! */
 .tile0 {
   width: 256px;
   height: 256px;
