@@ -825,8 +825,9 @@ class MagicMaze extends Table {
         $this->createTile($nextId, $newx, $newy, $rotation);
 
         if ($drawNew) {
-            // XXX this isn't good logic. We should just check if mageStatus === 1
-            // and we have 
+            // TODO We don't end up sending a "used" notification to the client for
+            // the half-used crystal ball, which is a bit weird. We should somehow unify
+            // the bottom two paths above.
             if (!$this->informNextTile()) {
                 $drawNew = false;
             }
