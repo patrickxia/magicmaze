@@ -66,7 +66,7 @@
 <div id="mm_border"></div>
 <div id="mm_talk_border"></div>
 
-<div id="mm_objectives">
+<div id="mm_objectives_float">
 <div id="mm_objectives_container">
 <div id="mm_objectives_front"></div>
 <div id="mm_objectives_back"></div>
