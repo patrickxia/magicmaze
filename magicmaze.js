@@ -771,9 +771,8 @@ function (dojo, declare) {
       dojo.connect($('mm_zoom_out'), 'onclick', this, 'onZoomOut')
       dojo.connect($('mm_zoom_fit'), 'onclick', this, 'onZoomFit')
 
-      const objEl = dojo.query('#mm_objectives_container')
-      dojo.connect($('mm_objectives_container'), 'onclick', this, function (evt) {
-        objEl.style('visibility', 'hidden')
+      dojo.connect($('mm_objectives_float'), 'onclick', this, function (evt) {
+        dojo.query('#mm_objectives_float').style('visibility', 'hidden')
       })
 
       this.mageStatus = parseInt(gamedatas.mage_status, 10)
@@ -919,7 +918,7 @@ function (dojo, declare) {
     //
 
     onEnteringState: function (stateName, args) {
-      const el = dojo.query('#mm_objectives_container')
+      const el = dojo.query('#mm_objectives_float')
       switch (stateName) {
         case 'steal_loud':
         case 'steal_quiet':
@@ -936,7 +935,7 @@ function (dojo, declare) {
           if (!this.displayedEscape) {
             this.displayedEscape = true
             el.style('visibility', 'visible')
-            el.style('transform', 'rotateY(180deg)')
+            dojo.query('#mm_objectives_container').style('transform', 'rotateY(180deg)')
             setTimeout(function () {
               el.style('visibility', 'hidden')
             }, 4500)
