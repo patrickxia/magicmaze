@@ -4,8 +4,8 @@ all: tiles
 
 .PHONY: tiles prod prodjs
 
-modules/mm-tiles.php: import-csv.php modules/mm-tiles.csv
-	php import-csv.php > tmp_csv
+modules/mm-tiles.php: misc/import-csv.php modules/mm-tiles.csv
+	php misc/import-csv.php > tmp_csv
 	mv tmp_csv modules/mm-tiles.php
 
 tiles: modules/mm-tiles.php
