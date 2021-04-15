@@ -11,6 +11,13 @@
 
 /* Note: you must not use any @import directive */
 
+@font-face {
+  font-family: "SymbolaArrows";
+  src: url("data:font/woff2;charset=utf8;base64,d09GMgABAAAAAAIYAA0AAAAABEAAAAHJAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGhYbEBwsBmAAKAqBUIEZATYCJAMUCwwABCAFgXoHIBsaAyCeBTnZaQqNOYtViip2+/djeBMP/3/fb587/WGmxlGs6FFA6TBT1AowaqWhpAEm9qmMWtMNg+LTBUKPDugCdHmiJLLT8XGiyrQ+1Yg98Vlqqw6Y1x0fvp3k88BSbUnQ2k0jayG0pS0rCcLAyii9YRqfYwW7ZJPAGJAEihAYGpsCaD3Vx3ml8TWk7nhaRer5VGwg9SJTSAGg1EfbByf11ZUEfJeV9G4nXm3Vbnc53F4XJ8gSFN0LpVj5v6p1/1vQOtv1OTD5zJC/6hpglxMhG2JsDDYBhFiqbEsDBKhgiIJDcAagACJo4FtqxKWwrETEhCF7gz7RpUiGGFbiDuSIIcouyRfyKiafX8rlhnqMhnK5JdBfCFdjB4m/W9qpUSR7vZwHINDnot58HFl46+uDHzdvy+6y9PH/v7Xy2DrAQALBZWSVgH6RYcNyLR3N/iG67RVdHGBDXdxHahwAgBDoueQQxQeeoeUw9QwJ3yDjs164WnX5QjP1bF9D2TnmAkVsYRpEAqKA4RGrGs6VUQ0iYtc5XlmTSDCP2EYxvCKK2MBIeAxjY0aMmrRLU3eGqTm1gyqS7FO8AxRPUMY0EDOGjBjhAP46SQQ=") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+}
+
 #mm_timer {
   position: fixed;
   left: 6px;
@@ -474,6 +481,7 @@
   display: inline-block;
   user-select: none;
   opacity: 0.5;
+  font-family: Roboto, Arial, sans-serif, SymbolaArrows;
 }
 
 .mm_escalator {
