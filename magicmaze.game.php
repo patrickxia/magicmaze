@@ -611,9 +611,7 @@ class MagicMaze extends Table {
         ));
         if ($this->delayedNotification !== null) {
             self::notifyAllPlayers(
-                $this->delayedNotification[0],
-                $this->delayedNotification[1],
-                $this->delayedNotification[2]
+                ...$this->delayedNotification
             );
         }
     }
