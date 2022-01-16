@@ -84,10 +84,6 @@ function updateTimer (obj, el) {
   el.textContent = minutes + ':' + seconds
 }
 
-function dispatchClick (obj, evt, tileId, relativex, relativey, x, y) {
-  obj.onCreateTile(tileId, relativex, relativey)
-}
-
 function dispatchMove (obj, tokenId, arr) {
   let arg = {}
   let path = ''
@@ -410,25 +406,6 @@ function drawProperties (obj, properties) {
     for (const explore of properties.explore) {
       const key = getKey(explore.position_x, explore.position_y)
       const tokenId = parseInt(explore.token_id)
-      const cellLeft = obj.lefts.get(key)
-      const cellTop = obj.tops.get(key)
-      if (obj.clickableCells.has(key)) continue
-      const el = dojo.create('div', {
-        style: {
-          position: 'absolute',
-          width: CELL_SIZE + 'px',
-          height: CELL_SIZE + 'px',
-          left: cellLeft + 'px',
-          top: cellTop + 'px',
-          'z-index': 0
-        }
-      }, $('mm_area_scrollable_oversurface'))
-
-      el.onclick = function (evt) {
-        dispatchClick(obj, evt, obj.tileIds.get(key),
-          obj.relativexs.get(key), obj.relativeys.get(key), false, false)
-      }
-      obj.clickableCells.set(key, el)
       obj.explores.set(key, tokenId)
     }
   }
@@ -974,6 +951,8 @@ function (dojo, declare) {
     /// ////////////////////////////////////////////////
     /// / Player's action
 
+    // This is actually the mage explore option. Historically this was also called if you clicked to
+    // explore from a particular tile, but that was no longer needed after we put in tile previews.
     onCreateTile: function (tileID, x, y) {
       // TODO checkAction
       this.ajaxcall('/magicmaze/magicmaze/placeTile.html',
