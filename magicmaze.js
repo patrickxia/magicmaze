@@ -83,7 +83,10 @@ function updateTimer (obj, el) {
   const minutes = Math.floor(left / 60)
   let seconds = left % 60
   if (seconds < 10) seconds = '0' + seconds
-  el.textContent = minutes + ':' + seconds
+  el.innerHTML = minutes + ':' + seconds
+  if (obj.tilesRemain > 0) {
+    el.innerHTML += `<br/>□ ${obj.tilesRemain}`
+  }
 }
 
 function dispatchMove (obj, tokenId, arr) {
