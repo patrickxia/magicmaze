@@ -26,7 +26,9 @@ const BORDER_WIDTH = 20
 const CELL_SIZE = 54
 const MEEPLE_SIZE = 30
 
+// X is also checked for, but is never valid.
 const VALID_MOVES = 'WNSERPH'
+const N_TOKENS = 4
 
 function toScreenCoords (x, y) {
   // Thanks Sarah Howell (soasrsamh@gmail.com) for the
@@ -132,7 +134,7 @@ function updateWarpHighlight (dojo, obj) {
     node.style('pointer-events', 'auto')
   } else {
     node.style('opacity', '0.3')
-    node.style('pointer-events', 'none')
+    node.style('pointer-events', 'auto')
     node.attr('title', '')
   }
 }
@@ -286,8 +288,10 @@ function placeTile (obj, tile) {
       clickableZone.cellTop = cellTop
       clickableZone.posX = x + i
       clickableZone.posY = y + j
-      obj.clickableCells.set(key, clickableZone)
       clickableZone.onclick = (evt) => cellClickHandler(dojo, obj, clickableZone, evt)
+      clickableZone.onmouseenter = (evt) => cellMoveHandler(dojo, obj, clickableZone, evt)
+      clickableZone.onmouseleave = (evt) => cellMoveHandler(dojo, obj, undefined, evt)
+      obj.clickableCells.set(key, clickableZone)
     }
   }
 }
@@ -334,16 +338,51 @@ function drawEscalators (obj) {
   })
 }
 
+function abilityNeeded (x, y) {
+  if (y === 0 && x === -1) return 'W'
+  if (y === 0 && x === 1) return 'E'
+  if (x === 0 && y === -1) return 'N'
+  if (x === 0 && y === 1) return 'S'
+  return 'X'
+}
+
+function eligibleMoves (game, x, y) {
+  const ret = []
+
+  if (!(game.player_id in game.abilities)) {
+    return ret
+  }
+  for (let token = 0; token < N_TOKENS; ++token) {
+    const [tokenX, tokenY] = game.characterLocs.get(token)
+    const dx = x - tokenX
+    const dy = y - tokenY
+    const ability = abilityNeeded(dx, dy)
+    if (game.abilities[game.player_id].indexOf(ability) !== -1) {
+      ret.push([token, ability, dx, dy])
+    }
+  }
+  return ret
+}
+
 function cellClickHandler (dojo, game, cell, evt) {
+  if (!(game.player_id in game.abilities)) {
+    return
+  }
+  const possibleWarp = 'warpFn' in cell && game.abilities[game.player_id].indexOf('P') !== -1
+  const possibleMoves = eligibleMoves(game, cell.posX, cell.posY)
+
+  if (possibleMoves.length > 1) {
+    game.showMessage(_('Possibly ambiguous move, use the specific arrow to move the desired character'), 'error')
+  }
+
+  if (!possibleWarp && possibleMoves.length === 1) {
+    const [token, , dx, dy] = possibleMoves[0]
+    dispatchMove(game, token, [dx, dy, evt.shiftKey])
+  }
+
   // Display warp regardless because it self-disambiguates.
-  if ('warpFn' in cell) {
+  if (possibleWarp) {
     cell.timer = setTimeout(function () {
-      if (!(game.player_id in game.abilities)) {
-        return
-      }
-      if (game.abilities[game.player_id].indexOf('P') === -1) {
-        return
-      }
       if (cell.confirmEl !== undefined) {
         // Already clicked, but clicked again somehow before we
         // rendered.
@@ -377,6 +416,19 @@ function cellClickHandler (dojo, game, cell, evt) {
       }
       cell.prevent = false
     }, 250)
+  }
+}
+
+function cellMoveHandler (dojo, game, cell) {
+  console.log(cell)
+  let possibleMoves = []
+  if (cell !== undefined) {
+    possibleMoves = eligibleMoves(game, cell.posX, cell.posY)
+  }
+  dojo.query('.mm_action').removeClass('mm_bold')
+  for (const move of possibleMoves) {
+    const [token, ability] = move
+    dojo.query(`#mm_token${token} .mm_action${ability}`).addClass('mm_bold')
   }
 }
 

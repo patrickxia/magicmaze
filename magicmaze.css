@@ -480,7 +480,7 @@
   padding: 5px;
   display: inline-block;
   user-select: none;
-  opacity: 0.5;
+  opacity: 0.5; /* also specified in the JS */
 }
 
 .mm_action, .mm_zoom {
@@ -503,7 +503,7 @@
   cursor: nwse-resize;
 }
 
-.mm_action:hover {
+.mm_bold, .mm_action:hover {
   opacity: 1.0;
   font-weight: 900;
 }

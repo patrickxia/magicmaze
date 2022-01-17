@@ -621,6 +621,10 @@ class MagicMaze extends Table {
         $this->delayedNotification = array($type, $msg, $args);
     }
 
+    // If we want to be nicer to the players, we can add a function findMoves($newx, $newy) that
+    // returns the token_id and $x, $y that can move there given the current player state.
+    // Then take a wrapper function, call it, and abort if ambiguous. Then call moveImpl.
+
     public function moveImpl($token_id, $x, $y) {
         $changedState = false;
         $this->checkAction('move');
