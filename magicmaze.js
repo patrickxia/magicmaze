@@ -1076,6 +1076,7 @@ function (dojo, declare) {
       drawUsed(this, notif.args.x, notif.args.y)
       if (isMage(parseInt(notif.args.token_id, 10))) {
         this.drawingMagePreviews = false
+        destroyPreviews(this, mageId)
       }
     },
     notif_attention: function (notif) {
