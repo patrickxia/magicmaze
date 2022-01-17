@@ -147,8 +147,14 @@ function setupAbilities (dojo, obj) {
     const els = dojo.query(`#${parentID} .mm_abilityblock`)
     if (els.length === 0) {
       const overallID = `overall_player_board_${playerId}`
+      const notifyFn = function () {
+        if (obj.last_notify === undefined || Date.now() - obj.last_notify > 1000) {
+          obj.last_notify = Date.now()
+          dispatchMove(obj, null, [playerId])
+        }
+      }
       dojo.connect($(overallID), 'ondblclick', this, function (evt) {
-        dispatchMove(obj, null, [playerId])
+        notifyFn()
       })
 
       dojo.query(`#${overallID}`).attr('title', _('Double-click to notify'))
@@ -166,7 +172,7 @@ function setupAbilities (dojo, obj) {
         evt.stopPropagation()
       })
       dojo.connect(notifyEl, 'onclick', this, function (evt) {
-        dispatchMove(obj, null, [playerId])
+        notifyFn()
       })
     }
     const playerEl = els[0]
