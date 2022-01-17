@@ -273,6 +273,21 @@ function placeTile (obj, tile) {
       obj.relativeys.set(key, j)
       obj.lefts.set(key, cellLeft)
       obj.tops.set(key, cellTop)
+      const clickableZone = dojo.create('div', {
+        style: {
+          position: 'absolute',
+          width: CELL_SIZE + 'px',
+          height: CELL_SIZE + 'px',
+          left: cellLeft + 'px',
+          top: cellTop + 'px'
+        }
+      }, $('mm_area_scrollable_oversurface'))
+      clickableZone.cellLeft = cellLeft
+      clickableZone.cellTop = cellTop
+      clickableZone.posX = x + i
+      clickableZone.posY = y + j
+      obj.clickableCells.set(key, clickableZone)
+      clickableZone.onclick = (evt) => cellClickHandler(dojo, obj, clickableZone, evt)
     }
   }
 }
@@ -319,99 +334,88 @@ function drawEscalators (obj) {
   })
 }
 
-function drawProperties (obj, properties) {
+function cellClickHandler (dojo, game, cell, evt) {
+  // Display warp regardless because it self-disambiguates.
+  if ('warpFn' in cell) {
+    cell.timer = setTimeout(function () {
+      if (!(game.player_id in game.abilities)) {
+        return
+      }
+      if (game.abilities[game.player_id].indexOf('P') === -1) {
+        return
+      }
+      if (cell.confirmEl !== undefined) {
+        // Already clicked, but clicked again somehow before we
+        // rendered.
+        return
+      }
+      if (!cell.prevent) {
+        cell.confirmEl = dojo.create('div', {
+          class: 'mm_action',
+          style: {
+            position: 'absolute',
+            width: CELL_SIZE + 'px',
+            height: CELL_SIZE + 'px',
+            left: cell.cellLeft + 'px',
+            top: cell.cellTop + 'px',
+            'text-align': 'center',
+            'line-height': CELL_SIZE + 'px',
+            'font-size': '48px'
+          },
+          innerHTML: '✔'
+        }, $('mm_area_scrollable_oversurface'))
+        setTimeout(function () {
+          if (cell.confirmEl !== undefined) {
+            dojo.destroy(cell.confirmEl)
+            cell.confirmEl = undefined
+          }
+        }, 4000)
+        dojo.connect(cell.confirmEl, 'onclick', null, function (evt) {
+          dojo.destroy(this) // warpFn does this, but in case we've messed up the confirmEl
+          cell.warpFn(evt)
+        })
+      }
+      cell.prevent = false
+    }, 250)
+  }
+}
+
+function drawProperties (dojo, game, properties) {
   if (properties.warp) {
     for (const warp of properties.warp) {
       const key = getKey(warp.position_x, warp.position_y)
-      if (obj.clickableCells.has(key)) continue
-      const cellLeft = obj.lefts.get(key)
-      const cellTop = obj.tops.get(key)
-      const clickableZone = dojo.create('div', {
-        class: 'mm_filterwarp',
-        style: {
-          position: 'absolute',
-          width: CELL_SIZE + 'px',
-          height: CELL_SIZE + 'px',
-          left: cellLeft + 'px',
-          top: cellTop + 'px'
-        }
-      }, $('mm_area_scrollable_oversurface'))
-      let timer
-      let prevent = false
-      let confirmEl
-      const warpFn = function (evt) {
+      const clickableZone = game.clickableCells.get(key)
+      clickableZone.classList.add('mm_filterwarp')
+      clickableZone.warpFn = function (evt) {
         evt.stopPropagation() // Or we get in a state where we regenerate this element
-        clearTimeout(timer)
-        prevent = true
-        if (confirmEl !== undefined) {
-          dojo.destroy(confirmEl)
-          confirmEl = undefined
+        clearTimeout(clickableZone.timer)
+        clickableZone.prevent = true
+        if (clickableZone.confirmEl !== undefined) {
+          dojo.destroy(clickableZone.confirmEl)
+          clickableZone.confirmEl = undefined
         }
-        dispatchMove(obj, -1, [warp.position_x, warp.position_y])
+        dispatchMove(game, -1, [warp.position_x, warp.position_y])
       }
-      clickableZone.onclick = function (evt) {
-        timer = setTimeout(function () {
-          if (!(obj.player_id in obj.abilities)) {
-            return
-          }
-          if (obj.abilities[obj.player_id].indexOf('P') === -1) {
-            return
-          }
-          if (confirmEl !== undefined) {
-            // Already clicked, but clicked again somehow before we
-            // rendered.
-            return
-          }
-          if (!prevent) {
-            confirmEl = dojo.create('div', {
-              class: 'mm_action',
-              style: {
-                position: 'absolute',
-                width: CELL_SIZE + 'px',
-                height: CELL_SIZE + 'px',
-                left: cellLeft + 'px',
-                top: cellTop + 'px',
-                'text-align': 'center',
-                'line-height': CELL_SIZE + 'px',
-                'font-size': '48px'
-              },
-              innerHTML: '✔'
-            }, $('mm_area_scrollable_oversurface'))
-            setTimeout(function () {
-              if (confirmEl !== undefined) {
-                dojo.destroy(confirmEl)
-                confirmEl = undefined
-              }
-            }, 4000)
-            dojo.connect(confirmEl, 'onclick', null, function (evt) {
-              dojo.destroy(this) // warpFn does this, but in case we've messed up the confirmEl
-              warpFn(evt)
-            })
-          }
-          prevent = false
-        }, 250)
-      }
-      clickableZone.ondblclick = warpFn
-      obj.clickableCells.set(key, clickableZone)
+      clickableZone.ondblclick = clickableZone.warpFn
     }
   }
-  updateWarpHighlight(dojo, obj)
+  updateWarpHighlight(dojo, game)
 
   if (properties.used) {
     for (const used of properties.used) {
-      drawUsed(obj, used.position_x, used.position_y)
+      drawUsed(game, used.position_x, used.position_y)
     }
   }
   if (properties.explore) {
     for (const explore of properties.explore) {
       const key = getKey(explore.position_x, explore.position_y)
       const tokenId = parseInt(explore.token_id)
-      obj.explores.set(key, tokenId)
+      game.explores.set(key, tokenId)
     }
   }
   if (properties.crystal) {
     for (const crystal of properties.crystal) {
-      obj.crystals.add(getKey(crystal.position_x, crystal.position_y))
+      game.crystals.add(getKey(crystal.position_x, crystal.position_y))
     }
   }
   if (properties.escalator) {
@@ -436,9 +440,9 @@ function drawProperties (obj, properties) {
         dstY = oldY
       }
 
-      obj.escalators.set(getKey(srcX, srcY), [dstX, dstY])
+      game.escalators.set(getKey(srcX, srcY), [dstX, dstY])
     }
-    drawEscalators(obj)
+    drawEscalators(game)
   }
 }
 
@@ -678,7 +682,7 @@ function (dojo, declare) {
         placeTile(this, gamedatas.tiles[key])
       }
 
-      drawProperties(this, gamedatas.properties)
+      drawProperties(dojo, this, gamedatas.properties)
       for (const key in gamedatas.tokens) {
         placeCharacter(this, gamedatas.tokens[key])
         const tokenId = gamedatas.tokens[key].token_id
@@ -984,7 +988,7 @@ function (dojo, declare) {
       this.tilesRemain = parseInt(notif.args.tiles_remain, 10)
       this.mageStatus = parseInt(notif.args.mage_status, 10)
       placeTile(this, notif.args)
-      drawProperties(this, notif.args.clickables)
+      drawProperties(dojo, this, notif.args.clickables)
       if (this.drawingMagePreviews) {
         destroyPreviews(this, mageId)
         drawMagePreviews(this)
