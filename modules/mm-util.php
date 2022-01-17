@@ -38,13 +38,13 @@ function getKey($inx, $iny) {
 function tokenName($tokenID) {
     switch ($tokenID) {
         case 0:
-            return clienttranslate('elf');
+            return clienttranslate('elf (green)');
         case 1:
-            return clienttranslate('dwarf');
+            return clienttranslate('dwarf (orange)');
         case 2:
-            return clienttranslate('barbarian');
+            return clienttranslate('barbarian (yellow)');
         case 3:
-            return clienttranslate('mage');
+            return clienttranslate('mage (purple)');
         default:
             throw new Exception('invalid token ID');
     }
