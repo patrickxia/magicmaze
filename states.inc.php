@@ -49,7 +49,7 @@ $machinestates = array(
         'description' => '',
         'type' => 'manager',
         'action' => 'stGameSetup',
-        'transitions' => array('' => 2),
+        'transitions' => array('' => 7),
     ),
 
     // This is a dummy state used to add sufficient time to the timer for all
@@ -63,10 +63,21 @@ $machinestates = array(
             'transitions' => array('' => 3),
     ),
 
+    7 => array(
+            'name' => 'pre_game',
+            'description' => clienttranslate('Coordinate with the others to move the characters and steal the items! The timer will start when somebody moves any token!'),
+            'descriptionmyturn' => clienttranslate('Coordinate with the others to move the characters and steal the items! The timer will start when somebody moves any token!'),
+            'type' => 'multipleactiveplayer',
+            'updateGameProgression' => true,
+            'possibleactions' => array('talk', 'move', 'warp', 'steal', 'lose'),
+            // I'm not convinced you can steal the items and remain in the loud state.
+            'transitions' => array('talk' => 2, 'move' => 3, 'warp' => 3, 'startTimer' => 6, 'steal' => 5, 'lose' => 99),
+    ),
+
     2 => array(
             'name' => 'steal_loud',
-            'description' => clienttranslate('Steal the items!'),
-            'descriptionmyturn' => clienttranslate('Steal the items!'),
+            'description' => clienttranslate('Steal the items! You may communicate until somebody moves a token.'),
+            'descriptionmyturn' => clienttranslate('Steal the items! You may communicate until somebody moves a token.'),
             'type' => 'multipleactiveplayer',
             'updateGameProgression' => true,
             'possibleactions' => array('talk', 'move', 'warp', 'steal', 'lose'),
@@ -76,8 +87,8 @@ $machinestates = array(
 
     3 => array(
             'name' => 'steal_quiet',
-            'description' => clienttranslate('Quietly steal the items!'),
-            'descriptionmyturn' => clienttranslate('Quietly steal the items!'),
+            'description' => clienttranslate('Quietly steal the items! You may not communicate.'),
+            'descriptionmyturn' => clienttranslate('Quietly steal the items! You may not communicate.'),
             'type' => 'multipleactiveplayer',
             'possibleactions' => array('talk', 'move', 'warp', 'steal', 'lose'),
             'transitions' => array('talk' => 2, 'move' => 3, 'warp' => 3, 'startTimer' => 6, 'steal' => 5, 'lose' => 99),
@@ -85,8 +96,8 @@ $machinestates = array(
 
     4 => array(
             'name' => 'escape_loud',
-            'description' => clienttranslate('Escape with the items!'),
-            'descriptionmyturn' => clienttranslate('Escape with the items!'),
+            'description' => clienttranslate('Escape with the items! You may communicate.'),
+            'descriptionmyturn' => clienttranslate('Escape with the items! You may communicate.'),
             'type' => 'multipleactiveplayer',
             'updateGameProgression' => true,
             'possibleactions' => array('talk', 'move', 'win', 'lose'),
@@ -95,8 +106,8 @@ $machinestates = array(
 
     5 => array(
             'name' => 'escape_quiet',
-            'description' => clienttranslate('Quietly escape with the items!'),
-            'descriptionmyturn' => clienttranslate('Quietly escape with the items!'),
+            'description' => clienttranslate('Quietly escape with the items! You may not communicate.'),
+            'descriptionmyturn' => clienttranslate('Quietly escape with the items! You may not communicate.'),
             'type' => 'multipleactiveplayer',
             'possibleactions' => array('talk', 'move', 'win', 'lose'),
             'transitions' => array('move' => 5, 'talk' => 4, 'win' => 99,  'lose' => 99),

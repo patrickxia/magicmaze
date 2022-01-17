@@ -953,6 +953,7 @@ function (dojo, declare) {
     onEnteringState: function (stateName, args) {
       const el = dojo.query('#mm_objectives_float')
       switch (stateName) {
+        case 'pre_game':
         case 'steal_loud':
         case 'steal_quiet':
           if (!this.displayedSteal) {
