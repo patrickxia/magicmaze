@@ -426,7 +426,6 @@ function cellClickHandler (dojo, game, cell, evt) {
 }
 
 function cellMoveHandler (dojo, game, cell) {
-  console.log(cell)
   let possibleMoves = []
   if (cell !== undefined) {
     possibleMoves = eligibleMoves(game, cell.posX, cell.posY)
