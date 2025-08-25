@@ -200,6 +200,21 @@ function setupAbilities (dojo, obj) {
       }, playerEl)
     }
   }
+  if (!obj.isSpectator) {
+    const player = obj.players[obj.player_id]
+    const displaycontainer = dojo.query(`#mm_bigabilitydisplay_container`)[0]
+    const abilities = getRoles(Object.keys(obj.players).length,
+                               player.player_no, obj.flips)
+    displaycontainer.innerText = ''
+    const backgroundEl = dojo.create('div', {
+      class: 'mm_ability'
+    }, displaycontainer)
+    for (const ability of abilities) {
+      dojo.create('div', {
+        class: `mm_bigability${ability}`
+      }, backgroundEl)
+    }
+  }
   const body = document.getElementsByTagName('body')[0]
   for (const c of VALID_MOVES) {
     const node = dojo.query(`.mm_action${c}`)
@@ -816,6 +831,11 @@ function (dojo, declare) {
         dojo.query('#mm_objectives_float').style('visibility', 'hidden')
       })
 
+      dojo.query('#mm_bigabilitydisplay_float').style('visibility', 'hidden')
+      dojo.connect($('mm_bigabilitydisplay_float'), 'onclick', this, function (evt) {
+        dojo.query('#mm_bigabilitydisplay_float').style('visibility', 'hidden')
+      })
+
       this.mageStatus = parseInt(gamedatas.mage_status, 10)
       // Needs to be after placeCharacter
       if (gamedatas.next_tile) {
@@ -1067,6 +1087,13 @@ function (dojo, declare) {
         this.deadline = (Date.now() / 1000.0) + parseFloat(notif.args.time_left)
       }
       if (notif.args.flips) {
+        if (this.flips != notif.args.flips) {
+          const el = dojo.query('#mm_bigabilitydisplay_float')
+          el.style('visibility', 'visible')
+          setTimeout(function () {
+            el.style('visibility', 'hidden')
+          }, 4500)
+        }
         this.flips = notif.args.flips
         setupAbilities(dojo, this)
       }

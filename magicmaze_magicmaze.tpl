@@ -73,6 +73,11 @@
 </div>
 </div>
 
+<div id="mm_bigabilitydisplay_float">
+<div id="mm_bigabilitydisplay_container">
+</div>
+</div>
+
 <div id="mm_control0" class="mm_control">
 <div class="mm_actionW mm_abilityW"></div>
 <div class="mm_actionN mm_abilityN"></div>
