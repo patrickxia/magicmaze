@@ -423,6 +423,15 @@
   background: url('img/sprites.png') -55px 0px;
 }
 
+.mm_bigcrossout {
+    width: 30px;
+    height: 24px;
+    background: url('img/sprites.png') -55px 0px;
+    scale: 3;
+    margin-left: 30px;
+    margin-top: 24px;
+}
+
 @keyframes mm_blink {
   50% {
     opacity: 0;

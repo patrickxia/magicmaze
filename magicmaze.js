@@ -215,6 +215,20 @@ function setupAbilities (dojo, obj) {
       }, backgroundEl)
     }
   }
+  if (obj.displayedEscape) {
+    dojo.query('.mm_abilityP').forEach(function (node, index, arr) {
+      node.innerText = ''
+      dojo.create('div', {
+        class: 'mm_crossout'
+      }, node)
+    })
+    dojo.query('.mm_bigabilityP').forEach(function (node, index, arr) {
+      node.innerText = ''
+      dojo.create('div', {
+        class: 'mm_bigcrossout'
+      }, node)
+    })
+  }
   const body = document.getElementsByTagName('body')[0]
   for (const c of VALID_MOVES) {
     const node = dojo.query(`.mm_action${c}`)
