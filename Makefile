@@ -2,6 +2,8 @@
 # version of the files. Don't include it in 'all'.
 all: tiles
 
+BABEL ?= babel
+
 .PHONY: tiles prod prodjs
 
 modules/mm-tiles.php: misc/import-csv.php modules/mm-tiles.csv
@@ -12,7 +14,7 @@ tiles: modules/mm-tiles.php
 
 prodjs: magicmaze.js
 	git diff-index --quiet HEAD # Check to see if we can cleanly checkout
-	babel magicmaze.js > a
+	$(BABEL) magicmaze.js > a
 	mv a magicmaze.js
 
 prod: prodjs
