@@ -30,6 +30,10 @@ const MEEPLE_SIZE = 30
 const VALID_MOVES = 'WNSERPH'
 const N_TOKENS = 4
 
+const PREF_VISUAL_NUM = 100
+const PREF_VISUAL_FULL = 1
+const PREF_VISUAL_NOFLASH = 2
+
 function toScreenCoords (x, y) {
   // Thanks Sarah Howell (soasrsamh@gmail.com) for the
   // lovely math behind this implementation. Note that this only
@@ -806,9 +810,15 @@ function (dojo, declare) {
         dojo.connect(document.querySelector(base + '> .mm_actionP'), 'onclick', this, function (evt) {
           const el = dojo.query('.mm_filterwarp')
           el.style('animation', 'none')
+          const stored_this = this
           setTimeout(function () {
-            el.style('animation', 'mm_inverseblink 0.3s')
-            el.style('animation-iteration-count', 2)
+            if (stored_this.getGameUserPreference(PREF_VISUAL_NUM) < PREF_VISUAL_NOFLASH) {
+              el.style('animation', 'mm_inverseblink 0.3s')
+              el.style('animation-iteration-count', 2)
+            } else {
+              el.style('animation', 'mm_inverseblink 1s')
+              el.style('animation-iteration-count', 1)
+            }
           }, 0)
         })
 
@@ -1129,10 +1139,13 @@ function (dojo, declare) {
       const el = dojo.query('#mm_border')
       if (parseInt(notif.args.player_id) === parseInt(this.player_id)) {
         el.style('animation', 'none')
+        const stored_this = this
         setTimeout(function () {
           el.style('visibility', 'visible')
-          el.style('animation', 'mm_blink 0.3s')
-          el.style('animation-iteration-count', 10)
+          if (stored_this.getGameUserPreference(PREF_VISUAL_NUM) < PREF_VISUAL_NOFLASH) {
+            el.style('animation', 'mm_blink 0.3s')
+            el.style('animation-iteration-count', 10)
+          }
         }, 0)
       } else {
         el.style('visibility', 'hidden')
