@@ -1,0 +1,17 @@
+{
+  "100": {
+    "name": "Visual hints",
+    "needReload": false,
+    "values": {
+      "1": {
+        "name": "Full",
+        "cssPref": "visual_hints_full"
+      },
+      "2": {
+        "name": "No flashing",
+        "cssPref": "visual_hints_no_flash"
+      }
+    },
+    "default": 1
+  }
+}
