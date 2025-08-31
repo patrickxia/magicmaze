@@ -97,7 +97,7 @@ function dispatchMove (obj, tokenId, arr) {
   let arg = {}
   let path = ''
   if (tokenId == null) {
-    path = 'magicmaze/magicmaze/notify.html'
+    path = '/magicmaze/magicmaze/notify.html'
     arg = {
       player_id: arr[0]
     }
