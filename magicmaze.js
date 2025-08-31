@@ -657,21 +657,55 @@ function drawMagePreviews (obj) {
   }
 }
 
+
+
 function placeCharacter (obj, info, warp = false) {
   const x = parseInt(info.position_x)
   const y = parseInt(info.position_y)
   const tokenId = parseInt(info.token_id)
+  const [oldx, oldy] = obj.characterLocs.get(tokenId) ?? [x, y]
   obj.characterLocs.set(tokenId, [x, y])
   const key = getKey(x, y)
   const top = obj.tops.get(key)
   const left = obj.lefts.get(key)
   const adjust = (CELL_SIZE - MEEPLE_SIZE) / 2
+  var halftime = 100
+  if (warp) {
+    halftime = 300
+  }
   obj.rescale(1.0)
-  obj.slideToObjectPos(`mm_token${info.token_id}`,
+  obj.slideToObjectPos(
+    `mm_token${info.token_id}`,
     'mm_area_scrollable_oversurface',
     left + adjust,
     top + adjust,
-    /* duration */ 200).play()
+    2*halftime).play()
+  if (warp) {
+    const tokenEl = dojo.query(`#mm_token${info.token_id}`)
+    const distance = Math.sqrt((x - oldx)*(x - oldx) + (y - oldy)*(y - oldy))
+    const scale = Math.min(5, Math.max(1, Math.sqrt(distance)))
+    const stored_obj = obj
+    dojo.connect(slide, "onEnd", async function(){
+      tokenEl.style('transition', `${2*halftime}ms`)
+      tokenEl.style('transform', 'scale(1)')
+      // If a player moves a token during the warp animation the end position
+      // ends up wrong due to the interaction of CSS scaling and dojo
+      // animation (the docs rightfully warn of this; however we need to take
+      // this downside here to achieve the desired grow and shrink effect). To
+      // ameliorate this we reposition the token after the animations are
+      // done.
+      await obj.wait(2*halftime)
+      const [newx, newy] = obj.characterLocs.get(tokenId)
+      const newinfo = {
+        position_x: newx,
+        position_y: newy,
+        token_id: tokenId
+      }
+      placeCharacter(obj, newinfo)
+    });
+    tokenEl.style('transition', `${2.5*halftime}ms`)
+    tokenEl.style('transform', `scale(${scale})`)
+  }
   obj.rescale()
   destroyPreviews(obj, tokenId)
 
