@@ -657,7 +657,7 @@ function drawMagePreviews (obj) {
   }
 }
 
-function placeCharacter (obj, info) {
+function placeCharacter (obj, info, warp = false) {
   const x = parseInt(info.position_x)
   const y = parseInt(info.position_y)
   const tokenId = parseInt(info.token_id)
@@ -1100,7 +1100,7 @@ function (dojo, declare) {
       }
     },
     notif_tokenMoved: function (notif) {
-      placeCharacter(this, notif.args)
+      placeCharacter(this, notif.args, /* warp= */ notif.args.warp)
     },
     notif_nextTile: function (notif) {
       this.mageStatus = parseInt(notif.args.mage_status, 10)
