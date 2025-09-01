@@ -677,7 +677,6 @@ function placeCharacter (obj, info, warp = false) {
     left + adjust,
     top + adjust,
     animtime)
-  slide.play()
   if (warp) {
     const tokenEl = dojo.query(`#mm_token${info.token_id}`)
     const distance = Math.sqrt((x - oldx)*(x - oldx) + (y - oldy)*(y - oldy))
@@ -703,6 +702,7 @@ function placeCharacter (obj, info, warp = false) {
     tokenEl.style('transition', `${1.25*animtime}ms`)
     tokenEl.style('transform', `scale(${scale})`)
   }
+  slide.play()
   obj.rescale()
   destroyPreviews(obj, tokenId)
 
