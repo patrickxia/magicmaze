@@ -674,17 +674,17 @@ function placeCharacter (obj, info, warp = false) {
     halftime = 300
   }
   obj.rescale(1.0)
-  obj.slideToObjectPos(
+  const slide = obj.slideToObjectPos(
     `mm_token${info.token_id}`,
     'mm_area_scrollable_oversurface',
     left + adjust,
     top + adjust,
-    2*halftime).play()
+    2*halftime)
+  slide.play()
   if (warp) {
     const tokenEl = dojo.query(`#mm_token${info.token_id}`)
     const distance = Math.sqrt((x - oldx)*(x - oldx) + (y - oldy)*(y - oldy))
     const scale = Math.min(5, Math.max(1, Math.sqrt(distance)))
-    const stored_obj = obj
     dojo.connect(slide, "onEnd", async function(){
       tokenEl.style('transition', `${2*halftime}ms`)
       tokenEl.style('transform', 'scale(1)')
