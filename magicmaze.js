@@ -669,24 +669,21 @@ function placeCharacter (obj, info, warp = false) {
   const top = obj.tops.get(key)
   const left = obj.lefts.get(key)
   const adjust = (CELL_SIZE - MEEPLE_SIZE) / 2
-  var halftime = 100
-  if (warp) {
-    halftime = 300
-  }
+  const animtime = warp ? 600 : 200
   obj.rescale(1.0)
   const slide = obj.slideToObjectPos(
     `mm_token${info.token_id}`,
     'mm_area_scrollable_oversurface',
     left + adjust,
     top + adjust,
-    2*halftime)
+    animtime)
   slide.play()
   if (warp) {
     const tokenEl = dojo.query(`#mm_token${info.token_id}`)
     const distance = Math.sqrt((x - oldx)*(x - oldx) + (y - oldy)*(y - oldy))
     const scale = Math.min(5, Math.max(1, Math.sqrt(distance)))
     dojo.connect(slide, "onEnd", async function(){
-      tokenEl.style('transition', `${2*halftime}ms`)
+      tokenEl.style('transition', `${animtime}ms`)
       tokenEl.style('transform', 'scale(1)')
       // If a player moves a token during the warp animation the end position
       // ends up wrong due to the interaction of CSS scaling and dojo
@@ -694,7 +691,7 @@ function placeCharacter (obj, info, warp = false) {
       // this downside here to achieve the desired grow and shrink effect). To
       // ameliorate this we reposition the token after the animations are
       // done.
-      await obj.wait(2*halftime)
+      await obj.wait(animtime)
       const [newx, newy] = obj.characterLocs.get(tokenId)
       const newinfo = {
         position_x: newx,
@@ -703,7 +700,7 @@ function placeCharacter (obj, info, warp = false) {
       }
       placeCharacter(obj, newinfo)
     });
-    tokenEl.style('transition', `${2.5*halftime}ms`)
+    tokenEl.style('transition', `${1.25*animtime}ms`)
     tokenEl.style('transform', `scale(${scale})`)
   }
   obj.rescale()
