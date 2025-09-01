@@ -697,7 +697,7 @@ function placeCharacter (obj, info, warp = false) {
         position_y: newy,
         token_id: tokenId
       }
-      placeCharacter(obj, newinfo)
+      placeCharacter(obj, newinfo, /* warp = */ false)
     });
     tokenEl.style('transition', `${1.25*animtime}ms`)
     tokenEl.style('transform', `scale(${scale})`)
