@@ -546,6 +546,7 @@ class MagicMaze extends Table {
             'player_name' => self::getCurrentPlayerName(),
             'position_x' => $res['position_x'],
             'position_y' => $res['position_y'],
+            'warp' => true,
         ));
     }
 
@@ -569,6 +570,7 @@ class MagicMaze extends Table {
             'player_name' => self::getCurrentPlayerName(),
             'position_x' => $res['position_x'],
             'position_y' => $res['position_y'],
+            'warp' => false,
         ));
     }
 
@@ -608,6 +610,7 @@ class MagicMaze extends Table {
             'player_name' => self::getCurrentPlayerName(),
             'position_x' => $res['position_x'],
             'position_y' => $res['position_y'],
+            'warp' => false,
         ));
         if ($this->delayedNotification !== null) {
             self::notifyAllPlayers(

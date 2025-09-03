@@ -657,21 +657,66 @@ function drawMagePreviews (obj) {
   }
 }
 
-function placeCharacter (obj, info) {
+
+
+function placeCharacter (obj, info, warp = false) {
   const x = parseInt(info.position_x)
   const y = parseInt(info.position_y)
   const tokenId = parseInt(info.token_id)
+  const [oldx, oldy] = obj.characterLocs.get(tokenId) ?? [x, y]
   obj.characterLocs.set(tokenId, [x, y])
   const key = getKey(x, y)
   const top = obj.tops.get(key)
   const left = obj.lefts.get(key)
   const adjust = (CELL_SIZE - MEEPLE_SIZE) / 2
+  const animtime = warp ? 600 : 200
   obj.rescale(1.0)
-  obj.slideToObjectPos(`mm_token${info.token_id}`,
+  const slide = obj.slideToObjectPos(
+    `mm_token${info.token_id}`,
     'mm_area_scrollable_oversurface',
     left + adjust,
     top + adjust,
-    /* duration */ 200).play()
+    animtime)
+  if (warp) {
+    // The following animation should vaguely look like picking up the token
+    // and placing it somewhere else.
+    //
+    // However the actual result differs from the expectation after reading
+    // the code. The main divergence seems to be that the onEnd-effect does
+    // trigger before the token reaches the target field. The final animation
+    // comes reasonably close to the goal above so that this feels like a good
+    // result.
+    //
+    // The weirdness probably is a side-effect of mixing dojo animations with
+    // CSS-transforms. Sadly no other way presented itself to reach the
+    // desired effect.
+    //
+    // Also note that the token seems to wobble if the zoom level is not 100%.
+    const tokenEl = dojo.query(`#mm_token${info.token_id}`)
+    const distance = Math.sqrt((x - oldx)*(x - oldx) + (y - oldy)*(y - oldy))
+    const scale = Math.min(5, Math.max(1, Math.sqrt(distance)))
+    dojo.connect(slide, "onEnd", async function(){
+      tokenEl.style('transition', `${animtime}ms`)
+      tokenEl.style('transform', 'scale(1)')
+      // If a player moves a token during the warp animation the end position
+      // ends up wrong due to the interaction of CSS scaling and dojo
+      // animation (the docs rightfully warn of this; however we need to take
+      // this downside here to achieve the desired grow and shrink effect). To
+      // ameliorate this we reposition the token after the animations are
+      // done.
+      await obj.wait(animtime)
+      const [newx, newy] = obj.characterLocs.get(tokenId)
+      const newinfo = {
+        position_x: newx,
+        position_y: newy,
+        token_id: tokenId
+      }
+      placeCharacter(obj, newinfo, /* warp = */ false)
+    });
+    tokenEl.style('transition', `${1.25*animtime}ms`)
+    tokenEl.style('transform', `scale(${scale})`)
+  }
+  slide.play()
   obj.rescale()
   destroyPreviews(obj, tokenId)
 
@@ -1100,7 +1145,7 @@ function (dojo, declare) {
       }
     },
     notif_tokenMoved: function (notif) {
-      placeCharacter(this, notif.args)
+      placeCharacter(this, notif.args, /* warp= */ notif.args.warp)
     },
     notif_nextTile: function (notif) {
       this.mageStatus = parseInt(notif.args.mage_status, 10)
