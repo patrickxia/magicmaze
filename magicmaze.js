@@ -678,6 +678,20 @@ function placeCharacter (obj, info, warp = false) {
     top + adjust,
     animtime)
   if (warp) {
+    // The following animation should vaguely look like picking up the token
+    // and placing it somewhere else.
+    //
+    // However the actual result differs from the expectation after reading
+    // the code. The main divergence seems to be that the onEnd-effect does
+    // trigger before the token reaches the target field. The final animation
+    // comes reasonably close to the goal above so that this feels like a good
+    // result.
+    //
+    // The weirdness probably is a side-effect of mixing dojo animations with
+    // CSS-transforms. Sadly no other way presented itself to reach the
+    // desired effect.
+    //
+    // Also note that the token seems to wobble if the zoom level is not 100%.
     const tokenEl = dojo.query(`#mm_token${info.token_id}`)
     const distance = Math.sqrt((x - oldx)*(x - oldx) + (y - oldy)*(y - oldy))
     const scale = Math.min(5, Math.max(1, Math.sqrt(distance)))
