@@ -394,6 +394,7 @@ function eligibleMoves (game, x, y) {
   if (!(game.player_id in game.abilities)) {
     return ret
   }
+
   for (let token = 0; token < N_TOKENS; ++token) {
     const [tokenX, tokenY] = game.characterLocs.get(token)
     const dx = x - tokenX
@@ -406,20 +407,48 @@ function eligibleMoves (game, x, y) {
   return ret
 }
 
+function eligibleActions (game, x, y) {
+  const ret = []
+
+  if (!(game.player_id in game.abilities)) {
+    return ret
+  }
+
+  ret.push(...eligibleMoves(game, x, y))
+
+  const key = getKey(x, y)
+  const mayEscalate =  (game.escalatorEnds.has(key)
+                        && game.abilities[game.player_id].indexOf('R') !== -1)
+  const [escX, escY] = mayEscalate ? game.escalatorEnds.get(key) : [null, null]
+
+  for (let token = 0; token < N_TOKENS; ++token) {
+    const [tokenX, tokenY] = game.characterLocs.get(token)
+    if (mayEscalate && tokenX === escX && tokenY === escY) {
+      ret.push([token, 'R', null, null])
+    }
+  }
+  return ret
+}
+
 function cellClickHandler (dojo, game, cell, evt) {
   if (!(game.player_id in game.abilities)) {
     return
   }
   const possibleWarp = 'warpFn' in cell && game.abilities[game.player_id].indexOf('P') !== -1
-  const possibleMoves = eligibleMoves(game, cell.posX, cell.posY)
+  const possibleMoves = eligibleActions(game, cell.posX, cell.posY)
 
   if (possibleMoves.length > 1) {
     game.showMessage(_('Possibly ambiguous move, use the specific arrow to move the desired character'), 'error')
   }
 
   if (!possibleWarp && possibleMoves.length === 1) {
-    const [token, , dx, dy] = possibleMoves[0]
-    dispatchMove(game, token, [dx, dy, evt.shiftKey])
+    const [token, ability, dx, dy] = possibleMoves[0]
+    if (ability === 'R') {
+      // escalator
+      dispatchMove(game, token, [1])
+    } else {
+      dispatchMove(game, token, [dx, dy, evt.shiftKey])
+    }
   }
 
   // Display warp regardless because it self-disambiguates.
@@ -534,6 +563,8 @@ function drawProperties (dojo, game, properties) {
       }
 
       game.escalators.set(getKey(srcX, srcY), [dstX, dstY])
+      game.escalatorEnds.set(getKey(srcX, srcY), [dstX, dstY])
+      game.escalatorEnds.set(getKey(dstX, dstY), [srcX, srcY])
     }
     drawEscalators(game)
   }
@@ -775,6 +806,8 @@ function (dojo, declare) {
       this.explores = new Map()
       this.escalators = new Map()
       this.escalatorEls = new Map()
+      this.escalatorEnds = new Map() // bidirectional mapping instead of
+                                     // unidirectional as above
       this.previewElements = new Map() // coord key -> dom element
       this.clickableCells = new Map()
       this.visualCells = new Map()
