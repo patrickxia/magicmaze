@@ -419,14 +419,19 @@ function eligibleActions (game, x, y) {
   const key = getKey(x, y)
   const mayEscalate =  (game.escalatorEnds.has(key)
                         && game.abilities[game.player_id].indexOf('R') !== -1)
-  const [escX, escY] = mayEscalate ? game.escalatorEnds.get(key) : [null, null]
 
+  if (!mayEscalate) {
+    return ret
+  }
+
+  const [escX, escY] = game.escalatorEnds.get(key)
   for (let token = 0; token < N_TOKENS; ++token) {
     const [tokenX, tokenY] = game.characterLocs.get(token)
-    if (mayEscalate && tokenX === escX && tokenY === escY) {
+    if (tokenX === escX && tokenY === escY) {
       ret.push([token, 'R', null, null])
     }
   }
+
   return ret
 }
 
