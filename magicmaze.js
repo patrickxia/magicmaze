@@ -1186,6 +1186,7 @@ function (dojo, declare) {
     },
     notif_tokenMoved: function (notif) {
       placeCharacter(this, notif.args, /* warp= */ notif.args.warp)
+      this.statusBar.setTitle(_('XXX Test message to try functionality.'))
     },
     notif_nextTile: function (notif) {
       this.mageStatus = parseInt(notif.args.mage_status, 10)
