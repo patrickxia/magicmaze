@@ -809,10 +809,12 @@ function (dojo, declare) {
       this.relativeys = new Map()
       this.crystals = new Set()
       this.explores = new Map()
-      this.escalators = new Map()
-      this.escalatorEls = new Map()
-      this.escalatorEnds = new Map() // bidirectional mapping instead of
-                                     // unidirectional as above
+      this.escalators = new Map() // stringified start coordinate -> end coordinate tuple
+                                  // start field is the one with lower x
+      this.escalatorEls = new Map() // stringified start coordinate -> clickable div
+      this.escalatorEnds = new Map() // stringified coordinate -> other end coordinate tuple
+                                     // bidirectional mapping instead of unidirectional
+                                     // as above
       this.previewElements = new Map() // coord key -> dom element
       this.clickableCells = new Map()
       this.visualCells = new Map()
