@@ -122,8 +122,8 @@ class MagicMaze extends Table {
     */
     protected function getAllDatas() {
         $result = array();
-        // Get information about players
-        $result['players'] = self::loadPlayersBasicInfos();
+        $sql = "select player_id id, player_score score, player_no no, player_color color, player_zombie zombie from player";
+        $result['players'] = self::getCollectionFromDb($sql);
         $sql = 'select tile_id tile_id, position_x, position_y, rotation from tiles where placed';
         $result['tiles'] = self::getCollectionFromDb($sql);
         $sql = 'select token_id, position_x, position_y, locked from tokens';
