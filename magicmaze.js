@@ -190,7 +190,7 @@ function setupAbilities (dojo, obj) {
     const abilities =
           getRoles(
             Object.keys(obj.players).length,
-            player.player_no,
+            player.no,
             obj.flips)
     obj.abilities[playerId] = abilities
     for (const ability of abilities) {
@@ -208,7 +208,7 @@ function setupAbilities (dojo, obj) {
     const player = obj.players[obj.player_id]
     const displaycontainer = dojo.query(`#mm_bigabilitydisplay_container`)[0]
     const abilities = getRoles(Object.keys(obj.players).length,
-                               player.player_no, obj.flips)
+                               player.no, obj.flips)
     displaycontainer.innerText = ''
     const backgroundEl = dojo.create('div', {
       class: 'mm_ability'
@@ -789,7 +789,7 @@ function fromEntries (iterable) {
 }
 
 function filterZombies (obj) {
-  return fromEntries(Object.entries(obj).filter(function (pair) { return !pair[1].player_zombie }))
+  return fromEntries(Object.entries(obj).filter(function (pair) { return !pair[1].zombie }))
 }
 
 define([
