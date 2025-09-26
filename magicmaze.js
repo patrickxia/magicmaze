@@ -1193,7 +1193,7 @@ function (dojo, declare) {
       }
     },
     notif_tokenMoved: function (notif) {
-      // suppres default sound as it's too annoying
+      // suppress default sound as it's too annoying
       this.disableNextMoveSound();
       placeCharacter(this, notif.args, /* warp= */ notif.args.warp)
     },
@@ -1230,7 +1230,7 @@ function (dojo, declare) {
       }
     },
     notif_attention: function (notif) {
-      // suppres default sound as it's too annoying
+      // suppress default sound as it's too annoying
       this.disableNextMoveSound();
       this.attention_pawn = notif.args.player_id
       setupAbilities(dojo, this)
