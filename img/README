@@ -8,3 +8,10 @@ Typically, this directory should contain less than 10 files (beside
 box graphics and publisher images), with no file larger than 4 Mb.
 
 See: http://en.doc.boardgamearena.com/Game_art:_img_directory for more details.
+
+The used sound effects are derived from the following samples (all under CC0
+license):
+  - redpawn: https://freesound.org/people/ConBlast/sounds/562974/
+  - steal: https://freesound.org/people/vyclops/sounds/717414/
+  - teleport: https://freesound.org/people/Vrymaa/sounds/770118/
+  - timerflip: https://freesound.org/people/rabban625/sounds/436481/

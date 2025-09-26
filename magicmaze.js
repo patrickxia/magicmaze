@@ -714,6 +714,7 @@ function placeCharacter (obj, info, warp = false) {
     top + adjust,
     animtime)
   if (warp) {
+    obj.sounds.play('teleport')
     // The following animation should vaguely look like picking up the token
     // and placing it somewhere else.
     //
@@ -956,6 +957,12 @@ function (dojo, declare) {
       // Setup game notifications to handle (see "setupNotifications" method below)
       this.setupNotifications()
 
+      // Make all sounds available
+      this.sounds.load('redpawn')
+      this.sounds.load('steal')
+      this.sounds.load('teleport')
+      this.sounds.load('timerflip')
+
       window.setInterval(function () { updateTimer(game, $('mm_timer_numbers')) }, 500)
     },
 
@@ -1104,6 +1111,7 @@ function (dojo, declare) {
         case 'escape_loud':
         case 'escape_quiet':
           if (!this.displayedEscape) {
+            this.sounds.play('steal')
             this.displayedEscape = true
             el.style('visibility', 'visible')
             dojo.query('#mm_objectives_container').style('transform', 'rotateY(180deg)')
@@ -1185,6 +1193,8 @@ function (dojo, declare) {
       }
     },
     notif_tokenMoved: function (notif) {
+      // suppres default sound as it's too annoying
+      this.disableNextMoveSound();
       placeCharacter(this, notif.args, /* warp= */ notif.args.warp)
     },
     notif_nextTile: function (notif) {
@@ -1197,6 +1207,7 @@ function (dojo, declare) {
       }
       if (notif.args.flips) {
         if (this.flips != notif.args.flips) {
+          this.sounds.play('timerflip')
           const el = dojo.query('#mm_bigabilitydisplay_float')
           el.style('visibility', 'visible')
           setTimeout(function () {
@@ -1219,10 +1230,13 @@ function (dojo, declare) {
       }
     },
     notif_attention: function (notif) {
+      // suppres default sound as it's too annoying
+      this.disableNextMoveSound();
       this.attention_pawn = notif.args.player_id
       setupAbilities(dojo, this)
       const el = dojo.query('#mm_border')
       if (parseInt(notif.args.player_id) === parseInt(this.player_id)) {
+        this.sounds.play('redpawn')
         el.style('animation', 'none')
         const stored_this = this
         setTimeout(function () {
