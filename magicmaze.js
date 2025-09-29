@@ -738,6 +738,7 @@ function placeCharacter (obj, info, warp = false) {
   const x = parseInt(info.position_x)
   const y = parseInt(info.position_y)
   const tokenId = parseInt(info.token_id)
+  const exited = (info.exited === '1')
   const [oldx, oldy] = obj.characterLocs.get(tokenId) ?? [x, y]
   obj.characterLocs.set(tokenId, [x, y])
   const key = getKey(x, y)
@@ -745,9 +746,18 @@ function placeCharacter (obj, info, warp = false) {
   const left = obj.lefts.get(key)
   const adjust = (CELL_SIZE - MEEPLE_SIZE) / 2
   const animtime = warp ? 600 : 200
+
+  if (exited && x === oldx && y === oldy) {
+    const thetoken = dojo.query(`#mm_token${tokenId}`)
+    thetoken.style('opacity', '0')
+    const ctrl = dojo.query(`#mm_controltoken${tokenId}`)
+    ctrl.style('opacity', 1)
+    return
+  }
+
   obj.rescale(1.0)
   const slide = obj.slideToObjectPos(
-    `mm_token${info.token_id}`,
+    `mm_token${tokenId}`,
     'mm_area_scrollable_oversurface',
     left + adjust,
     top + adjust,
@@ -768,7 +778,7 @@ function placeCharacter (obj, info, warp = false) {
     // desired effect.
     //
     // Also note that the token seems to wobble if the zoom level is not 100%.
-    const tokenEl = dojo.query(`#mm_token${info.token_id}`)
+    const tokenEl = dojo.query(`#mm_token${tokenId}`)
     const distance = Math.sqrt((x - oldx)*(x - oldx) + (y - oldy)*(y - oldy))
     const scale = Math.min(5, Math.max(1, Math.sqrt(distance)))
     dojo.connect(slide, "onEnd", async function(){
@@ -785,7 +795,8 @@ function placeCharacter (obj, info, warp = false) {
       const newinfo = {
         position_x: newx,
         position_y: newy,
-        token_id: tokenId
+        token_id: tokenId,
+        exited: false
       }
       placeCharacter(obj, newinfo, /* warp = */ false)
     });
@@ -795,6 +806,11 @@ function placeCharacter (obj, info, warp = false) {
   slide.play()
   obj.rescale()
   destroyPreviews(obj, tokenId)
+  if (exited) {
+    dojo.fadeOut({node: `mm_token${tokenId}`}).play()
+    const ctrl = dojo.query(`#mm_controltoken${tokenId}`)
+    ctrl.style('opacity', 1)
+  }
 
   if (obj.tilesRemain === 0) {
     return

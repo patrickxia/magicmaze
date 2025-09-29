@@ -126,7 +126,7 @@ class MagicMaze extends Table {
         $result['players'] = self::getCollectionFromDb($sql);
         $sql = 'select tile_id tile_id, position_x, position_y, rotation from tiles where placed';
         $result['tiles'] = self::getCollectionFromDb($sql);
-        $sql = 'select token_id, position_x, position_y, locked from tokens';
+        $sql = 'select token_id, position_x, position_y, locked, exited from tokens';
         $result['tokens'] = self::getCollectionFromDb($sql);
         foreach ($result['tokens'] as $token_id => $values) {
             if ($values['locked']) {
@@ -545,6 +545,7 @@ class MagicMaze extends Table {
             'player_name' => self::getCurrentPlayerName(),
             'position_x' => $res['position_x'],
             'position_y' => $res['position_y'],
+            'exited' => false,
             'warp' => true,
         ));
     }
@@ -569,6 +570,7 @@ class MagicMaze extends Table {
             'player_name' => self::getCurrentPlayerName(),
             'position_x' => $res['position_x'],
             'position_y' => $res['position_y'],
+            'exited' => false,
             'warp' => false,
         ));
     }
@@ -609,6 +611,7 @@ class MagicMaze extends Table {
             'player_name' => self::getCurrentPlayerName(),
             'position_x' => $res['position_x'],
             'position_y' => $res['position_y'],
+            'exited' => $res['exited'],
             'warp' => false,
         ));
         if ($this->delayedNotification !== null) {
@@ -653,7 +656,7 @@ class MagicMaze extends Table {
                 throw new BgaUserException(self::_('received invalid move'));
         }
 
-        $sql = 'select token_id, position_x, position_y from tokens for update';
+        $sql = 'select token_id, position_x, position_y, exited from tokens for update';
         //$allPositions = self::getNonEmptyCollectionFromDB($sql);
         $res = self::DbQuery($sql);
         $others = array();
@@ -664,6 +667,9 @@ class MagicMaze extends Table {
             if ($row[0] == $token_id) {
                 $oldx = $row[1];
                 $oldy = $row[2];
+                if ($row[3]) {
+                    throw new BgaUserException(self::_('already exited'));
+                }
             } else {
                 $others[getKey($row[1], $row[2])] = 1;
             }
@@ -693,22 +699,32 @@ class MagicMaze extends Table {
             throw new BgaUserException(self::_("you can't move there"));
         }
 
-        $target = ($this->checkAction('steal', false) ? 'item' : 'exit');
-        self::DbQuery(checkVictoryConditionQuery($target));
+        // update if token has sucessfully exited the mall
+        if (!$this->checkAction('steal', false)) {
+            self::DbQuery(attemptExitQuery($token_id));
+        }
 
+        // check for game advancment first steal then victory
         // TODO maybe move this logic down and refactor it out of here...
-        if (self::DbAffectedRow() === 4) {
-            if ($this->checkAction('steal', false)) {
-                $this->delayedNotifyAllPlayers('message', clienttranslate('The items have been stolen! Escape!'), array());
+        if ($this->checkAction('steal', false)) {
+            self::DbQuery(checkStealConditionQuery());
+            if (self::DbAffectedRow() === 4) {
+                $this->delayedNotifyAllPlayers(
+                    'message', clienttranslate('The items have been stolen! Escape!'), array());
                 $this->gamestate->nextState('steal');
                 $changedState = true;
-            } else {
+            }
+        } else {
+            $res = self::getNonEmptyObjectFromDb(checkVictoryConditionQuery());
+            if ($res['finished'] == 4) {
                 self::DbQuery('update player set player_score = 1');
                 $this->gamestate->nextState('win');
                 $changedState = true;
-                $this->delayedNotifyAllPlayers('message', clienttranslate('Congratulations!'), array());
+                $this->delayedNotifyAllPlayers(
+                    'message', clienttranslate('Congratulations!'), array());
             }
         }
+
         // XXX roundtrips
         $res = self::getNonEmptyObjectFromDb(getTokenInfoQuery($token_id));
         if ($res['property'] === 'timer') {

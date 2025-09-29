@@ -291,6 +291,38 @@
   filter: drop-shadow(0px -5px 10px #000);
 }
 
+#mm_controltoken0 {
+  width: 30px;
+  height: 30px;
+  background: url('img/sprites.png') 0px -55px;
+  opacity: 0.5;
+  display: inline-block;
+}
+
+#mm_controltoken1 {
+  width: 30px;
+  height: 30px;
+  background: url('img/sprites.png') -30px -55px;
+  opacity: 0.5;
+  display: inline-block;
+}
+
+#mm_controltoken2 {
+  width: 30px;
+  height: 30px;
+  background: url('img/sprites.png') -60px -55px;
+  opacity: 0.5;
+  display: inline-block;
+}
+
+#mm_controltoken3 {
+  width: 30px;
+  height: 30px;
+  background: url('img/sprites.png') -90px -55px;
+  opacity: 0.5;
+  display: inline-block;
+}
+
 #mm_meeple0 {
   width: 12px;
   height: 20px;
@@ -550,24 +582,30 @@
 
 #mm_control0 {
   background-color: #74c936;
-  bottom: 80px;
+  bottom: 115px;
   user-select: none;
 }
 
 #mm_control1 {
   background-color: #f47b1c;
-  bottom: 55px;
+  bottom: 90px;
   user-select: none;
 }
 
 #mm_control2 {
   background-color: #fcd112;
-  bottom: 30px;
+  bottom: 65px;
   user-select: none;
 }
 
 #mm_control3 {
   background-color: #7f48a9;
+  bottom: 40px;
+  user-select: none;
+}
+
+#mm_meeplecontrol {
+  background-color: #ffffff;
   bottom: 5px;
   user-select: none;
 }

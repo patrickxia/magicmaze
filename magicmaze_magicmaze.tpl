@@ -114,6 +114,12 @@
 <div class="mm_actionH mm_abilityH"></div>
 <div class="mm_actionP mm_abilityP"></div>
 </div>
+<div id="mm_meeplecontrol" class="mm_control">
+<div id="mm_controltoken0"></div>
+<div id="mm_controltoken1"></div>
+<div id="mm_controltoken2"></div>
+<div id="mm_controltoken3"></div>
+</div>
 
 {TEXT_PLAYER_LIST}
 <div id="playerlist">

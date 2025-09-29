@@ -13,6 +13,7 @@ set t.position_x = e.new_x, t.position_y = e.new_y
 where
     t.token_id = $tokenID
 and not t.locked
+and not t.exited
 and not exists (
     select 1 from (select * from `tokens` for update) t2
     where t2.position_x = e.new_x and t2.position_y = e.new_y
@@ -32,6 +33,7 @@ set
 where
     t.token_id = $mage
     and not t.locked
+    and not t.exited
     and p.property = 'crystal'
     and not exists (
         select 1 from (select * from tokens for update) t2 where locked
@@ -46,8 +48,8 @@ select
 from tokens
 where
   token_id = $tokenID
-  and
-  locked
+  and locked
+  and not exited
 SQL;
 }
 
@@ -55,7 +57,7 @@ function findLockedTokensQuery() {
     return <<<SQL
 select
   token_id, position_x, position_y, find_tile(position_x, position_y) tile_id
-from tokens where locked;
+from tokens where locked and not exited;
 SQL;
 }
 
@@ -70,6 +72,7 @@ where
   p.position_x = t.position_x
   and p.position_y = t.position_y
   and not t.locked
+  and not t.exited
   and p.property = 'explore'
   and not exists (
       select 1 from (select * from tokens for update) t2 where locked
@@ -89,6 +92,7 @@ where
   p.position_x = $x
   and p.position_y = $y
   and not t.locked
+  and not t.exited
   and p.property = 'warp' 
   and not exists (
       select 1 from (select * from tokens for update) t2 where
@@ -97,22 +101,31 @@ where
 SQL;
 }
 
-function checkVictoryConditionQuery($target) {
+function checkStealConditionQuery() {
     return <<<SQL
 select
     1
 from tokens t join properties p
 on t.token_id = p.token_id
-where p.property = "$target"
+where p.property = 'item'
 and t.position_x = p.position_x
 and t.position_y = p.position_y
+SQL;
+}
+
+function checkVictoryConditionQuery() {
+    return <<<SQL
+select
+    count(*) finished
+from tokens
+where exited
 SQL;
 }
 
 function getTokenInfoQuery($tokenID) {
     return <<<SQL
 select
-    t.token_id, t.position_x, t.position_y, p.property
+    t.token_id, t.position_x, t.position_y, t.exited, p.property
 from
     tokens t
     left join
@@ -120,6 +133,24 @@ from
     on t.position_x = p.position_x and t.position_y = p.position_y
 where
     t.token_id = $tokenID
+SQL;
+}
+
+function attemptExitQuery($tokenID) {
+    return <<<SQL
+update tokens t
+set
+    t.exited = true
+where
+    t.token_id = $tokenID
+    and exists
+        (select p.property
+         from properties p
+         where
+         p.position_x = t.position_x
+         and p.position_y = t.position_y
+         and p.property = 'exit'
+         and p.token_id = $tokenID )
 SQL;
 }
 
@@ -157,6 +188,7 @@ and p.position_y = t.position_y
 and p.position_x = $x
 and p.position_y = $y
 and (p.property = 'explore')
+and not t.exited
 SQL;
 }
 
@@ -169,6 +201,7 @@ join properties p
 on t.position_x = p.position_x and t.position_y = p.position_y
 set p.property = 'used'
 where t.token_id = $mage
+and not t.exited
 SQL;
 }
 
@@ -184,7 +217,7 @@ from
     properties p
     on t.position_x = p.position_x and t.position_y = p.position_y
 where
-    t.token_id = $mage and p.property = "used"
+    t.token_id = $mage and p.property = "used" and not t.exited
 SQL;
 }
 
