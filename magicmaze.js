@@ -94,6 +94,8 @@ function updateTimer (obj, el) {
 }
 
 function dispatchMove (obj, tokenId, arr) {
+  // reset possible query after ambiguous action
+  obj.updatePageTitle()
   let arg = {}
   let path = ''
   if (tokenId == null) {
@@ -375,8 +377,6 @@ function drawEscalators (obj) {
       if (eligible.size !== 1) {
         return
       }
-      // reset possible query after ambiguous action
-      obj.updatePageTitle()
       dispatchMove(obj, [...eligible][0], [1])
     })
   })
@@ -467,7 +467,6 @@ function cellClickHandler (dojo, game, cell, evt) {
           } else {
             dispatchMove(game, token, [dx, dy, evt.shiftKey])
           }
-          game.updatePageTitle()
         })
     }
     game.statusBar.addActionButton(_('Cancel'), () => game.updatePageTitle())
@@ -548,8 +547,6 @@ function drawProperties (dojo, game, properties) {
           dojo.destroy(clickableZone.confirmEl)
           clickableZone.confirmEl = undefined
         }
-        // reset possible query after ambiguous action
-        game.updatePageTitle()
         dispatchMove(game, -1, [warp.position_x, warp.position_y])
       }
       clickableZone.ondblclick = clickableZone.warpFn
@@ -709,8 +706,6 @@ function drawMagePreviews (obj) {
       if (obj.mageStatus !== 0) {
         obj.onCreateTile(srcTileID, newRelativeX, newRelativeY)
       } else {
-        // reset possible query after ambiguous action
-        obj.updatePageTitle()
         dispatchMove(obj, mageId, [0])
       }
     })
@@ -806,8 +801,6 @@ function placeCharacter (obj, info, warp = false) {
     el.mm_rot = rot
     obj.mm_zindex = 0
     dojo.connect(el, 'onclick', obj, function (evt) {
-      // reset possible query after ambiguous action
-      obj.updatePageTitle()
       dispatchMove(obj, tokenId, [0])
     })
     obj.previewElements.set(tokenId, [el])
@@ -902,38 +895,26 @@ function (dojo, declare) {
         }
         const base = `#mm_control${tokenId} `
         dojo.connect(document.querySelector(base + '> .mm_actionN'), 'onclick', this, function (evt) {
-          // reset possible query after ambiguous action
-          this.updatePageTitle()
           // up
           dispatchMove(this, tokenId, [0, -1, evt.shiftKey])
         })
         dojo.connect(document.querySelector(base + '> .mm_actionW'), 'onclick', this, function (evt) {
-          // reset possible query after ambiguous action
-          this.updatePageTitle()
           // left
           dispatchMove(this, tokenId, [-1, 0, evt.shiftKey])
         })
         dojo.connect(document.querySelector(base + '> .mm_actionE'), 'onclick', this, function (evt) {
-          // reset possible query after ambiguous action
-          this.updatePageTitle()
           // right
           dispatchMove(this, tokenId, [1, 0, evt.shiftKey])
         })
         dojo.connect(document.querySelector(base + '> .mm_actionS'), 'onclick', this, function (evt) {
-          // reset possible query after ambiguous action
-          this.updatePageTitle()
           // down
           dispatchMove(this, tokenId, [0, 1, evt.shiftKey])
         })
         dojo.connect(document.querySelector(base + '> .mm_actionH'), 'onclick', this, function (evt) {
-          // reset possible query after ambiguous action
-          this.updatePageTitle()
           // explore
           dispatchMove(this, tokenId, [0])
         })
         dojo.connect(document.querySelector(base + '> .mm_actionR'), 'onclick', this, function (evt) {
-          // reset possible query after ambiguous action
-          this.updatePageTitle()
           // escalator
           dispatchMove(this, tokenId, [1])
         })
@@ -955,26 +936,18 @@ function (dojo, declare) {
         const base2 = `#mm_token${tokenId}`
 
         dojo.connect(document.querySelector(base2 + '> .mm_actionN'), 'onclick', this, function (evt) {
-          // reset possible query after ambiguous action
-          this.updatePageTitle()
           // up
           dispatchMove(this, tokenId, [0, -1, evt.shiftKey])
         })
         dojo.connect(document.querySelector(base2 + '> .mm_actionW'), 'onclick', this, function (evt) {
-          // reset possible query after ambiguous action
-          this.updatePageTitle()
           // left
           dispatchMove(this, tokenId, [-1, 0, evt.shiftKey])
         })
         dojo.connect(document.querySelector(base2 + '> .mm_actionE'), 'onclick', this, function (evt) {
-          // reset possible query after ambiguous action
-          this.updatePageTitle()
           // up
           dispatchMove(this, tokenId, [1, 0, evt.shiftKey])
         })
         dojo.connect(document.querySelector(base2 + '> .mm_actionS'), 'onclick', this, function (evt) {
-          // reset possible query after ambiguous action
-          this.updatePageTitle()
           // down
           dispatchMove(this, tokenId, [0, 1, evt.shiftKey])
         })
