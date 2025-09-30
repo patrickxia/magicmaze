@@ -453,7 +453,7 @@ function cellClickHandler (dojo, game, cell, evt) {
 
   // first reset page title
   game.updatePageTitle()
-  if (possibleMoves.length > 1) {
+  if (possibleMoves.length > 1 || (possibleMoves.length === 1 && possibleWarp)) {
     game.statusBar.setTitle(_('Ambiguous move. Select a token.'))
     for (const move of possibleMoves) {
       const [token, ability, dx, dy] = move
@@ -467,7 +467,18 @@ function cellClickHandler (dojo, game, cell, evt) {
           } else {
             dispatchMove(game, token, [dx, dy, evt.shiftKey])
           }
+          if (possibleWarp) {
+            if (cell.confirmEl !== undefined) {
+              dojo.destroy(cell.confirmEl)
+              cell.confirmEl = undefined
+            }
+          }
         })
+    }
+    if (possibleWarp) {
+      game.statusBar.addActionButton(
+        (`<span id="mm_buttonWarp"></span> ` + _('Use vortex')),
+        () => { cell.warpFn(undefined) })
     }
     game.statusBar.addActionButton(_('Cancel'), () => game.updatePageTitle())
   }
@@ -540,7 +551,9 @@ function drawProperties (dojo, game, properties) {
       const clickableZone = game.clickableCells.get(key)
       clickableZone.classList.add('mm_filterwarp')
       clickableZone.warpFn = function (evt) {
-        evt.stopPropagation() // Or we get in a state where we regenerate this element
+        if (evt !== undefined) {
+          evt.stopPropagation() // Or we get in a state where we regenerate this element
+        }
         clearTimeout(clickableZone.timer)
         clickableZone.prevent = true
         if (clickableZone.confirmEl !== undefined) {

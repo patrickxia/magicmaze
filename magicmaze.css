@@ -323,6 +323,14 @@
   display: inline-block;
 }
 
+#mm_buttonWarp {
+  width: 22px;
+  height: 24px;
+  background: url('img/dirs.png') -124px 0;
+  margin-bottom: -6px;
+  display: inline-block;
+}
+
 .mm_notify {
   display: inline-block;
   cursor: pointer;
