@@ -1111,6 +1111,7 @@ function (dojo, declare) {
         case 'escape_loud':
         case 'escape_quiet':
           if (!this.displayedEscape) {
+            // TODO suppress this on reload (maybe after implementing meeple exit)
             this.sounds.play('steal')
             this.displayedEscape = true
             el.style('visibility', 'visible')
