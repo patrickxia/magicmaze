@@ -94,6 +94,8 @@ function updateTimer (obj, el) {
 }
 
 function dispatchMove (obj, tokenId, arr) {
+  // reset possible query after ambiguous action
+  obj.updatePageTitle()
   let arg = {}
   let path = ''
   if (tokenId == null) {
@@ -442,8 +444,43 @@ function cellClickHandler (dojo, game, cell, evt) {
   const possibleWarp = 'warpFn' in cell && game.abilities[game.player_id].indexOf('P') !== -1
   const possibleMoves = eligibleActions(game, cell.posX, cell.posY)
 
-  if (possibleMoves.length > 1) {
-    game.showMessage(_('Possibly ambiguous move, use the specific arrow to move the desired character'), 'error')
+  const tokenNames = {
+    0: _('Elf'),
+    1: _('Dwarf'),
+    2: _('Barbarian'),
+    3: _('Mage'),
+  }
+
+  // first reset page title
+  game.updatePageTitle()
+  if (possibleMoves.length > 1 || (possibleMoves.length === 1 && possibleWarp)) {
+    game.statusBar.setTitle(_('Ambiguous move. Select a token.'))
+    for (const move of possibleMoves) {
+      const [token, ability, dx, dy] = move
+      game.statusBar.addActionButton(
+        (`<span id="mm_meeple${token}"></span> ` + 
+         dojo.string.substitute(_('Move the ${token}'), {token: tokenNames[token]})),
+        () => {
+          if (ability === 'R') {
+            // escalator
+            dispatchMove(game, token, [1])
+          } else {
+            dispatchMove(game, token, [dx, dy, evt.shiftKey])
+          }
+          if (possibleWarp) {
+            if (cell.confirmEl !== undefined) {
+              dojo.destroy(cell.confirmEl)
+              cell.confirmEl = undefined
+            }
+          }
+        })
+    }
+    if (possibleWarp) {
+      game.statusBar.addActionButton(
+        (`<span id="mm_buttonWarp"></span> ` + _('Use vortex')),
+        () => { cell.warpFn(undefined) })
+    }
+    game.statusBar.addActionButton(_('Cancel'), () => game.updatePageTitle())
   }
 
   if (!possibleWarp && possibleMoves.length === 1) {
@@ -514,7 +551,9 @@ function drawProperties (dojo, game, properties) {
       const clickableZone = game.clickableCells.get(key)
       clickableZone.classList.add('mm_filterwarp')
       clickableZone.warpFn = function (evt) {
-        evt.stopPropagation() // Or we get in a state where we regenerate this element
+        if (evt !== undefined) {
+          evt.stopPropagation() // Or we get in a state where we regenerate this element
+        }
         clearTimeout(clickableZone.timer)
         clickableZone.prevent = true
         if (clickableZone.confirmEl !== undefined) {
