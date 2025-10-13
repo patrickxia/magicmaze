@@ -810,6 +810,7 @@ function placeCharacter (obj, info, warp = false) {
     dojo.fadeOut({node: `mm_token${tokenId}`}).play()
     const ctrl = dojo.query(`#mm_controltoken${tokenId}`)
     ctrl.style('opacity', 1)
+    obj.sounds.play('exit')
   }
 
   if (obj.tilesRemain === 0) {
@@ -1017,6 +1018,7 @@ function (dojo, declare) {
       this.sounds.load('steal')
       this.sounds.load('teleport')
       this.sounds.load('timerflip')
+      this.sounds.load('exit')
 
       window.setInterval(function () { updateTimer(game, $('mm_timer_numbers')) }, 500)
     },
