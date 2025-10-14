@@ -747,13 +747,17 @@ function placeCharacter (obj, info, warp = false) {
   const adjust = (CELL_SIZE - MEEPLE_SIZE) / 2
   const animtime = warp ? 600 : 200
 
-  if (exited && x === oldx && y === oldy) {
-    const thetoken = dojo.query(`#mm_token${tokenId}`)
-    thetoken.style('opacity', '0')
-    const ctrl = dojo.query(`#mm_controltoken${tokenId}`)
-    ctrl.style('opacity', 1)
-    return
+  if (exited) {
+    obj.exitStatus[tokenId] = true
+    if (x === oldx && y === oldy) {
+      const thetoken = dojo.query(`#mm_token${tokenId}`)
+      thetoken.style('opacity', '0')
+      const ctrl = dojo.query(`#mm_controltoken${tokenId}`)
+      ctrl.style('opacity', 1)
+      return
+    }
   }
+
 
   obj.rescale(1.0)
   const slide = obj.slideToObjectPos(
@@ -887,6 +891,7 @@ function (dojo, declare) {
       this.zoomLevel = 0
       this.drawingMagePreviews = false
       this.tokenHighlightTstamp = 0
+      this.exitStatus = [false, false, false, false] // mapping tokenID -> hasExited
     },
 
     setup: function (gamedatas) {
@@ -1009,6 +1014,9 @@ function (dojo, declare) {
       for (let i = 0; i < 4; ++i) {
         const tmp = dojo.query(`#mm_controltoken${i}`)
         dojo.connect(tmp[0], 'onclick', this, function (evt) {
+          if (this.exitStatus[i]) {
+            return
+          }
           const token = dojo.query(`#mm_token${i}`)
           token.addClass(`mm_tokenwhite`)
           setTimeout(function () {
@@ -1017,7 +1025,8 @@ function (dojo, declare) {
           const now = Date.now()
           if (now - this.tokenHighlightTstamp < 500) {
             const zoomRatio = toZoomRatio(this.zoomLevel)
-            this.scrollmap.scrollto(-token[0].offsetLeft*zoomRatio, -token[0].offsetTop*zoomRatio)
+            this.scrollmap.scrollto(-token[0].offsetLeft*zoomRatio,
+                                    -token[0].offsetTop*zoomRatio)
           }
           this.tokenHighlightTstamp = now
         })
