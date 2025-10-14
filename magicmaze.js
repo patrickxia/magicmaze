@@ -799,6 +799,9 @@ function placeCharacter (obj, info, warp = false) {
         exited: false
       }
       placeCharacter(obj, newinfo, /* warp = */ false)
+      // Remove style attributes after everything is over to avoid interference
+      tokenEl.style('transition', '')
+      tokenEl.style('transform', '')
     });
     tokenEl.style('transition', `${1.25*animtime}ms`)
     tokenEl.style('transform', `scale(${scale})`)
@@ -1001,6 +1004,17 @@ function (dojo, declare) {
       dojo.connect($('mm_bigabilitydisplay_float'), 'onclick', this, function (evt) {
         dojo.query('#mm_bigabilitydisplay_float').style('visibility', 'hidden')
       })
+
+      for (let i = 0; i < 4; ++i) {
+        const tmp = dojo.query(`#mm_controltoken${i}`)
+        dojo.connect(tmp[0], 'onclick', this, function (evt) {
+          const token = dojo.query(`#mm_token${i}`)
+          token.addClass(`mm_tokenwhite`)
+          setTimeout(function () {
+            token.removeClass(`mm_tokenwhite`)
+          }, 333)
+        })
+      }
 
       this.mageStatus = parseInt(gamedatas.mage_status, 10)
       // Needs to be after placeCharacter
