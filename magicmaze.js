@@ -1198,8 +1198,14 @@ function (dojo, declare) {
         case 'escape_loud':
         case 'escape_quiet':
           if (!this.displayedEscape) {
-            // TODO suppress this on reload (maybe after implementing meeple exit)
-            this.sounds.play('steal')
+            // Suppress the alarm siren if any meeple has exited reducing the
+            // annoyance factor on reload (this is a cheap test for the steal
+            // being a good bit in the past)
+            // Note that this appears to be superfluous as it seems that
+            // sounds do not play during load.
+            if (!(this.exitStatus.some(Boolean))) {
+              this.sounds.play('steal')
+            }
             this.displayedEscape = true
             el.style('visibility', 'visible')
             dojo.query('#mm_objectives_container').style('transform', 'rotateY(180deg)')
@@ -1211,8 +1217,7 @@ function (dojo, declare) {
               dojo.create('div', {
                 class: 'mm_crossout'
               }, node)
-            }
-            )
+            })
           }
       }
       const bEl = dojo.query('#mm_talk_border')
