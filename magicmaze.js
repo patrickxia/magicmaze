@@ -886,6 +886,7 @@ function (dojo, declare) {
       this.lastRefreshDeadline = 0
       this.zoomLevel = 0
       this.drawingMagePreviews = false
+      this.tokenHighlightTstamp = 0
     },
 
     setup: function (gamedatas) {
@@ -1013,6 +1014,12 @@ function (dojo, declare) {
           setTimeout(function () {
             token.removeClass(`mm_tokenwhite`)
           }, 333)
+          const now = Date.now()
+          if (now - this.tokenHighlightTstamp < 500) {
+            const zoomRatio = toZoomRatio(this.zoomLevel)
+            this.scrollmap.scrollto(-token[0].offsetLeft*zoomRatio, -token[0].offsetTop*zoomRatio)
+          }
+          this.tokenHighlightTstamp = now
         })
       }
 
