@@ -581,7 +581,7 @@
   opacity: 0.5; /* also specified in the JS */
 }
 
-.mm_action, .mm_zoom {
+.mm_action {
   font-family: Roboto, Arial, sans-serif, SymbolaArrows;
 }
 
@@ -662,4 +662,8 @@
 
 #reflexiontime {
   visibility: hidden;
+}
+
+.mm_help_item {
+  list-style: unset;
 }

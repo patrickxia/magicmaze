@@ -16,10 +16,11 @@
 
 <div id="mm_area_container">
   <div id="mm_zoom_controls">
-    <a href="#" class="mm_zoom" id="mm_zoom_in"><i class="fa6 fa6-magnifying-glass-plus"></i></a> |
-    <a href="#" class="mm_zoom" id="mm_zoom_reset"><i class="fa6 fa6-plus-minus"></i></a> |
-    <a href="#" class="mm_zoom" id="mm_zoom_out"><i class="fa6 fa6-magnifying-glass-minus"></i></a> |
-    <a href="#" class="mm_zoom" id="mm_zoom_fit"><i class="fa6 fa6-expand"></i></a>
+    <a href="#" id="mm_zoom_in"><i class="fa6 fa6-magnifying-glass-plus"></i></a> |
+    <a href="#" id="mm_zoom_reset"><i class="fa6 fa6-plus-minus"></i></a> |
+    <a href="#" id="mm_zoom_out"><i class="fa6 fa6-magnifying-glass-minus"></i></a> |
+    <a href="#" id="mm_zoom_fit"><i class="fa6 fa6-expand"></i></a> |
+    <a href="#" id="mm_ui_help"><i class="fa6 fa6-circle-info"></i></a>
   </div>
   <div id="mm_area_surface"></div>
   <div id="mm_area_aggregate">
@@ -115,21 +116,15 @@
 <div class="mm_actionP mm_abilityP"></div>
 </div>
 
-{TEXT_PLAYER_LIST}
 <div id="playerlist">
-
 </div>
 
 <script type="text/javascript">
-
 // Javascript HTML templates
-
 /*
 // Example:
 var jstpl_some_game_item='<div class="my_game_item" id="my_game_item_${MY_ITEM_ID}"></div>';
-
 */
-
 </script>  
 
 {OVERALL_GAME_FOOTER}
