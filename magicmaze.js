@@ -1253,6 +1253,13 @@ function (dojo, declare) {
           setTimeout(function () {
             el.style('visibility', 'hidden')
           }, 4500)
+          const timer = dojo.query('#mm_timer_img')
+          timer.style('transition', `1000ms`)
+          timer.style('transform', 'rotate(180deg)')
+          setTimeout(function () {
+            timer.style('transition', '')
+            timer.style('transform', '')
+          }, 1000)
         }
         this.flips = notif.args.flips
         setupAbilities(dojo, this)
