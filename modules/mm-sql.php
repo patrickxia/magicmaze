@@ -49,7 +49,6 @@ from tokens
 where
   token_id = $tokenID
   and locked
-  and not exited
 SQL;
 }
 
@@ -57,7 +56,7 @@ function findLockedTokensQuery() {
     return <<<SQL
 select
   token_id, position_x, position_y, find_tile(position_x, position_y) tile_id
-from tokens where locked and not exited;
+from tokens where locked;
 SQL;
 }
 
