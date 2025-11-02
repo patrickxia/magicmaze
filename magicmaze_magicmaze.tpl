@@ -16,10 +16,10 @@
 
 <div id="mm_area_container">
   <div id="mm_zoom_controls">
-    <a href="#" class="mm_zoom" id="mm_zoom_in">➕</a> |
-    <a href="#" class="mm_zoom" id="mm_zoom_reset">⭯</a> |
-    <a href="#" class="mm_zoom" id="mm_zoom_out">➖</a> |
-    <a href="#" class="mm_zoom" id="mm_zoom_fit">⬚</a>
+    <a href="#" class="mm_zoom" id="mm_zoom_in"><i class="fa6 fa6-magnifying-glass-plus"></i></a> |
+    <a href="#" class="mm_zoom" id="mm_zoom_reset"><i class="fa6 fa6-plus-minus"></i></a> |
+    <a href="#" class="mm_zoom" id="mm_zoom_out"><i class="fa6 fa6-magnifying-glass-minus"></i></a> |
+    <a href="#" class="mm_zoom" id="mm_zoom_fit"><i class="fa6 fa6-expand"></i></a>
   </div>
   <div id="mm_area_surface"></div>
   <div id="mm_area_aggregate">
