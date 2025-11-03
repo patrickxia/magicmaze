@@ -78,47 +78,54 @@
 </div>
 </div>
 
-<div id="mm_control0" class="mm_control">
-<div class="mm_actionW mm_abilityW"></div>
-<div class="mm_actionN mm_abilityN"></div>
-<div class="mm_actionS mm_abilityS"></div>
-<div class="mm_actionE mm_abilityE"></div>
-<div class="mm_actionR mm_abilityR"></div>
-<div class="mm_actionH mm_abilityH"></div>
-<div class="mm_actionP mm_abilityP"></div>
+
+<div id="mm_ctrlrow0" class="mm_ctrlrow">
+  <div id="mm_controltoken0"></div>
+  <div id="mm_control0" class="mm_control">
+    <div class="mm_actionW mm_abilityW"></div>
+    <div class="mm_actionN mm_abilityN"></div>
+    <div class="mm_actionS mm_abilityS"></div>
+    <div class="mm_actionE mm_abilityE"></div>
+    <div class="mm_actionR mm_abilityR"></div>
+    <div class="mm_actionH mm_abilityH"></div>
+    <div class="mm_actionP mm_abilityP"></div>
+  </div>
 </div>
-<div id="mm_control1" class="mm_control">
-<div class="mm_actionW mm_abilityW"></div>
-<div class="mm_actionN mm_abilityN"></div>
-<div class="mm_actionS mm_abilityS"></div>
-<div class="mm_actionE mm_abilityE"></div>
-<div class="mm_actionR mm_abilityR"></div>
-<div class="mm_actionH mm_abilityH"></div>
-<div class="mm_actionP mm_abilityP"></div>
+<div id="mm_ctrlrow1" class="mm_ctrlrow">
+  <div id="mm_controltoken1"></div>
+  <div id="mm_control1" class="mm_control">
+    <div class="mm_actionW mm_abilityW"></div>
+    <div class="mm_actionN mm_abilityN"></div>
+    <div class="mm_actionS mm_abilityS"></div>
+    <div class="mm_actionE mm_abilityE"></div>
+    <div class="mm_actionR mm_abilityR"></div>
+    <div class="mm_actionH mm_abilityH"></div>
+    <div class="mm_actionP mm_abilityP"></div>
+  </div>
 </div>
-<div id="mm_control2" class="mm_control">
-<div class="mm_actionW mm_abilityW"></div>
-<div class="mm_actionN mm_abilityN"></div>
-<div class="mm_actionS mm_abilityS"></div>
-<div class="mm_actionE mm_abilityE"></div>
-<div class="mm_actionR mm_abilityR"></div>
-<div class="mm_actionH mm_abilityH"></div>
-<div class="mm_actionP mm_abilityP"></div>
+<div id="mm_ctrlrow2" class="mm_ctrlrow">
+  <div id="mm_controltoken2"></div>
+  <div id="mm_control2" class="mm_control">
+    <div class="mm_actionW mm_abilityW"></div>
+    <div class="mm_actionN mm_abilityN"></div>
+    <div class="mm_actionS mm_abilityS"></div>
+    <div class="mm_actionE mm_abilityE"></div>
+    <div class="mm_actionR mm_abilityR"></div>
+    <div class="mm_actionH mm_abilityH"></div>
+    <div class="mm_actionP mm_abilityP"></div>
+  </div>
 </div>
-<div id="mm_control3" class="mm_control">
-<div class="mm_actionW mm_abilityW"></div>
-<div class="mm_actionN mm_abilityN"></div>
-<div class="mm_actionS mm_abilityS"></div>
-<div class="mm_actionE mm_abilityE"></div>
-<div class="mm_actionR mm_abilityR"></div>
-<div class="mm_actionH mm_abilityH"></div>
-<div class="mm_actionP mm_abilityP"></div>
-</div>
-<div id="mm_meeplecontrol" class="mm_control">
-<div id="mm_controltoken0"></div>
-<div id="mm_controltoken1"></div>
-<div id="mm_controltoken2"></div>
-<div id="mm_controltoken3"></div>
+<div id="mm_ctrlrow3" class="mm_ctrlrow">
+  <div id="mm_controltoken3"></div>
+  <div id="mm_control3" class="mm_control">
+    <div class="mm_actionW mm_abilityW"></div>
+    <div class="mm_actionN mm_abilityN"></div>
+    <div class="mm_actionS mm_abilityS"></div>
+    <div class="mm_actionE mm_abilityE"></div>
+    <div class="mm_actionR mm_abilityR"></div>
+    <div class="mm_actionH mm_abilityH"></div>
+    <div class="mm_actionP mm_abilityP"></div>
+  </div>
 </div>
 
 {TEXT_PLAYER_LIST}
