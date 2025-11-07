@@ -292,6 +292,50 @@
   filter: drop-shadow(0px -5px 10px #000);
 }
 
+#mm_controltoken0 {
+  width: 30px;
+  height: 30px;
+  background: url('img/sprites.png') 0px -55px;
+  opacity: 0.5;
+  display: inline-block;
+  scale: 0.8;
+  margin-top: -6px;
+  margin-bottom: -3px;
+}
+
+#mm_controltoken1 {
+  width: 30px;
+  height: 30px;
+  background: url('img/sprites.png') -30px -55px;
+  opacity: 0.5;
+  display: inline-block;
+  scale: 0.8;
+  margin-top: -6px;
+  margin-bottom: -3px;
+}
+
+#mm_controltoken2 {
+  width: 30px;
+  height: 30px;
+  background: url('img/sprites.png') -60px -55px;
+  opacity: 0.5;
+  display: inline-block;
+  scale: 0.8;
+  margin-top: -6px;
+  margin-bottom: -3px;
+}
+
+#mm_controltoken3 {
+  width: 30px;
+  height: 30px;
+  background: url('img/sprites.png') -90px -55px;
+  opacity: 0.5;
+  display: inline-block;
+  scale: 0.8;
+  margin-top: -6px;
+  margin-bottom: -3px;
+}
+
 #mm_meeple0 {
   width: 12px;
   height: 20px;
@@ -536,41 +580,55 @@
   opacity: 0.3;
 }
 
-/* TODO: Make these line up with the player guides */
-.mm_control {
+.mm_ctrlrow {
   position: fixed;
   z-index: 10;
   left: 5px;
+  background-color: #ffffff;
+  user-select: none;
+}
+
+#mm_ctrlrow0 {
+  bottom: 85px;
+}
+
+#mm_ctrlrow1 {
+  bottom: 60px;
+}
+
+#mm_ctrlrow2 {
+  bottom: 35px;
+}
+
+#mm_ctrlrow3 {
+  bottom: 10px;
+}
+
+/* TODO: Make these line up with the player guides */
+.mm_control {
+  display: inline-block;
 }
 
 @media only screen and (max-width: 665px)  {
-  .mobile_version .mm_control {
+  .mobile_version .mm_ctrlrow {
     left: 20%;
   }
 }
 
 #mm_control0 {
   background-color: #74c936;
-  bottom: 80px;
-  user-select: none;
 }
 
 #mm_control1 {
   background-color: #f47b1c;
-  bottom: 55px;
-  user-select: none;
 }
 
 #mm_control2 {
   background-color: #fcd112;
-  bottom: 30px;
-  user-select: none;
 }
 
 #mm_control3 {
   background-color: #7f48a9;
-  bottom: 5px;
-  user-select: none;
 }
 
 .mm_action {

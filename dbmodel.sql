@@ -39,6 +39,7 @@ create table `tokens` (
     `position_y` int not null,
     `locked` bool not null default false,
     `dummy` bool not null default false,
+    `exited` bool not null default false,
     primary key (`token_id`)
 ) ENGINE=InnoDB;
 
