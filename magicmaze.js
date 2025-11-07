@@ -983,7 +983,7 @@ function (dojo, declare) {
         myDlg.setMaxWidth( 600 );
         const infoHTML = `
 <ul>
-  <li class="mm_help_item">${_("Give the red pawn to a player by double-clicking/-taping the bell besides the player in the player list (top or right).")}</li>
+  <li class="mm_help_item">${_("Give the red pawn to a player by double-clicking/-tapping the bell besides the player in the player list (top or right).")}</li>
   <li class="mm_help_item">${_("Move the meeples:")}
   <ul>
     <li class="mm_help_item">${_("by clicking/tapping on the black arrows besides them,")}</li>
