@@ -747,13 +747,17 @@ function placeCharacter (obj, info, warp = false) {
   const adjust = (CELL_SIZE - MEEPLE_SIZE) / 2
   const animtime = warp ? 600 : 200
 
-  if (exited && x === oldx && y === oldy) {
-    const thetoken = dojo.query(`#mm_token${tokenId}`)
-    thetoken.style('opacity', '0')
-    const ctrl = dojo.query(`#mm_controltoken${tokenId}`)
-    ctrl.style('opacity', 1)
-    return
+  if (exited) {
+    obj.exitStatus[tokenId] = true
+    if (x === oldx && y === oldy) {
+      const thetoken = dojo.query(`#mm_token${tokenId}`)
+      thetoken.style('opacity', '0')
+      const ctrl = dojo.query(`#mm_controltoken${tokenId}`)
+      ctrl.style('opacity', 1)
+      return
+    }
   }
+
 
   obj.rescale(1.0)
   const slide = obj.slideToObjectPos(
@@ -799,6 +803,9 @@ function placeCharacter (obj, info, warp = false) {
         exited: false
       }
       placeCharacter(obj, newinfo, /* warp = */ false)
+      // Remove style attributes after everything is over to avoid interference
+      tokenEl.style('transition', '')
+      tokenEl.style('transform', '')
     });
     tokenEl.style('transition', `${1.25*animtime}ms`)
     tokenEl.style('transform', `scale(${scale})`)
@@ -883,6 +890,8 @@ function (dojo, declare) {
       this.lastRefreshDeadline = 0
       this.zoomLevel = 0
       this.drawingMagePreviews = false
+      this.tokenHighlightTstamp = 0
+      this.exitStatus = [false, false, false, false] // mapping tokenID -> hasExited
     },
 
     setup: function (gamedatas) {
@@ -1001,6 +1010,27 @@ function (dojo, declare) {
       dojo.connect($('mm_bigabilitydisplay_float'), 'onclick', this, function (evt) {
         dojo.query('#mm_bigabilitydisplay_float').style('visibility', 'hidden')
       })
+
+      for (let i = 0; i < 4; ++i) {
+        const tmp = dojo.query(`#mm_controltoken${i}`)
+        dojo.connect(tmp[0], 'onclick', this, function (evt) {
+          if (this.exitStatus[i]) {
+            return
+          }
+          const token = dojo.query(`#mm_token${i}`)
+          token.addClass(`mm_tokenwhite`)
+          setTimeout(function () {
+            token.removeClass(`mm_tokenwhite`)
+          }, 333)
+          const now = Date.now()
+          if (now - this.tokenHighlightTstamp < 500) {
+            const zoomRatio = toZoomRatio(this.zoomLevel)
+            this.scrollmap.scrollto(-token[0].offsetLeft*zoomRatio,
+                                    -token[0].offsetTop*zoomRatio)
+          }
+          this.tokenHighlightTstamp = now
+        })
+      }
 
       this.mageStatus = parseInt(gamedatas.mage_status, 10)
       // Needs to be after placeCharacter
@@ -1168,8 +1198,14 @@ function (dojo, declare) {
         case 'escape_loud':
         case 'escape_quiet':
           if (!this.displayedEscape) {
-            // TODO suppress this on reload (maybe after implementing meeple exit)
-            this.sounds.play('steal')
+            // Suppress the alarm siren if any meeple has exited reducing the
+            // annoyance factor on reload (this is a cheap test for the steal
+            // being a good bit in the past)
+            // Note that this appears to be superfluous as it seems that
+            // sounds do not play during load.
+            if (!(this.exitStatus.some(Boolean))) {
+              this.sounds.play('steal')
+            }
             this.displayedEscape = true
             el.style('visibility', 'visible')
             dojo.query('#mm_objectives_container').style('transform', 'rotateY(180deg)')
@@ -1181,8 +1217,7 @@ function (dojo, declare) {
               dojo.create('div', {
                 class: 'mm_crossout'
               }, node)
-            }
-            )
+            })
           }
       }
       const bEl = dojo.query('#mm_talk_border')
