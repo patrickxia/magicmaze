@@ -1002,6 +1002,32 @@ function (dojo, declare) {
       dojo.connect($('mm_zoom_out'), 'onclick', this, 'onZoomOut')
       dojo.connect($('mm_zoom_fit'), 'onclick', this, 'onZoomFit')
 
+      dojo.connect($('mm_ui_help'), 'onclick', this, function (evt) {
+        const myDlg = new ebg.popindialog();
+        myDlg.create('mmUIHelpDialog');
+        myDlg.setTitle(_("UI hints"));
+        myDlg.setMaxWidth( 600 );
+        const infoHTML = `
+<ul>
+  <li class="mm_help_item">${_("Give the red pawn to a player by double-clicking/-tapping the bell besides the player in the player list (top or right).")}</li>
+  <li class="mm_help_item">${_("Move the meeples:")}
+  <ul>
+    <li class="mm_help_item">${_("by clicking/tapping on the black arrows besides them,")}</li>
+    <li class="mm_help_item">${_("by clicking/tapping on the fields/escalators besides them,")}</li>
+    <li class="mm_help_item">${_("by clicking/tapping on the action controls in the lower left,")}</li>
+    <li class="mm_help_item">${_("holding the shift key moves up to the next obstacle,")}</li>
+    <li class="mm_help_item">${_("by clicking/tapping on the vortex fields.")}</li>
+  </ul>
+  </li>
+  <li class="mm_help_item">${_("Find the meeples by clicking/tapping on meeple control in the lower left:")}
+  <ul>
+    <li class="mm_help_item">${_("a single click/tap highlights the corresponding meeple,")}</li>
+    <li class="mm_help_item">${_("a double click/tap centers the corresponding meeple.")}</li>
+</ul>`
+        myDlg.setContent( infoHTML );
+        myDlg.show();
+      })
+
       dojo.connect($('mm_objectives_float'), 'onclick', this, function (evt) {
         dojo.query('#mm_objectives_float').style('visibility', 'hidden')
       })
