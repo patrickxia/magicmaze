@@ -3,6 +3,7 @@
 all: tiles
 
 BABEL ?= babel
+CWEBP ?= cwebp
 
 .PHONY: tiles prod prodjs
 
@@ -16,5 +17,14 @@ prodjs: magicmaze.js
 	git diff-index --quiet HEAD # Check to see if we can cleanly checkout
 	$(BABEL) magicmaze.js > a
 	mv a magicmaze.js
+
+# By default, boardgamearena uses lossy (!) webp compression, which causes
+# noticeable artifacting on the sprites and the tiles. Generate webp files
+# for them so that this doesn't happen to us.
+prodimg: img/dirs.png img/objectives.png img/sprites.png img/t.png
+	$(CWEBP) img/dirs.png -lossless -m 6 -q 100 -o img/dirs.png.webp
+	$(CWEBP) img/objectives.png -lossless -m 6 -q 100 -o img/objectives.png.webp
+	$(CWEBP) img/sprites.png -lossless -m 6 -q 100 -o img/sprites.png.webp
+	$(CWEBP) img/t.png -lossless -m 6 -q 100 -o img/t.png.webp
 
 prod: prodjs
