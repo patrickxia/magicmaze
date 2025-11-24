@@ -3,6 +3,8 @@
 all: tiles
 
 BABEL ?= babel
+# cwebp 1.6.0 for reproducibility; binaries at
+# https://storage.googleapis.com/downloads.webmproject.org/releases/webp/index.html
 CWEBP ?= cwebp
 
 .PHONY: tiles prod prodjs
@@ -21,10 +23,9 @@ prodjs: magicmaze.js
 # By default, boardgamearena uses lossy (!) webp compression, which causes
 # noticeable artifacting on the sprites and the tiles. Generate webp files
 # for them so that this doesn't happen to us.
-prodimg: img/dirs.png img/objectives.png img/sprites.png img/t.png
-	$(CWEBP) img/dirs.png -lossless -m 6 -q 100 -o img/dirs.png.webp
-	$(CWEBP) img/objectives.png -lossless -m 6 -q 100 -o img/objectives.png.webp
-	$(CWEBP) img/sprites.png -lossless -m 6 -q 100 -o img/sprites.png.webp
-	$(CWEBP) img/t.png -lossless -m 6 -q 100 -o img/t.png.webp
+img/%.png.webp: img/%.png
+	$(CWEBP) $< -lossless -m 6 -q 100 -o $@
 
-prod: prodjs
+prodimg: img/dirs.png.webp img/objectives.png.webp img/sprites.png.webp img/t.png.webp
+
+prod: prodjs prodimg
