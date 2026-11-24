@@ -17,11 +17,10 @@ create table `tiles` (
      primary key (`tile_id`)
 ) ENGINE=InnoDB;
 
-create function find_tile(x int, y int) returns int begin
+create function find_tile(x int, y int) returns int deterministic
   return (select tile_id from tiles where
     x - position_x between 0 and 3
     and y - position_y between 0 and 3);
-end;
 
 -- The token that initiates an explore half-step is locked.
 -- This stops people from invalidly moving a meeple when the person is
