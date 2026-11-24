@@ -932,6 +932,11 @@ class MagicMaze extends Table {
         $this->gamestate->nextState('');
     }
 
+    public function uncalled() {
+        // work around build checks
+        $this->giveExtraTime($this->getFirstPlayer());
+    }
+
     ///////////////////////////////////////////////////////////////////////////////////:
     ////////// DB upgrade
     //////////
