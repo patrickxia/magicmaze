@@ -17,7 +17,9 @@ create table `tiles` (
      primary key (`tile_id`)
 ) ENGINE=InnoDB;
 
-create function find_tile(x int, y int) returns int deterministic
+create function find_tile(x int, y int) returns int
+  not deterministic
+  reads sql data
   return (select tile_id from tiles where
     x - position_x between 0 and 3
     and y - position_y between 0 and 3);
